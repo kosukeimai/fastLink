@@ -1,0 +1,2 @@
+import(Matrix, parallel, foreach, doParallel, gtools, stringdist, data.table)
+exportPattern("^[[:alpha:]]+")
