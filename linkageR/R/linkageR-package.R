@@ -14,7 +14,6 @@
 #' 
 #' Maintainer: Ted Enamorado \email{tede@@princeton.edu}
 #' @keywords package
-#' @import Matrix, parallel, foreach, doParallel, gtools, stringdist, data.table
+#' @import Matrix parallel foreach doParallel gtools stringdist data.table RcppEigen
 #' @importFrom Rcpp evalCpp
 NULL
-
