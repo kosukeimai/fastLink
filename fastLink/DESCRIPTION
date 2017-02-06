@@ -1,4 +1,4 @@
-Package: linkageR
+Package: fastLink
 Type: Package
 Title: Record Linkage under MAR
 Version: 0.1.0
