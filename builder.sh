@@ -16,3 +16,4 @@ cd ../..
 # Build and run CRAN checks
 R CMD BUILD fastLink --resave-data 
 R CMD CHECK fastLink_0.1.0.tar.gz --as-cran
+R CMD INSTALL fastLink_0.1.0.tar.gz
