@@ -21,7 +21,7 @@ fastLink <- function(df_a, df_b, varnames, partial_match, tol.em = 1e-04, tol.ma
     }
 
     ## Create gammas
-    cat("Calculating matches for each variable."
+    cat("Calculating matches for each variable.")
     gammalist <- vector(mode = "list", length = length(varnames))
     for(i in 1:length(gammalist)){
         if(partial_match[i]){
