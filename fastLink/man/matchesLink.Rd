@@ -4,10 +4,12 @@
 \alias{matchesLink}
 \title{matchesLink}
 \usage{
-matchesLink(g1p = x, g2p = NULL, g3p = NULL, g4p = NULL, g5p = NULL,
-  g6p = NULL, nr1 = w, nr2 = p, em = y, cut = z)
+matchesLink(gammalist, nr1 = w, nr2 = p, em = y, cut = z)
 }
 \arguments{
+\item{gammalist}{A list of objects produced by either gammaKpar or
+gammaCKpar.}
+
 \item{nr1}{number of observations in dataset 1}
 
 \item{nr2}{number of observations in dataset 2}
@@ -16,8 +18,6 @@ matchesLink(g1p = x, g2p = NULL, g3p = NULL, g4p = NULL, g5p = NULL,
 produced by emlinkMAR}
 
 \item{cut}{is the interval of weight values for the agreements that we want to examine closer.}
-
-\item{g1p-g16p}{list of indices for the first linking field - these are produced by either gammaKpar or gammaCKpar}
 }
 \description{
 matchesLink produces two dataframes that store

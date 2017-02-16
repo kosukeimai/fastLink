@@ -48,16 +48,19 @@ tableCounts <- function(gammalist, nr1 = y, nr2 = z) {
     n.lim.2 <- limit.2[-1] - limit.2[-last]
 
     ind.i <- ind.j <- 1:n.slices
-    ind <- expand.grid(ind.i, ind.j)
+    ind <- as.matrix(expand.grid(ind.i, ind.j))
 
     ## Run main function
-    gammas <- m_func_par(temp, ptemp, natemp,
-                         limit.1, limit.2,
-                         n.lim.1, n.lim.2,
-                         ind, nc)
+    gammas <- m_func_par(temp = temp, ptemp = ptemp, natemp = natemp,
+                         limit1 = limit.1, limit2 = limit.2,
+                         nlim1 = n.lim.1, nlim2 = n.lim.2,
+                         ind = ind, threads = nc)
+    gammas_mat <- lapply(gammas, function(x){
+        as.matrix(data.frame(x[[1]], x[[2]]))
+    })
 
-    temp <- do.call('rbind', gammas)
-    rm(gammas); gc()
+    temp <- do.call('rbind', gammas_mat)
+    rm(gammas); rm(gammas_mat); gc()
 
     counts.f <- as.matrix(tapply(as.numeric(temp[, 2]), temp[, 1], sum))
     counts.d <- cbind( as.numeric(row.names(counts.f)), counts.f)

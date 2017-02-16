@@ -4,7 +4,7 @@
 \alias{tableCounts}
 \title{tableCounts}
 \usage{
-tableCounts(gammalist = NULL, nr1 = y, nr2 = z)
+tableCounts(gammalist, nr1 = y, nr2 = z)
 }
 \arguments{
 \item{gammalist}{A list of objects produced by either gammaKpar or
