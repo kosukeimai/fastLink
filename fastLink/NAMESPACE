@@ -2,6 +2,7 @@
 
 export(deletion)
 export(emlinkMAR)
+export(fastLink)
 export(gammaCK2par)
 export(gammaCK3par)
 export(gammaCKpar)
