@@ -1,4 +1,5 @@
 // [[Rcpp::depends(RcppArmadillo,RcppEigen)]]
+// [[Rcpp::plugins(openmp)]]
 
 #include <RcppArmadillo.h>
 #include <RcppEigen.h>
