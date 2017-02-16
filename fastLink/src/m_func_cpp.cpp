@@ -1,5 +1,6 @@
-// [[Rcpp::depends(RcppEigen)]]
+// [[Rcpp::depends(RcppArmadillo,RcppEigen)]]
 
+#include <RcppArmadillo.h>
 #include <RcppEigen.h>
 #include <ctime>
 
@@ -9,60 +10,79 @@
 
 using namespace Rcpp;
 
-typedef Eigen::Triplet<double> T;
+typedef Eigen::Triplet<double> Trip;
 typedef Eigen::SparseMatrix<double> SpMat;
 typedef Eigen::SparseMatrix<double>::InnerIterator InIt;
 
-IntegerMatrix indexing(List s, int l1, int l2, int l3, int l4){
+arma::mat indexing(std::vector<arma::vec> s, int l1, int l2, int l3, int l4){
   
   // Get elements, declare matrix object
-  IntegerVector s0 = s[0]; IntegerVector s1 = s[1];
-  if(sum(s0 > l1 & s0 <= l2) >= 1 & sum(s1 > l3 & s1 <= l4) >= 1){
-    
-    // Subset vectors to indices that fall in range
-    IntegerVector temp0 = as<IntegerVector>(s0[s0 > l1 & s0 <= l2]) - l1;
-    IntegerVector temp1 = as<IntegerVector>(s1[s1 > l3 & s1 <= l4]) - l3;
-    
-    // Expand grid, declare size of matrix
-    int i; int j;
-    int rowcount = 0;
-    IntegerMatrix index_out(temp0.size() * temp1.size(), 2);
-    for(i = 0; i < temp0.size(); i++){
-      for(j = 0; j < temp1.size(); j++){
-	index_out(rowcount,0) = temp0[i];
-	index_out(rowcount,1) = temp1[j];
-	rowcount++;
+  arma::vec s0 = s[0]; arma::vec s1 = s[1];
+  arma::mat index_out;
+
+  // Subset down to right elements
+  arma::uvec s0_l1 = s0 > l1;
+  arma::uvec s0_l2 = s0 <= l2;
+  arma::uvec s1_l3 = s1 > l3;
+  arma::uvec s1_l4 = s1 <= l4;
+  arma::uvec s0_bool = s0_l1 % s0_l2;
+  arma::uvec s1_bool = s1_l3 % s1_l4;
+  if(sum(s0_bool) >= 1){
+
+    if(sum(s1_bool) >= 1){
+      // Subset vectors to indices that fall in range
+      arma::vec temp0 = s0.elem(find(s0_bool == true)) - l1;
+      arma::vec temp1 = s1.elem(find(s1_bool == true)) - l3;
+      
+      // Expand grid, declare size of matrix
+      int i; int j;
+      int rowcount = 0;
+      index_out.set_size(temp0.n_elem * temp1.n_elem, 2);
+      for(i = 0; i < temp0.n_elem; i++){
+      	for(j = 0; j < temp1.n_elem; j++){
+      	  index_out(rowcount,0) = temp0[i];
+      	  index_out(rowcount,1) = temp1[j];
+      	  rowcount++;
+      	}
       }
     }
-    return index_out;
+    
   }
-
+  return index_out;
 }
 
-List indexing_na(List s, int l1, int l2, int l3, int l4){
+std::vector<arma::vec> indexing_na(std::vector<arma::vec> s,
+				   int l1, int l2, int l3, int l4){
 
   // Unpack
-  IntegerVector s0 = s[0]; IntegerVector s1 = s[1];
+  arma::vec s0 = s[0]; arma::vec s1 = s[1];
 
   // Subset
-  IntegerVector temp0 = as<IntegerVector>(s0[s0 > l1 & s0 <= l2]) - l1;
-  IntegerVector temp1 = as<IntegerVector>(s1[s1 > l3 & s1 <= l4]) - l3;
+  arma::uvec s0_l1 = s0 > l1;
+  arma::uvec s0_l2 = s0 <= l2;
+  arma::uvec s1_l3 = s1 > l3;
+  arma::uvec s1_l4 = s1 <= l4;
+  arma::uvec s0_bool = s0_l1 % s0_l2;
+  arma::uvec s1_bool = s1_l3 % s1_l4;
+  arma::vec temp0 = s0.elem(find(s0_bool == true)) - l1;
+  arma::vec temp1 = s1.elem(find(s1_bool == true)) - l3;
 
   // Output
-  List out(2);
+  std::vector<arma::vec> out(2);
   out[0] = temp0;
   out[1] = temp1;
   return out;
   
 }
 
-List unpack_matches(List x, IntegerVector dims, bool match){
+std::vector<SpMat> unpack_matches(const std::vector< std::vector<arma::mat> > x,
+				  const arma::vec dims, const bool match){
 
   // Declare objects
-  int len_x = x.size(); int i; int j; int k; List feature_adj;
-  int matrix_length; int adj_length;
-  List list_out(len_x); int track_row; IntegerMatrix adj_store;
-  int val; 
+  int len_x = x.size(); int i; int j; int k; std::vector<arma::mat> feature_adj;
+  int matrix_length; 
+  std::vector<SpMat> list_out(len_x); arma::mat adj_store;
+  int val; arma::mat feature_adj_j;
   
   // Loop over features
   for(i = 0; i < len_x; i++){
@@ -70,13 +90,14 @@ List unpack_matches(List x, IntegerVector dims, bool match){
     // Unpack that feature
     feature_adj = x[i];
     matrix_length = 0;
-    IntegerVector is_not_null(feature_adj.size());
+    arma::vec is_not_null(feature_adj.size());
 
     // Loop over entries in feature, delete if null
     for(j = 0; j < feature_adj.size(); j++){
-      if(!Rf_isNull(feature_adj[j])){
+      feature_adj_j = feature_adj[j];
+      if(!feature_adj_j.is_empty()){
 	is_not_null[j] = 1;
-	matrix_length += as<IntegerMatrix>(feature_adj[j]).nrow();
+	matrix_length += feature_adj_j.n_rows;
       } 
     }
 
@@ -88,13 +109,13 @@ List unpack_matches(List x, IntegerVector dims, bool match){
     }
 
     // Create tripletList out of feature_adj
-    std::vector<T> tripletList;
+    std::vector<Trip> tripletList;
     tripletList.reserve(matrix_length);
     for(j = 0; j < feature_adj.size(); j++){
       if(is_not_null[j] == 1){
-	adj_store = as<IntegerMatrix>(feature_adj[j]);
-	for(k = 0; k < adj_store.nrow(); k++){
-	  tripletList.push_back(T(adj_store(k,0)-1, adj_store(k,1)-1, val));
+	adj_store = feature_adj[j];
+	for(k = 0; k < adj_store.n_rows; k++){
+	  tripletList.push_back(Trip(adj_store(k,0)-1, adj_store(k,1)-1, val));
 	}
       }
     }
@@ -112,8 +133,9 @@ List unpack_matches(List x, IntegerVector dims, bool match){
   
 }
 
-IntegerVector getNotIn(IntegerVector vec1, IntegerVector vec2){
-  IntegerVector matches = match(vec1,vec2);
+arma::vec getNotIn(const arma::vec vec1, const arma::vec vec2){
+  IntegerVector matches = match(as<NumericVector>(wrap(vec1)),
+				as<NumericVector>(wrap(vec2)));
   int n_out = sum(is_na(matches)) ;
   IntegerVector output(n_out); int i; int j;
 		
@@ -122,17 +144,18 @@ IntegerVector getNotIn(IntegerVector vec1, IntegerVector vec2){
       output[j++] = vec1[i];
     }
   }	
-  return output;		
+  return as<arma::vec>(output);		
 }
 
-List create_sparse_na(List nas, IntegerVector dims){
+std::vector<SpMat> create_sparse_na(std::vector< std::vector<arma::vec> > nas,
+				    arma::vec dims){
 
   int i; int j; int k; int val; int nobs_a = dims[0]; int nobs_b = dims[1];
-  IntegerVector nas_a; IntegerVector nas_b; List list_out(nas.size());
-  IntegerVector nobs_a_notnull_inb;
+  arma::vec nas_a; arma::vec nas_b; std::vector<SpMat> list_out(nas.size());
+  arma::vec nobs_a_notnull_inb; std::vector<arma::vec> nas_extract(2);
 
   // Create comparison vector of indices of nobs_a
-  IntegerVector nobs_a_vec(nobs_a);
+  arma::vec nobs_a_vec(nobs_a);
   for(i = 0; i < nobs_a; i++){
     nobs_a_vec[i] = i+1;
   }
@@ -143,22 +166,23 @@ List create_sparse_na(List nas, IntegerVector dims){
     val = pow(2, 3 + (i * 3));
 
     // Extract indices of NAs
-    nas_a = as<List>(nas[i])[0];
-    nas_b = as<List>(nas[i])[1];
+    nas_extract = nas[i];
+    nas_a = nas_extract[0];
+    nas_b = nas_extract[1];
 
     nobs_a_notnull_inb = getNotIn(nobs_a_vec, nas_a);
     
     // Create triplet
-    std::vector<T> tripletList;
+    std::vector<Trip> tripletList;
     tripletList.reserve(nas_a.size() * nobs_b + nas_b.size() * nobs_a);
     for(j = 0; j < nas_a.size(); j++){
       for(k = 0; k < nobs_b; k++){
-	tripletList.push_back(T(nas_a[j]-1, k, val));
+	tripletList.push_back(Trip(nas_a[j]-1, k, val));
       }
     }
     for(j = 0; j < nas_b.size(); j++){
       for(k = 0; k < nobs_a_notnull_inb.size(); k++){
-	tripletList.push_back(T(nobs_a_notnull_inb[k]-1, nas_b[j]-1, val));
+	tripletList.push_back(Trip(nobs_a_notnull_inb[k]-1, nas_b[j]-1, val));
       }
     }
 
@@ -175,30 +199,33 @@ List create_sparse_na(List nas, IntegerVector dims){
 
 }
 
-List m_func(List x){
+std::vector<arma::vec> m_func(const std::vector< std::vector<arma::mat> > matches,
+			      const std::vector< std::vector<arma::mat> > pmatches,
+			      const std::vector< std::vector<arma::vec> > nas,
+			      const arma::vec lims,
+			      const int slice
+			      ){
 
-  // Unpack the matched object and convert to sparse matrix
-  List matches = x[0]; List pmatches = x[1];
-  List nas = x[2]; IntegerVector lims = x[3];
-  int i;
-  matches  = unpack_matches(matches,  lims, true);
-  pmatches = unpack_matches(pmatches, lims, false);
+  // Create sparse matches, pmatches object
+  std::vector<SpMat> matches_up  = unpack_matches(matches,  lims, true);
+  std::vector<SpMat> pmatches_up = unpack_matches(pmatches, lims, false);
 
-  // Insert nas into the matches object
-  List nas_sp = create_sparse_na(nas, lims);
+  // Create sparse NA matrix
+  std::vector<SpMat> nas_sp = create_sparse_na(nas, lims);
   
   // Add up everything
   SpMat sp(lims(0), lims(1));
   SpMat match_pmatch(lims(0), lims(1));
   SpMat match_pmatch_na(lims(0), lims(1));
-  for(i = 0; i < matches.size(); i++){
-    match_pmatch = as<SpMat>(matches[i]) + as<SpMat>(pmatches[i]);
-    match_pmatch_na = match_pmatch + as<SpMat>(nas_sp[i]);
+  int i;
+  for(i = 0; i < matches_up.size(); i++){
+    match_pmatch = matches_up[i] + pmatches_up[i];
+    match_pmatch_na = match_pmatch + nas_sp[i];
     sp = sp + match_pmatch_na;
   }
 
   // Create table by iterating through
-  IntegerVector nz(sp.nonZeros());
+  arma::vec nz(sp.nonZeros());
   int counter = 0;
   for(i = 0; i < sp.outerSize(); i++){
     for(InIt it(sp,i); it; ++it){
@@ -206,93 +233,101 @@ List m_func(List x){
       counter++;
     }
   }
-  IntegerVector tab = table(nz);
-  CharacterVector names = tab.names();
 
-  IntegerVector out_num(tab.size() + 1);
-  CharacterVector out_char(tab.size() + 1);
-  for(i = 0; i < out_num.size(); i++){
-    if(i == out_num.size()-1){
-      out_char[i] = "0";
-      out_num[i] = lims(0)*lims(1) - sum(tab);
-    }else{
-      out_char(i) = names[i];
-      out_num(i) = tab[i];
-    }
+  // Get unique values and create table
+  arma::vec nz_unique = unique(nz);
+  arma::vec nz_unique_counts(nz_unique.n_elem);
+  arma::uvec nz_unique_i;
+  for(i = 0; i < nz_unique_counts.n_elem; i++){
+    nz_unique_i = find(nz == nz_unique(i));
+    nz_unique_counts(i) = nz_unique_i.n_elem;
   }
+  int num_zeros = lims(0)*lims(1) - sum(nz_unique_counts);
+  nz_unique.resize(nz_unique.n_elem + 1);
+  nz_unique_counts.resize(nz_unique_counts.n_elem + 1);
+  nz_unique_counts(nz_unique_counts.n_elem-1) = num_zeros;
+    
+  // Create return object
+  std::vector<arma::vec> nz_out(2);
+  nz_out[0] = nz_unique;
+  nz_out[1] = nz_unique_counts;
 
-  return List::create(
-		      _["names"] = out_char,
-		      _["nobs"] = out_num
-		      );
+  return nz_out;
   
 }
 
 // [[Rcpp::export]]
-List m_func_par(List temp, List ptemp, List natemp,
-		IntegerVector limit1, IntegerVector limit2,
-		IntegerVector nlim1, IntegerVector nlim2,
-		IntegerMatrix ind, int threads = 1){
+std::vector< std::vector<arma::vec> > m_func_par(const std::vector< std::vector< std::vector<arma::vec> > > temp,
+						 const std::vector< std::vector< std::vector<arma::vec> > > ptemp,
+						 const std::vector< std::vector<arma::vec> > natemp,
+						 const arma::vec limit1, const arma::vec limit2,
+						 const arma::vec nlim1, const arma::vec nlim2,
+						 const arma::mat ind, const int threads = 1){
 
-  // Declare objects
-  int i; int j; int k; int n; int m; List step1(4);
-  List templist(temp.size()); List ptemplist(ptemp.size());
-  List natemplist(natemp.size());
-  IntegerVector lims(2);
-  List ind_out(ind.nrow());
+  // Declare objects (shared)
+  int n; int m;
+  std::vector< std::vector<arma::vec> > ind_out(ind.n_rows);
+
+  // Declare objects (private)
+  std::vector< std::vector<arma::vec> > temp_feature;
+  std::vector< std::vector<arma::vec> > ptemp_feature;
+  std::vector<arma::mat> indlist;
+  std::vector<arma::mat> pindlist;
+
+  // Declare objects (firstprivate)
+  std::vector< std::vector<arma::mat> > templist(temp.size());
+  std::vector< std::vector<arma::mat> > ptemplist(ptemp.size());
+  std::vector< std::vector<arma::vec> > natemplist(natemp.size());
+  std::vector<arma::vec> mf_out(2);
+  arma::vec lims(2);
   
   // Declare pragma environment
-  #ifdef _OPENMP
+#ifdef _OPENMP
   omp_set_num_threads(threads);
-  threadsused = omp_get_max_threads();
+  int threadsused = omp_get_max_threads();
   Rcout << "Gamma calculation is parallelized. "
 	<< threadsused << " threads out of "
 	<< omp_get_num_procs() << " are used."
-	<< std::endl;
-  #pragma omp parallel for
-  #endif
-  for(i = 0; i < ind.nrow(); i++){
+	<< std::endl << std::endl;
+#pragma omp parallel for private(n, m, temp_feature, ptemp_feature, indlist, pindlist) firstprivate(lims, templist, ptemplist, natemplist, mf_out)
+#endif
+  for(int i = 0; i < ind.n_rows; i++){
 
     // Get indices of the rows
     n = ind(i,0)-1; m = ind(i, 1)-1;
-    lims[0] = nlim1[n]; lims[1] = nlim2[m];
-
+    lims(0) = nlim1(n); lims(1) = nlim2(m);
+    
     // Loop over the number of features
-    for(j = 0; j < temp.size(); j++){
+    for(int j = 0; j < temp.size(); j++){
 
       // Within this, loop over the list of each feature
-      List temp_feature = temp[j];
-      List ptemp_feature = ptemp[j];
-      List indlist(temp_feature.size());
-      List pindlist(ptemp_feature.size());
+      temp_feature = temp[j];
+      ptemp_feature = ptemp[j];
+      indlist.resize(temp_feature.size());
+      pindlist.resize(ptemp_feature.size());
+      int k;
       for(k = 0; k < temp_feature.size(); k++){
-	if(temp_feature.size() > 0){
-	  indlist[k] = indexing(temp_feature[k], limit1[n], limit1[n+1],
-				limit2[m], limit2[m+1]);
-	}
+    	if(temp_feature.size() > 0){
+    	  indlist[k] = indexing(temp_feature[k], limit1[n], limit1[n+1],
+    				limit2[m], limit2[m+1]);
+    	}
       }
       for(k = 0; k < ptemp_feature.size(); k++){
-	if(ptemp_feature.size() > 0){
-	  pindlist[k] = indexing(ptemp_feature[k], limit1[n], limit1[n+1],
-				 limit2[m], limit2[m+1]);
-	}
+    	if(ptemp_feature.size() > 0){
+    	  pindlist[k] = indexing(ptemp_feature[k], limit1[n], limit1[n+1],
+    				 limit2[m], limit2[m+1]);
+    	}
       }
-
       templist[j] = indlist;
       ptemplist[j] = pindlist;
       natemplist[j] = indexing_na(natemp[j], limit1[n], limit1[n+1],
-       				  limit2[m], limit2[m+1]);
-      
+       				  limit2[m], limit2[m+1]);      
     }
 
-    // Create step1
-    step1[0] = templist; step1[1] = ptemplist;
-    step1[2] = natemplist; step1[3] = lims;
-
     // Run m_func
-    List mf_out = m_func(step1);
+    mf_out = m_func(templist, ptemplist, natemplist, lims, i);
     ind_out[i] = mf_out;
-    
+
   }
 
   return ind_out;
