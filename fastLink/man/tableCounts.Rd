@@ -4,15 +4,15 @@
 \alias{tableCounts}
 \title{tableCounts}
 \usage{
-tableCounts(g1p = x, g2p = NULL, g3p = NULL, g4p = NULL, g5p = NULL,
-  g6p = NULL, nr1 = y, nr2 = z)
+tableCounts(gammalist = NULL, nr1 = y, nr2 = z)
 }
 \arguments{
+\item{gammalist}{A list of objects produced by either gammaKpar or
+gammaCKpar.}
+
 \item{nr1}{number of observations in dataset 1}
 
 \item{nr2}{number of observations in dataset 2}
-
-\item{g1p-g16p}{list of indices for the first linking field - these are produced by either gammaKpar or gammaCKpar}
 }
 \description{
 Count pairs with the same pattern in the cross product between two datasets.
