@@ -202,7 +202,10 @@ std::vector<SpMat> create_sparse_na(std::vector< std::vector<arma::vec> > nas,
 std::vector<arma::vec> m_func(const std::vector< std::vector<arma::mat> > matches,
 			      const std::vector< std::vector<arma::mat> > pmatches,
 			      const std::vector< std::vector<arma::vec> > nas,
-			      const arma::vec lims
+			      const arma::vec lims,
+			      const arma::vec lims_2,
+			      const arma::vec listid,
+			      const bool matchesLink
 			      ){
 
   // Create sparse matches, pmatches object
@@ -223,32 +226,60 @@ std::vector<arma::vec> m_func(const std::vector< std::vector<arma::mat> > matche
     sp = sp + match_pmatch_na;
   }
 
-  // Create table by iterating through
-  arma::vec nz(sp.nonZeros());
-  int counter = 0;
-  for(i = 0; i < sp.outerSize(); i++){
-    for(InIt it(sp,i); it; ++it){
-      nz[counter] = it.value();
-      counter++;
+  std::vector<arma::vec> nz_out(2);
+  if(matchesLink == false){
+
+    // Create table by iterating through
+    arma::vec nz(sp.nonZeros());
+    int counter = 0;
+    for(i = 0; i < sp.outerSize(); i++){
+      for(InIt it(sp,i); it; ++it){
+	nz[counter] = it.value();
+	counter++;
+      }
     }
+    
+    // Get unique values and create table
+    arma::vec nz_unique = unique(nz);
+    arma::vec nz_unique_counts(nz_unique.n_elem);
+    arma::uvec nz_unique_i;
+    for(i = 0; i < nz_unique_counts.n_elem; i++){
+      nz_unique_i = find(nz == nz_unique(i));
+      nz_unique_counts(i) = nz_unique_i.n_elem;
+    }
+    int num_zeros = lims(0)*lims(1) - sum(nz_unique_counts);
+
+    // Add zeros, create nz_out
+    nz_unique.resize(nz_unique.n_elem + 1);
+    nz_unique_counts.resize(nz_unique_counts.n_elem + 1);
+    nz_unique_counts(nz_unique_counts.n_elem-1) = num_zeros;
+    nz_out[0] = nz_unique;
+    nz_out[1] = nz_unique_counts;
+    
+  }else{
+
+    // Find elements of sp that are in listid, replace with 9999
+    arma::vec nz_out_rows(sp.nonZeros());
+    arma::vec nz_out_cols(sp.nonZeros());
+    int counter = 0;
+    for(i = 0; i < sp.outerSize(); i++){
+      for(InIt it(sp,i); it; ++it){
+	if(any(listid == it.value())){
+	  nz_out_rows(counter) = it.row() + lims_2(0);
+	  nz_out_cols(counter) = it.col() + lims_2(1);
+	  counter++;
+	}
+      }
+    }
+
+    // Store in nz_out, only take 0:(counter-1)
+    if(counter > 0){
+      nz_out[0] = nz_out_rows.subvec(0, counter-1);
+      nz_out[1] = nz_out_cols.subvec(0, counter-1);
+    }
+    
   }
 
-  std::vector<arma::vec> nz_out(2);
-  // Get unique values and create table
-  arma::vec nz_unique = unique(nz);
-  arma::vec nz_unique_counts(nz_unique.n_elem);
-  arma::uvec nz_unique_i;
-  for(i = 0; i < nz_unique_counts.n_elem; i++){
-    nz_unique_i = find(nz == nz_unique(i));
-    nz_unique_counts(i) = nz_unique_i.n_elem;
-  }
-  int num_zeros = lims(0)*lims(1) - sum(nz_unique_counts);
-  nz_unique.resize(nz_unique.n_elem + 1);
-  nz_unique_counts.resize(nz_unique_counts.n_elem + 1);
-  nz_unique_counts(nz_unique_counts.n_elem-1) = num_zeros;
-  nz_out[0] = nz_unique;
-  nz_out[1] = nz_unique_counts;
-  
   return nz_out;
   
 }
@@ -260,6 +291,8 @@ std::vector< std::vector<arma::vec> > m_func_par(const std::vector< std::vector<
 						 const arma::vec limit1, const arma::vec limit2,
 						 const arma::vec nlim1, const arma::vec nlim2,
 						 const arma::mat ind,
+						 const arma::vec listid,
+						 const bool matchesLink = false,
 						 const int threads = 1){
 
   // Declare objects (shared)
@@ -278,6 +311,7 @@ std::vector< std::vector<arma::vec> > m_func_par(const std::vector< std::vector<
   std::vector< std::vector<arma::vec> > natemplist(natemp.size());
   std::vector<arma::vec> mf_out(2);
   arma::vec lims(2);
+  arma::vec lims_2(2);
   
   // Declare pragma environment
 #ifdef _OPENMP
@@ -287,13 +321,14 @@ std::vector< std::vector<arma::vec> > m_func_par(const std::vector< std::vector<
 	<< threadsused << " threads out of "
 	<< omp_get_num_procs() << " are used."
 	<< std::endl << std::endl;
-#pragma omp parallel for private(n, m, temp_feature, ptemp_feature, indlist, pindlist) firstprivate(lims, templist, ptemplist, natemplist, mf_out)
+#pragma omp parallel for private(n, m, temp_feature, ptemp_feature, indlist, pindlist) firstprivate(lims, lims_2, templist, ptemplist, natemplist, mf_out)
 #endif
   for(int i = 0; i < ind.n_rows; i++){
 
     // Get indices of the rows
     n = ind(i,0)-1; m = ind(i, 1)-1;
     lims(0) = nlim1(n); lims(1) = nlim2(m);
+    lims_2(0) = limit1(n), lims_2(1) = limit2(m);
     
     // Loop over the number of features
     for(int j = 0; j < temp.size(); j++){
@@ -323,7 +358,7 @@ std::vector< std::vector<arma::vec> > m_func_par(const std::vector< std::vector<
     }
 
     // Run m_func
-    mf_out = m_func(templist, ptemplist, natemplist, lims);
+    mf_out = m_func(templist, ptemplist, natemplist, lims, lims_2, listid, matchesLink);
     ind_out[i] = mf_out;
 
   }

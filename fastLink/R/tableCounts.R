@@ -54,7 +54,8 @@ tableCounts <- function(gammalist, nr1 = y, nr2 = z) {
     gammas <- m_func_par(temp = temp, ptemp = ptemp, natemp = natemp,
                          limit1 = limit.1, limit2 = limit.2,
                          nlim1 = n.lim.1, nlim2 = n.lim.2,
-                         ind = ind, threads = nc)
+                         ind = ind, listid = rep(1, 2),
+                         matchesLink = FALSE, threads = nc)
     gammas_mat <- lapply(gammas, function(x){
         as.matrix(data.frame(x[[1]], x[[2]]))
     })

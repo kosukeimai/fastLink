@@ -8,8 +8,8 @@
 using namespace Rcpp;
 
 // m_func_par
-std::vector< std::vector<arma::vec> > m_func_par(const std::vector< std::vector< std::vector<arma::vec> > > temp, const std::vector< std::vector< std::vector<arma::vec> > > ptemp, const std::vector< std::vector<arma::vec> > natemp, const arma::vec limit1, const arma::vec limit2, const arma::vec nlim1, const arma::vec nlim2, const arma::mat ind, const int threads);
-RcppExport SEXP fastLink_m_func_par(SEXP tempSEXP, SEXP ptempSEXP, SEXP natempSEXP, SEXP limit1SEXP, SEXP limit2SEXP, SEXP nlim1SEXP, SEXP nlim2SEXP, SEXP indSEXP, SEXP threadsSEXP) {
+std::vector< std::vector<arma::vec> > m_func_par(const std::vector< std::vector< std::vector<arma::vec> > > temp, const std::vector< std::vector< std::vector<arma::vec> > > ptemp, const std::vector< std::vector<arma::vec> > natemp, const arma::vec limit1, const arma::vec limit2, const arma::vec nlim1, const arma::vec nlim2, const arma::mat ind, const arma::vec listid, const bool matchesLink, const int threads);
+RcppExport SEXP fastLink_m_func_par(SEXP tempSEXP, SEXP ptempSEXP, SEXP natempSEXP, SEXP limit1SEXP, SEXP limit2SEXP, SEXP nlim1SEXP, SEXP nlim2SEXP, SEXP indSEXP, SEXP listidSEXP, SEXP matchesLinkSEXP, SEXP threadsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -21,8 +21,10 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const arma::vec >::type nlim1(nlim1SEXP);
     Rcpp::traits::input_parameter< const arma::vec >::type nlim2(nlim2SEXP);
     Rcpp::traits::input_parameter< const arma::mat >::type ind(indSEXP);
+    Rcpp::traits::input_parameter< const arma::vec >::type listid(listidSEXP);
+    Rcpp::traits::input_parameter< const bool >::type matchesLink(matchesLinkSEXP);
     Rcpp::traits::input_parameter< const int >::type threads(threadsSEXP);
-    rcpp_result_gen = Rcpp::wrap(m_func_par(temp, ptemp, natemp, limit1, limit2, nlim1, nlim2, ind, threads));
+    rcpp_result_gen = Rcpp::wrap(m_func_par(temp, ptemp, natemp, limit1, limit2, nlim1, nlim2, ind, listid, matchesLink, threads));
     return rcpp_result_gen;
 END_RCPP
 }
