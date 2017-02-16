@@ -17,7 +17,7 @@
 ## functions that does the trick
 ## ------------------------
 
-tableCounts <- function(gammalist = NULL, nr1 = y, nr2 = z) {
+tableCounts <- function(gammalist, nr1 = y, nr2 = z) {
 
     ## Lists of indices:
     ##     temp - exact
