@@ -8,7 +8,7 @@
 #' @param matAp vector storing the comparison field in data set 1
 #' @param matBp vector storing the comparison field in data set 2
 #'
-#' @author Ted Enamorado <ted.enamorado@gmail.com> and Kosuke Imai
+#' @author Ted Enamorado <ted.enamorado@gmail.com>, Ben Fifield, and Kosuke Imai
 #'
 #' @export
 
