@@ -8,7 +8,7 @@
 #' @param matAp vector storing the comparison field in data set 1
 #' @param matBp vector storing the comparison field in data set 2
 #'
-#' @author Ted Enamorado <ted.enamorado@gmail.com> and Kosuke Imai
+#' @author Ted Enamorado <ted.enamorado@gmail.com>, Ben Fifield, and Kosuke Imai
 #'
 #' @export
 
@@ -35,19 +35,19 @@ gammaCK2par <- function(matAp, matBp) {
 	u.values.1 <- unique(matrix.1)
 	u.values.2 <- unique(matrix.2)
 
-	slices <- round((max(length(u.values.1), length(u.values.2))/8000), 0)
+	n.slices1 <- max(round(length(u.values.1)/(4500), 0), 1) 
+    	n.slices2 <- max(round(length(u.values.2)/(4500), 0), 1) 
 
-	if(slices == 0){
-		 slices <- 1
+	limit.1 <- round(quantile((0:nrow(u.values.2)), p = seq(0, 1, 1/n.slices2)), 0)
+	limit.2 <- round(quantile((0:nrow(u.values.1)), p = seq(0, 1, 1/n.slices1)), 0)
+
+  	temp.1 <- temp.2 <- list()
+	  	
+	for(i in 1:n.slices2) {
+		temp.1[[i]] <- list(u.values.2[(limit.1[i]+1):limit.1[i+1]], limit.1[i])
 	}
 
-	n.slices <- slices
-	limit.1 <- round(quantile((0:nrow(u.values.2)), p = seq(0, 1, 1/n.slices)), 0)
-	limit.2 <- round(quantile((0:nrow(u.values.1)), p = seq(0, 1, 1/n.slices)), 0)
-
-  temp.1 <- temp.2 <- list()
-	for(i in 1:n.slices) {
-		temp.1[[i]] <- list(u.values.2[(limit.1[i]+1):limit.1[i+1]], limit.1[i])
+	for(i in 1:n.slices1) {
 		temp.2[[i]] <- list(u.values.1[(limit.2[i]+1):limit.2[i+1]], limit.2[i])
 	}
 
@@ -68,7 +68,7 @@ gammaCK2par <- function(matAp, matBp) {
     list(indexes.2)
   }
 
-	do <- expand.grid(1:slices, 1:slices)
+	do <- expand.grid(1:n.slices2, 1:n.slices1)
 
 	nc <- detectCores() - 1
   	cl <- makeCluster(nc)
@@ -88,8 +88,8 @@ gammaCK2par <- function(matAp, matBp) {
 
 	indexes.2 <- do.call('rbind', temp.2)
 
-  ht1 <- new.env(hash=TRUE)
-  ht2 <- new.env(hash=TRUE)
+  	ht1 <- new.env(hash=TRUE)
+  	ht2 <- new.env(hash=TRUE)
 
 	n.values.2 <- as.matrix(cbind(u.values.1[indexes.2[, 1]], u.values.2[indexes.2[, 2]]))
 	matches.2 <- lapply(seq_len(nrow(n.values.2)), function(i) n.values.2[i, ])
