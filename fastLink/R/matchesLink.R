@@ -24,24 +24,19 @@
 
 matchesLink <- function(gammalist, nr1 = w, nr2 = p, em = y, cut = z) {
 
-    requireNamespace('foreach')
-    requireNamespace('doParallel')
-    requireNamespace('parallel')
-    requireNamespace('stats')
-
     ## Slicing the data:
-    n.slices <- round(max(as.numeric(nr1), as.numeric(nr2))/(4900), 0)
-    if(n.slices == 0){
-        n.slices <- 1
-    }
+    n.slices1 <- max(round(as.numeric(nr1)/(4500), 0), 1) 
+    n.slices2 <- max(round(as.numeric(nr2)/(4500), 0), 1) 
+    nc <- min((detectCores() - 1), n.slices1 * n.slices2)
 
-    nc <- min((detectCores() - 1), n.slices^2)
+    limit.1 <- round(quantile((0:nr1), p = seq(0, 1, 1/n.slices1)), 0)
+    limit.2 <- round(quantile((0:nr2), p = seq(0, 1, 1/n.slices2)), 0)
 
-    limit.1 <- round(quantile((0:nr1), p = seq(0, 1, 1/n.slices)), 0)
-    limit.2 <- round(quantile((0:nr2), p = seq(0, 1, 1/n.slices)), 0)
-    last <- length(limit.1)
-    n.lim.1 <- limit.1[-1] - limit.1[-last]
-    n.lim.2 <- limit.2[-1] - limit.2[-last]
+    last1 <- length(limit.1)
+    last2 <- length(limit.2)
+
+    n.lim.1 <- limit.1[-1] - limit.1[-last1]
+    n.lim.2 <- limit.2[-1] - limit.2[-last2]
 
     l.b <- cut[1]
     u.b <- cut[2]
@@ -84,21 +79,52 @@ matchesLink <- function(gammalist, nr1 = w, nr2 = p, em = y, cut = z) {
         natemp[[i]] <- gammalist[[i]]$nas
     }
 
-    ind.i <- ind.j <- 1:n.slices
+    ind.i <- 1:n.slices1
+    ind.j <- 1:n.slices2
     ind <- as.matrix(expand.grid(ind.i, ind.j))
 
-    ## Run the function
-    gammas <- m_func_par(temp = temp, ptemp = ptemp, natemp = natemp,
+    ## Run main function
+	if(Sys.info()[['sysname']] == 'Darwin') {
+    	cl <- makeCluster(nc)
+    	registerDoParallel(cl)
+
+		gammas <- foreach(i = 1:nrow(ind)) %dopar% {
+			m_func_par(temp = temp, ptemp = ptemp, natemp = natemp,
+                       limit1 = limit.1, limit2 = limit.2,
+                       nlim1 = n.lim.1, nlim2 = n.lim.2,
+                       ind = as.matrix(t(ind[i, ])), listid = rep(1, 2),
+                       matchesLink = TRUE, threads = 1)
+      	}
+
+      	stopCluster(cl)
+      				
+	gammas_mat <- list()
+	for(i in 1:length(gammas)){
+		temp0 <- gammas[[i]]	
+		temp1 <- as.matrix(lapply(temp0, function(x){
+			as.matrix(data.frame(x[[1]], x[[2]]))
+			}))
+		gammas_mat[[i]] <- temp1[[1]] 
+		}
+	rm(temp0, temp1)	
+
+    temp <- do.call('rbind', gammas_mat)
+
+	} else {
+
+		gammas <- m_func_par(temp = temp, ptemp = ptemp, natemp = natemp,
                          limit1 = limit.1, limit2 = limit.2,
                          nlim1 = n.lim.1, nlim2 = n.lim.2,
-                         ind = ind, listid = list.id,
+                         ind = ind, listid = rep(1, 2),
                          matchesLink = TRUE, threads = nc)
+
     gammas_mat <- lapply(gammas, function(x){
         as.matrix(data.frame(x[[1]], x[[2]]))
     })
-    rm(temp, ptemp, natemp)
-
+    
     temp <- do.call('rbind', gammas_mat)
+	}
+    
     temp <- temp + 1
     rm(gammas, gammas_mat); gc()
     return(temp)
