@@ -84,46 +84,46 @@ matchesLink <- function(gammalist, nr1 = w, nr2 = p, em = y, cut = z) {
     ind <- as.matrix(expand.grid(ind.i, ind.j))
 
     ## Run main function
-	if(Sys.info()[['sysname']] == 'Darwin') {
+    if(Sys.info()[['sysname']] == 'Darwin') {
     	cl <- makeCluster(nc)
     	registerDoParallel(cl)
 
-		gammas <- foreach(i = 1:nrow(ind)) %dopar% {
-			m_func_par(temp = temp, ptemp = ptemp, natemp = natemp,
+        gammas <- foreach(i = 1:nrow(ind)) %dopar% {
+            m_func_par(temp = temp, ptemp = ptemp, natemp = natemp,
                        limit1 = limit.1, limit2 = limit.2,
                        nlim1 = n.lim.1, nlim2 = n.lim.2,
-                       ind = as.matrix(t(ind[i, ])), listid = rep(1, 2),
+                       ind = as.matrix(t(ind[i, ])), listid = list.id,
                        matchesLink = TRUE, threads = 1)
       	}
 
       	stopCluster(cl)
-      				
+        
 	gammas_mat <- list()
 	for(i in 1:length(gammas)){
-		temp0 <- gammas[[i]]	
-		temp1 <- as.matrix(lapply(temp0, function(x){
-			as.matrix(data.frame(x[[1]], x[[2]]))
-			}))
-		gammas_mat[[i]] <- temp1[[1]] 
-		}
+            temp0 <- gammas[[i]]	
+            temp1 <- as.matrix(lapply(temp0, function(x){
+                as.matrix(data.frame(x[[1]], x[[2]]))
+            }))
+            gammas_mat[[i]] <- temp1[[1]] 
+        }
 	rm(temp0, temp1)	
 
-    temp <- do.call('rbind', gammas_mat)
+        temp <- do.call('rbind', gammas_mat)
 
-	} else {
+    } else {
 
-		gammas <- m_func_par(temp = temp, ptemp = ptemp, natemp = natemp,
-                         limit1 = limit.1, limit2 = limit.2,
-                         nlim1 = n.lim.1, nlim2 = n.lim.2,
-                         ind = ind, listid = rep(1, 2),
-                         matchesLink = TRUE, threads = nc)
+        gammas <- m_func_par(temp = temp, ptemp = ptemp, natemp = natemp,
+                             limit1 = limit.1, limit2 = limit.2,
+                             nlim1 = n.lim.1, nlim2 = n.lim.2,
+                             ind = ind, listid = list.id,
+                             matchesLink = TRUE, threads = nc)
 
-    gammas_mat <- lapply(gammas, function(x){
-        as.matrix(data.frame(x[[1]], x[[2]]))
-    })
-    
-    temp <- do.call('rbind', gammas_mat)
-	}
+        gammas_mat <- lapply(gammas, function(x){
+            as.matrix(data.frame(x[[1]], x[[2]]))
+        })
+        
+        temp <- do.call('rbind', gammas_mat)
+    }
     
     temp <- temp + 1
     rm(gammas, gammas_mat); gc()
