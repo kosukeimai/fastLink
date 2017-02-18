@@ -21,7 +21,7 @@ fastLink <- function(df_a, df_b, varnames, partial_match, tol.em = 1e-04, tol.ma
     }
 
     ## Create gammas
-    cat("Calculating matches for each variable.")
+    cat("Calculating matches for each variable.\n")
     gammalist <- vector(mode = "list", length = length(varnames))
     for(i in 1:length(gammalist)){
         if(partial_match[i]){
@@ -36,11 +36,11 @@ fastLink <- function(df_a, df_b, varnames, partial_match, tol.em = 1e-04, tol.ma
     nr_b <- nrow(df_b)
 
     ## Get counts for zeta parameters
-    cat("Getting counts for zeta parameters.")
+    cat("Getting counts for zeta parameters.\n")
     counts <- tableCounts(gammalist, nr1 = nr_a, nr2 = nr_b)
 
     ## Run EM algorithm
-    cat("Running the EM algorithm.")
+    cat("Running the EM algorithm.\n")
     resultsEM <- emlinkMAR(patterns = counts, tol = tol.em)
 
     ## Get output
@@ -51,7 +51,7 @@ fastLink <- function(df_a, df_b, varnames, partial_match, tol.em = 1e-04, tol.ma
     match.ut <- EM$weights[EM$cumsum.u <= tol.match][1]
 
     ## Get matches
-    cat("Getting the indices of estimated matches.")
+    cat("Getting the indices of estimated matches.\n")
     matches <- matchesLink(gammalist, nr1 = nr_a, nr2 = nr_b,
                            em = resultsEM, cut = match.ut)
     colnames(matches) <- c("inds_a", "inds_b")

@@ -18,6 +18,6 @@ The distance between strings is calculated using a Jaro-Winkler distance as impl
 in the stringdist package.
 }
 \author{
-Ted Enamorado <ted.enamorado@gmail.com> and Kosuke Imai
+Ted Enamorado <ted.enamorado@gmail.com>, Ben Fifield, and Kosuke Imai
 }
 
