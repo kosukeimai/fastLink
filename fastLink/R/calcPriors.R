@@ -2,7 +2,7 @@
 #'
 #' calcPriors estimates optimal \eqn{\alpha} and \eqn{\beta} values
 #' for the Beta prior on \eqn{\gamma}, and optimal \eqn{\alpha_1} and
-#' \eqn{\alpha_2} values for the Dirichlet prior on \eqn{\pi_{j,k}} when matching
+#' \eqn{\alpha_2} values for the Dirichlet prior on \eqn{\pi_{k,l}} when matching
 #' state voter files over time.
 #'
 #' @param state_a The state code for the earlier of the two voter files.
@@ -10,11 +10,12 @@
 #' @param year_start The year of the voter file for state A.
 #' @param year_end The year of the voter file for state B.
 #' @param var User-specified variance for the prior probability.
+#' @param L Number of agreement categories for \eqn{\pi_{k,l}}. Default is NULL.
 #'
 #' @author Ben Fifield <benfifield@gmail.com>
 #'
 #' @export
-calcPriors <- function(state_a, state_b, year_start, year_end, var){
+calcPriors <- function(state_a, state_b, year_start, year_end, var, L = NULL){
 
     ## Load data
     data(irs_statemigration); data(statecode_to_fips)
@@ -77,8 +78,14 @@ calcPriors <- function(state_a, state_b, year_start, year_end, var){
     beta <- alpha * (1/mean - 1)
 
     if(state_a == state_b){
+        alpha_1 <- (dir_mean * (1 - dir_mean)^2 + var * dir_mean - var) /
+            (var * L - var)
+        alpha_0 <- ((L - 1) * alpha_1 * dir_mean) / (1 - dir_mean)
+    }
+
+    if(state_a == state_b){
         return(gamma_priors = list(alpha = alpha, beta = beta),
-               pi_prior = list(alpha_0 = NULL, alpha_1 = NULL))
+               pi_prior = list(alpha_0 = alpha_0, alpha_1 = alpha_1))
     }else{
         return(gamma_priors = list(alpha = alpha, beta= beta))
     }
