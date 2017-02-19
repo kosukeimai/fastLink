@@ -7,8 +7,11 @@
 #'
 #' @param matAp vector storing the comparison field in data set 1
 #' @param matBp vector storing the comparison field in data set 2
+#' @n.cores
+#' @cut.a
+#' @cut.p
 #'
-#' @author Ted Enamorado <ted.enamorado@gmail.com>, Ben Fifield, and Kosuke Imai
+#' @author Ted Enamorado <ted.enamorado@gmail.com>, Ben Fifield <benfifield@gmail.com>, and Kosuke Imai
 #'
 #' @export
 
@@ -18,13 +21,25 @@
 ## in parallel
 ## ------------------------
 
-gammaCKpar <- function(matAp, matBp) {
+gammaCKpar <- function(matAp, matBp, n.cores = NULL, cut.a = NULL, cut.p = NULL) {
 
-  requireNamespace('parallel')
-  requireNamespace('stringdist')
-  requireNamespace('Matrix')
-  requireNamespace('doParallel')
-  requireNamespace('stats')
+  	requireNamespace('parallel')
+  	requireNamespace('stringdist')
+  	requireNamespace('Matrix')
+  	requireNamespace('doParallel')
+  	requireNamespace('stats')
+
+	if(is.null(n.cores)) {
+		n.cores <- detectCores() - 1
+	}
+
+	if(is.null(cut.a)) {
+		cut.a <- 0.92
+	}
+
+	if(is.null(cut.p)) {
+		cut.p <- 0.88
+	}
 
 	matrix.1 <- as.matrix(as.character(matAp))
 	matrix.2 <- as.matrix(as.character(matBp))
@@ -35,12 +50,14 @@ gammaCKpar <- function(matAp, matBp) {
 	u.values.1 <- unique(matrix.1)
 	u.values.2 <- unique(matrix.2)
 
-    	n.slices1 <- max(round(length(u.values.1)/(4500), 0), 1) 
-    	n.slices2 <- max(round(length(u.values.2)/(4500), 0), 1) 
+    n.slices1 <- max(round(length(u.values.1)/(4500), 0), 1) 
+    n.slices2 <- max(round(length(u.values.2)/(4500), 0), 1) 
 
 	limit.1 <- round(quantile((0:nrow(u.values.2)), p = seq(0, 1, 1/n.slices2)), 0)
 	limit.2 <- round(quantile((0:nrow(u.values.1)), p = seq(0, 1, 1/n.slices1)), 0)
 
+	n.cores <- min(n.cores, n.slices1 * n.slices2)
+	
   	temp.1 <- temp.2 <- list()
 	  	
 	for(i in 1:n.slices2) {
@@ -51,16 +68,16 @@ gammaCKpar <- function(matAp, matBp) {
 		temp.2[[i]] <- list(u.values.1[(limit.2[i]+1):limit.2[i+1]], limit.2[i])
 	}
 
-  stringvec <- function(m, y) {
+  stringvec <- function(m, y, cut) {
     x <- as.matrix(m[[1]])
     e <- as.matrix(y[[1]])
     require('stringdist')
     require('Matrix')
     t <- 1 - stringdistmatrix(e, x, method = "jw", nthread = 1)
-    t[ t < 0.87 ] <- 0
+    t[ t < cut[2] ] <- 0
     t <- Matrix(t, sparse = T)
-    t@x[t@x >= 0.92] <- 2
-    t@x[t@x >= 0.87 & t@x < 0.92] <- 1; gc()
+    t@x[t@x >= cut[1]] <- 2
+    t@x[t@x >= cut[2] & t@x < cut[1]] <- 1; gc()
     slice.1 <- m[[2]]
     slice.2 <- y[[2]]
     indexes.2 <- which(t == 2, arr.ind = T)
@@ -74,14 +91,14 @@ gammaCKpar <- function(matAp, matBp) {
 
 	do <- expand.grid(1:n.slices2, 1:n.slices1)
 	
-	nc <- detectCores() - 1
+	nc <- n.cores
   	cl <- makeCluster(nc)
   	registerDoParallel(cl)
 
   	temp.f <- foreach(i = 1:nrow(do)) %dopar% { 
   		r1 <- do[i, 1]
   		r2 <- do[i, 2]
-  		stringvec(temp.1[[r1]], temp.2[[r2]])
+  		stringvec(temp.1[[r1]], temp.2[[r2]], c(cut.a, cut.p))
   	}
 
   	stopCluster(cl)
@@ -105,7 +122,7 @@ gammaCKpar <- function(matAp, matBp) {
 	matches.1 <- lapply(seq_len(nrow(n.values.1)), function(i) n.values.1[i, ])
 
 	if(Sys.info()[['sysname']] == 'Windows') {
-	nc <- detectCores() - 1
+		nc <- n.cores
     	cl <- makeCluster(nc)
     	registerDoParallel(cl)
 
@@ -120,7 +137,7 @@ gammaCKpar <- function(matAp, matBp) {
       	}
     	stopCluster(cl)
 	} else {
-	no_cores <- detectCores() - 1
+		no_cores <- n.cores
     	final.list2 <- mclapply(matches.2, function(s){
     	ht1 <- which(matrix.1 == s[1]); ht2 <- which(matrix.2 == s[2]);
     	list(ht1, ht2) }, mc.cores = getOption("mc.cores", no_cores))

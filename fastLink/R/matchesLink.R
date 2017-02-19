@@ -12,8 +12,9 @@
 #' @param em parameters obtained from the Expectation-Maximization algorithm under the MAR assumption. These estimates are
 #' produced by emlinkMAR
 #' @param cut is the interval of weight values for the agreements that we want to examine closer.
+#' @n.cores number of cores
 #'
-#' @author Ted Enamorado <ted.enamorado@gmail.com> and Kosuke Imai
+#' @author Ted Enamorado <ted.enamorado@gmail.com>, Ben Fifield <benfifield@gmail.com>, and Kosuke Imai
 #'
 #' @export
 
@@ -22,12 +23,16 @@
 ## we use matchesLink
 ## ------------------------
 
-matchesLink <- function(gammalist, nr1 = w, nr2 = p, em = y, cut = z) {
+matchesLink <- function(gammalist, nr1 = w, nr2 = p, em = y, cut = z, n.cores = NULL) {
+
+	if(is.null(n.cores)) {
+		n.cores <- detectCores() - 1
+	}
 
     ## Slicing the data:
     n.slices1 <- max(round(as.numeric(nr1)/(4500), 0), 1) 
     n.slices2 <- max(round(as.numeric(nr2)/(4500), 0), 1) 
-    nc <- min((detectCores() - 1), n.slices1 * n.slices2)
+    nc <- min(n.cores, n.slices1 * n.slices2)
 
     limit.1 <- round(quantile((0:nr1), p = seq(0, 1, 1/n.slices1)), 0)
     limit.2 <- round(quantile((0:nr2), p = seq(0, 1, 1/n.slices2)), 0)
@@ -75,7 +80,9 @@ matchesLink <- function(gammalist, nr1 = w, nr2 = p, em = y, cut = z) {
     natemp <- vector(mode = "list", length = length(gammalist))
     for(i in 1:length(gammalist)){
         temp[[i]] <- gammalist[[i]]$matches2
-        ptemp[[i]] <- gammalist[[i]]$matches1
+        if(!is.null(gammalist[[i]]$matches1)) {
+        	ptemp[[i]] <- gammalist[[i]]$matches1
+        	}
         natemp[[i]] <- gammalist[[i]]$nas
     }
 

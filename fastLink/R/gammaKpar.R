@@ -5,7 +5,7 @@
 #' @param matAp vector storing the comparison field in data set 1
 #' @param matBp vector storing the comparison field in data set 2
 #'
-#' @author Ted Enamorado <ted.enamorado@gmail.com> and Kosuke Imai
+#' @author Ted Enamorado <ted.enamorado@gmail.com>, Ben Fifield <benfifield@gmail.com>, and Kosuke Imai
 #'
 #' @export
 
@@ -15,8 +15,12 @@
 ## in parallel
 ## ------------------------
 
-gammaKpar <- function(matAp, matBp) {
-  requireNamespace('parallel')
+gammaKpar <- function(matAp, matBp, n.cores = NULL) {
+	requireNamespace('parallel')
+
+	if(is.null(n.cores)) {
+		n.cores <- detectCores() - 1
+	}
 
 	matrix.1 <- as.matrix(as.character(matAp))
 	matrix.2 <- as.matrix(as.character(matBp))
@@ -34,7 +38,7 @@ gammaKpar <- function(matAp, matBp) {
     matches.l <- as.list(matches)
 
 	if(Sys.info()[['sysname']] == "Windows") {
-		nc <- detectCores() - 1
+		nc <- n.cores
 		cl <- makeCluster(nc)
 		registerDoParallel(cl)
 		final.list <- foreach(i = 1:length(matches.l)) %dopar% {
@@ -43,7 +47,7 @@ gammaKpar <- function(matAp, matBp) {
 		}
 		stopCluster(cl)
 	} else {
-    	no_cores <- detectCores() - 1
+    	no_cores <- n.cores
     	final.list <- mclapply(matches.l, function(s){
     		ht1[[s]] <- which(matrix.1 == s); ht2[[s]] <- which(matrix.2 == s);
     		list(ht1[[s]], ht2[[s]]) }, mc.cores = getOption("mc.cores", no_cores))

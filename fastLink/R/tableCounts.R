@@ -6,8 +6,9 @@
 #' gammaCKpar. 
 #' @param nr1 number of observations in dataset 1
 #' @param nr2 number of observations in dataset 2
+#' @n.cores number of cores
 #'
-#' @author Ted Enamorado <ted.enamorado@gmail.com> and Kosuke Imai
+#' @author Ted Enamorado <ted.enamorado@gmail.com>, Ben Fifield <benfifield@gmail.com>, and Kosuke Imai
 #'
 #' @export
 
@@ -17,7 +18,7 @@
 ## functions that does the trick
 ## ------------------------
 
-tableCounts <- function(gammalist, nr1 = y, nr2 = z) {
+tableCounts <- function(gammalist, nr1 = y, nr2 = z, n.cores = NULL) {
 
     ## Lists of indices:
     ##     temp - exact
@@ -26,17 +27,24 @@ tableCounts <- function(gammalist, nr1 = y, nr2 = z) {
     temp <- vector(mode = "list", length = length(gammalist))
     ptemp <- vector(mode = "list", length = length(gammalist))
     natemp <- vector(mode = "list", length = length(gammalist))
+
     for(i in 1:length(gammalist)){
         temp[[i]] <- gammalist[[i]]$matches2
-        ptemp[[i]] <- gammalist[[i]]$matches1
+        if(!is.null(gammalist[[i]]$matches1)) {
+        	ptemp[[i]] <- gammalist[[i]]$matches1
+        	}
         natemp[[i]] <- gammalist[[i]]$nas
     }
 
     ## Slicing the data:
     n.slices1 <- max(round(as.numeric(nr1)/(4500), 0), 1) 
     n.slices2 <- max(round(as.numeric(nr2)/(4500), 0), 1) 
+ 
+ 	if(is.null(n.cores)) {
+		n.cores <- detectCores() - 1
+	}
     
-    nc <- min((detectCores() - 1), n.slices1 * n.slices2)
+    nc <- min(n.cores, n.slices1 * n.slices2)
 
     ## Prep objects for m_func_par
     limit.1 <- round(quantile((0:nr1), p = seq(0, 1, 1/n.slices1)), 0)
