@@ -4,7 +4,7 @@
 \alias{gammaKpar}
 \title{gammaKpar}
 \usage{
-gammaKpar(matAp, matBp)
+gammaKpar(matAp, matBp, n.cores = NULL)
 }
 \arguments{
 \item{matAp}{vector storing the comparison field in data set 1}
@@ -15,6 +15,6 @@ gammaKpar(matAp, matBp)
 Field comparisons: 0 disagreement, 2 total agreement.
 }
 \author{
-Ted Enamorado <ted.enamorado@gmail.com> and Kosuke Imai
+Ted Enamorado <ted.enamorado@gmail.com>, Ben Fifield <benfifield@gmail.com>, and Kosuke Imai
 }
 

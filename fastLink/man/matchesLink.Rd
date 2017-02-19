@@ -4,7 +4,8 @@
 \alias{matchesLink}
 \title{matchesLink}
 \usage{
-matchesLink(gammalist, nr1 = w, nr2 = p, em = y, cut = z)
+matchesLink(gammalist, nr1 = w, nr2 = p, em = y, cut = z,
+  n.cores = NULL)
 }
 \arguments{
 \item{gammalist}{A list of objects produced by either gammaKpar or
@@ -26,6 +27,6 @@ to the an interval of the Fellegi-Sunter
 weights
 }
 \author{
-Ted Enamorado <ted.enamorado@gmail.com> and Kosuke Imai
+Ted Enamorado <ted.enamorado@gmail.com>, Ben Fifield <benfifield@gmail.com>, and Kosuke Imai
 }
 

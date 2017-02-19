@@ -4,7 +4,7 @@
 \alias{tableCounts}
 \title{tableCounts}
 \usage{
-tableCounts(gammalist, nr1 = y, nr2 = z)
+tableCounts(gammalist, nr1 = y, nr2 = z, n.cores = NULL)
 }
 \arguments{
 \item{gammalist}{A list of objects produced by either gammaKpar or
@@ -18,6 +18,6 @@ gammaCKpar.}
 Count pairs with the same pattern in the cross product between two datasets.
 }
 \author{
-Ted Enamorado <ted.enamorado@gmail.com> and Kosuke Imai
+Ted Enamorado <ted.enamorado@gmail.com>, Ben Fifield <benfifield@gmail.com>, and Kosuke Imai
 }
 

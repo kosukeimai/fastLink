@@ -4,8 +4,8 @@
 \alias{fastLink}
 \title{fastLink}
 \usage{
-fastLink(df_a, df_b, varnames, partial_match, tol.em = 1e-04,
-  tol.match = 1e-07)
+fastLink(df_a, df_b, varnames, partial_match, n.cores = NULL,
+  tol.em = 1e-04, tol.match = 1e-07, verbose = FALSE)
 }
 \arguments{
 \item{df_a}{Dataset A - to be matched to Dataset B}
@@ -19,12 +19,19 @@ Must be present in both df_a and df_b}
 partial matching or exact matching when determining matching patterns on
 each variable.}
 
+\item{n.cores}{Number of cores to parallelize over. Default is NULL.}
+
 \item{tol.em}{Convergence tolerance for the EM Algorithm. Default is 1e-04.}
 
 \item{tol.match}{Convergence tolerance for determining matches. Default is 1e-07.}
+
+\item{verbose}{Whether to print elapsed time for each step. Default is FALSE.}
 }
 \description{
 Run the fastLink algorithm to probabilistically match
 two datasets.
+}
+\author{
+Ted Enamorado <ted.enamorado@gmail.com>, Ben Fifield <benfifield@gmail.com>, and Kosuke Imai
 }
 

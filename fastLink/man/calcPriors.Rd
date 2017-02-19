@@ -4,7 +4,7 @@
 \alias{calcPriors}
 \title{calcPriors}
 \usage{
-calcPriors(state_a, state_b, year_start, year_end, var)
+calcPriors(state_a, state_b, year_start, year_end, var, L = NULL)
 }
 \arguments{
 \item{state_a}{The state code for the earlier of the two voter files.}
@@ -16,11 +16,13 @@ calcPriors(state_a, state_b, year_start, year_end, var)
 \item{year_end}{The year of the voter file for state B.}
 
 \item{var}{User-specified variance for the prior probability.}
+
+\item{L}{Number of agreement categories for \eqn{\pi_{k,l}}. Default is NULL.}
 }
 \description{
 calcPriors estimates optimal \eqn{\alpha} and \eqn{\beta} values
 for the Beta prior on \eqn{\gamma}, and optimal \eqn{\alpha_1} and
-\eqn{\alpha_2} values for the Dirichlet prior on \eqn{\pi_{j,k}} when matching
+\eqn{\alpha_2} values for the Dirichlet prior on \eqn{\pi_{k,l}} when matching
 state voter files over time.
 }
 \author{

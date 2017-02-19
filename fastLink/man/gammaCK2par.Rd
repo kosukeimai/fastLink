@@ -4,7 +4,7 @@
 \alias{gammaCK2par}
 \title{gammaCK2par}
 \usage{
-gammaCK2par(matAp, matBp)
+gammaCK2par(matAp, matBp, n.cores = NULL, cut.a = NULL)
 }
 \arguments{
 \item{matAp}{vector storing the comparison field in data set 1}
@@ -18,6 +18,6 @@ The distance between strings is calculated using a Jaro-Winkler distance as impl
 in the stringdist package.
 }
 \author{
-Ted Enamorado <ted.enamorado@gmail.com>, Ben Fifield, and Kosuke Imai
+Ted Enamorado <ted.enamorado@gmail.com>, Ben Fifield <benfifield@gmail.com>, and Kosuke Imai
 }
 
