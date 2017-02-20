@@ -23,7 +23,7 @@ each variable.}
 
 \item{tol.em}{Convergence tolerance for the EM Algorithm. Default is 1e-04.}
 
-\item{tol.match}{Convergence tolerance for determining matches. Default is 1e-07.}
+\item{match}{A number between 0 and 1. The closer to 1 the more centainty you have about a given pair being a match.}
 
 \item{verbose}{Whether to print elapsed time for each step. Default is FALSE.}
 }

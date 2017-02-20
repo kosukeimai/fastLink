@@ -12,13 +12,13 @@
 #' each variable.
 #' @param n.cores Number of cores to parallelize over. Default is NULL.
 #' @param tol.em Convergence tolerance for the EM Algorithm. Default is 1e-04.
-#' @param tol.match Convergence tolerance for determining matches. Default is 1e-07.
+#' @param match A number between 0 and 1. The closer to 1 the more centainty you have about a given pair being a match 
 #' @param verbose Whether to print elapsed time for each step. Default is FALSE.
 #'
 #' @author Ted Enamorado <ted.enamorado@gmail.com>, Ben Fifield <benfifield@gmail.com>, and Kosuke Imai
 #'
 #' @export
-fastLink <- function(df_a, df_b, varnames, partial_match, n.cores = NULL, tol.em = 1e-04, tol.match = 1e-07, verbose = FALSE){
+fastLink <- function(df_a, df_b, varnames, partial_match, n.cores = NULL, tol.em = 1e-04, match = 0.85, verbose = FALSE){
 
     cat("\n")
     cat(c(paste(rep("=", 20), sep = "", collapse = ""), "\n"))
@@ -68,11 +68,15 @@ fastLink <- function(df_a, df_b, varnames, partial_match, n.cores = NULL, tol.em
     }
 
     ## Get output
-    EM <- data.frame(cbind(resultsEM$patterns.w))
-    EM <- EM[order(EM[, "weights"]),] 
-    EM$cumsum.m <- cumsum(EM[, "p.gamma.j.m"])
-    EM$cumsum.u <- 1 - cumsum(EM[, "p.gamma.j.u"])
-    match.ut <- EM$weights[EM$cumsum.u <= tol.match][1]
+	EM <- data.frame(resultsEM$patterns.w)
+	EM$zeta.j <- resultsEM$zeta.j
+	EM <- EM[order(EM[, "weights"]), ] 
+	EM$cumsum.m <- cumsum(EM[, "p.gamma.j.m"])
+	EM$cumsum.u <- 1 - cumsum(EM[, "p.gamma.j.u"])
+	EM
+
+	match.ut <- EM$weights[ EM$zeta.j >= match ][1]
+	match.ut
 
     ## Get matches
     cat("Getting the indices of estimated matches.\n")
