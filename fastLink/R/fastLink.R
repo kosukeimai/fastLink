@@ -42,7 +42,7 @@ fastLink <- function(df_a, df_b, varnames, partial_match, n.cores = NULL, tol.em
     }
     end <- Sys.time()
     if(verbose){
-        cat("Calculating matches for each variable took ", difftime(end, start, units = "mins"), " minutes.\n\n")
+        cat("Calculating matches for each variable took ", round(difftime(end, start, units = "mins"), 2), " minutes.\n\n")
     }
 
     ## Get row numbers
@@ -55,7 +55,7 @@ fastLink <- function(df_a, df_b, varnames, partial_match, n.cores = NULL, tol.em
     counts <- tableCounts(gammalist, nr1 = nr_a, nr2 = nr_b, n.cores = n.cores)
     end <- Sys.time()
     if(verbose){
-        cat("Getting counts for zeta parameters took ", difftime(end, start, units = "mins"), " minutes.\n\n")
+        cat("Getting counts for zeta parameters took ", round(difftime(end, start, units = "mins"), 2), " minutes.\n\n")
     }
 
     ## Run EM algorithm
@@ -64,19 +64,19 @@ fastLink <- function(df_a, df_b, varnames, partial_match, n.cores = NULL, tol.em
     resultsEM <- emlinkMAR(patterns = counts, tol = tol.em)
     end <- Sys.time()
     if(verbose){
-        cat("Running the EM algorithm took ", difftime(end, start, units = "secs"), " seconds.\n\n")
+        cat("Running the EM algorithm took ", round(difftime(end, start, units = "secs"), 2), " seconds.\n\n")
     }
 
     ## Get output
-	EM <- data.frame(resultsEM$patterns.w)
-	EM$zeta.j <- resultsEM$zeta.j
-	EM <- EM[order(EM[, "weights"]), ] 
-	EM$cumsum.m <- cumsum(EM[, "p.gamma.j.m"])
-	EM$cumsum.u <- 1 - cumsum(EM[, "p.gamma.j.u"])
-	EM
+    EM <- data.frame(resultsEM$patterns.w)
+    EM$zeta.j <- resultsEM$zeta.j
+    EM <- EM[order(EM[, "weights"]), ] 
+    EM$cumsum.m <- cumsum(EM[, "p.gamma.j.m"])
+    EM$cumsum.u <- 1 - cumsum(EM[, "p.gamma.j.u"])
+    EM
 
-	match.ut <- EM$weights[ EM$zeta.j >= match ][1]
-	match.ut
+    match.ut <- EM$weights[ EM$zeta.j >= match ][1]
+    match.ut
 
     ## Get matches
     cat("Getting the indices of estimated matches.\n")
@@ -86,7 +86,7 @@ fastLink <- function(df_a, df_b, varnames, partial_match, n.cores = NULL, tol.em
                            n.cores = n.cores)
     end <- Sys.time()
     if(verbose){
-        cat("Getting the indices of estimated matches took ", difftime(end, start, units = "mins"), " minutes.\n\n")
+        cat("Getting the indices of estimated matches took ", round(difftime(end, start, units = "mins"), 2), " minutes.\n\n")
     }
     colnames(matches) <- c("inds_a", "inds_b")
 

@@ -5,7 +5,7 @@
 \title{fastLink}
 \usage{
 fastLink(df_a, df_b, varnames, partial_match, n.cores = NULL,
-  tol.em = 1e-04, tol.match = 1e-07, verbose = FALSE)
+  tol.em = 1e-04, match = 0.85, verbose = FALSE)
 }
 \arguments{
 \item{df_a}{Dataset A - to be matched to Dataset B}
@@ -23,7 +23,7 @@ each variable.}
 
 \item{tol.em}{Convergence tolerance for the EM Algorithm. Default is 1e-04.}
 
-\item{match}{A number between 0 and 1. The closer to 1 the more centainty you have about a given pair being a match.}
+\item{match}{A number between 0 and 1. The closer to 1 the more centainty you have about a given pair being a match}
 
 \item{verbose}{Whether to print elapsed time for each step. Default is FALSE.}
 }

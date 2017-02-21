@@ -25,9 +25,9 @@
 
 matchesLink <- function(gammalist, nr1 = w, nr2 = p, em = y, cut = z, n.cores = NULL) {
 
-	if(is.null(n.cores)) {
-		n.cores <- detectCores() - 1
-	}
+    if(is.null(n.cores)) {
+        n.cores <- detectCores() - 1
+    }
 
     ## Slicing the data:
     n.slices1 <- max(round(as.numeric(nr1)/(4500), 0), 1) 
@@ -81,8 +81,8 @@ matchesLink <- function(gammalist, nr1 = w, nr2 = p, em = y, cut = z, n.cores = 
     for(i in 1:length(gammalist)){
         temp[[i]] <- gammalist[[i]]$matches2
         if(!is.null(gammalist[[i]]$matches1)) {
-        	ptemp[[i]] <- gammalist[[i]]$matches1
-        	}
+            ptemp[[i]] <- gammalist[[i]]$matches1
+        }
         natemp[[i]] <- gammalist[[i]]$nas
     }
 
@@ -92,6 +92,7 @@ matchesLink <- function(gammalist, nr1 = w, nr2 = p, em = y, cut = z, n.cores = 
 
     ## Run main function
     if(Sys.info()[['sysname']] == 'Darwin') {
+        cat("Parallelizing gamma calculation using", nc, "cores.\n")
     	cl <- makeCluster(nc)
     	registerDoParallel(cl)
 

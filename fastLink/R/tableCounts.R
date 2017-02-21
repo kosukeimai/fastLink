@@ -31,18 +31,18 @@ tableCounts <- function(gammalist, nr1 = y, nr2 = z, n.cores = NULL) {
     for(i in 1:length(gammalist)){
         temp[[i]] <- gammalist[[i]]$matches2
         if(!is.null(gammalist[[i]]$matches1)) {
-        	ptemp[[i]] <- gammalist[[i]]$matches1
-        	}
+            ptemp[[i]] <- gammalist[[i]]$matches1
+        }
         natemp[[i]] <- gammalist[[i]]$nas
     }
 
     ## Slicing the data:
     n.slices1 <- max(round(as.numeric(nr1)/(4500), 0), 1) 
     n.slices2 <- max(round(as.numeric(nr2)/(4500), 0), 1) 
- 
- 	if(is.null(n.cores)) {
-		n.cores <- detectCores() - 1
-	}
+    
+    if(is.null(n.cores)) {
+        n.cores <- detectCores() - 1
+    }
     
     nc <- min(n.cores, n.slices1 * n.slices2)
 
@@ -61,12 +61,13 @@ tableCounts <- function(gammalist, nr1 = y, nr2 = z, n.cores = NULL) {
     ind <- as.matrix(expand.grid(ind.i, ind.j))
 
     ## Run main function
-	if(Sys.info()[['sysname']] == 'Darwin') {
+    if(Sys.info()[['sysname']] == 'Darwin') {
+        cat("Parallelizing gamma calculation using", nc, "cores.\n")
     	cl <- makeCluster(nc)
     	registerDoParallel(cl)
 
-		gammas <- foreach(i = 1:nrow(ind)) %dopar% {
-			m_func_par(temp = temp, ptemp = ptemp, natemp = natemp,
+        gammas <- foreach(i = 1:nrow(ind)) %dopar% {
+            m_func_par(temp = temp, ptemp = ptemp, natemp = natemp,
                        limit1 = limit.1, limit2 = limit.2,
                        nlim1 = n.lim.1, nlim2 = n.lim.2,
                        ind = as.matrix(t(ind[i, ])), listid = rep(1, 2),
@@ -74,33 +75,33 @@ tableCounts <- function(gammalist, nr1 = y, nr2 = z, n.cores = NULL) {
       	}
 
       	stopCluster(cl)
-      				
+        
 	gammas_mat <- list()
 	for(i in 1:length(gammas)){
-		temp0 <- gammas[[i]]	
-		temp1 <- as.matrix(lapply(temp0, function(x){
-			as.matrix(data.frame(x[[1]], x[[2]]))
-			}))
-		gammas_mat[[i]] <- temp1[[1]] 
-		}
+            temp0 <- gammas[[i]]	
+            temp1 <- as.matrix(lapply(temp0, function(x){
+                as.matrix(data.frame(x[[1]], x[[2]]))
+            }))
+            gammas_mat[[i]] <- temp1[[1]] 
+        }
 	rm(temp0, temp1)	
 
-    temp <- do.call('rbind', gammas_mat)
+        temp <- do.call('rbind', gammas_mat)
 
-	} else {
+    } else {
 
-		gammas <- m_func_par(temp = temp, ptemp = ptemp, natemp = natemp,
-                         limit1 = limit.1, limit2 = limit.2,
-                         nlim1 = n.lim.1, nlim2 = n.lim.2,
-                         ind = ind, listid = rep(1, 2),
-                         matchesLink = FALSE, threads = nc)
+        gammas <- m_func_par(temp = temp, ptemp = ptemp, natemp = natemp,
+                             limit1 = limit.1, limit2 = limit.2,
+                             nlim1 = n.lim.1, nlim2 = n.lim.2,
+                             ind = ind, listid = rep(1, 2),
+                             matchesLink = FALSE, threads = nc)
 
-    gammas_mat <- lapply(gammas, function(x){
-        as.matrix(data.frame(x[[1]], x[[2]]))
-    })
-    
-    temp <- do.call('rbind', gammas_mat)
-	}
+        gammas_mat <- lapply(gammas, function(x){
+            as.matrix(data.frame(x[[1]], x[[2]]))
+        })
+        
+        temp <- do.call('rbind', gammas_mat)
+    }
     
     rm(gammas); rm(gammas_mat); gc()
 

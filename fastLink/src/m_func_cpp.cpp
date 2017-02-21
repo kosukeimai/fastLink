@@ -320,7 +320,7 @@ std::vector< std::vector<arma::vec> > m_func_par(const std::vector< std::vector<
   Rcout << "Gamma calculation is parallelized. "
 	<< threadsused << " threads out of "
 	<< omp_get_num_procs() << " are used."
-	<< std::endl << std::endl;
+	<< std::endl;
 #pragma omp parallel for private(n, m, temp_feature, ptemp_feature, indlist, pindlist) firstprivate(lims, lims_2, templist, ptemplist, natemplist, mf_out)
 #endif
   for(int i = 0; i < ind.n_rows; i++){
