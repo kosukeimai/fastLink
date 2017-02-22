@@ -4,20 +4,32 @@
 \alias{calcPriors}
 \title{calcPriors}
 \usage{
-calcPriors(state_a, state_b, year_start, year_end, var, L = NULL)
+calcPriors(geo_a, geo_b, year_start, year_end, var, L = NULL,
+  county = FALSE, state_a = NULL, state_b = NULL)
 }
 \arguments{
-\item{state_a}{The state code for the earlier of the two voter files.}
+\item{geo_a}{The state code (if state = TRUE) or county name
+(if state = FALSE) for the earlier of the two voter files.}
 
-\item{state_b}{The state code for the later of the two voter files.}
+\item{geo_b}{The state code (if state = TRUE) or county name
+(if state = FALSE) for the later of the two voter files.}
 
-\item{year_start}{The year of the voter file for state A.}
+\item{year_start}{The year of the voter file for geography A.}
 
-\item{year_end}{The year of the voter file for state B.}
+\item{year_end}{The year of the voter file for geography B.}
 
 \item{var}{User-specified variance for the prior probability.}
 
 \item{L}{Number of agreement categories for \eqn{\pi_{k,l}}. Default is NULL.}
+
+\item{county}{Whether prior is being calculated on the county or state level.
+Default is FALSE (for a state-level calculation).}
+
+\item{state_a}{If \code{county = TRUE} (indicating a county-level match),
+the state code of \code{geo_a}. Default is NULL.}
+
+\item{state_b}{If \code{county = TRUE} (indicating a county-level match),
+the state code of \code{geo_b}. Default is NULL.}
 }
 \description{
 calcPriors estimates optimal \eqn{\alpha} and \eqn{\beta} values
