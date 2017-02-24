@@ -19,7 +19,7 @@
 ## ------------------------
 
 tableCounts <- function(gammalist, nr1 = y, nr2 = z, n.cores = NULL) {
-
+    
     ## Lists of indices:
     ##     temp - exact
     ##     ptemp - partial
@@ -112,18 +112,26 @@ tableCounts <- function(gammalist, nr1 = y, nr2 = z, n.cores = NULL) {
     colnames(counts.d) <- c("pattern.id", "count")
 
     ## Merge Counts
-    seq <- 1:18
+    seq <- 1:(length(gammalist)*3)
     b <- 2^(seq)
-    patterns <- expand.grid( c(b[1:3], 0), c(b[4:6], 0), c(b[7:9], 0), c(b[10:12], 0), c(b[13:15], 0), c(b[16:18], 0))
+    patterns.vec <- matrix(NA, 4, length(gammalist))
+    for(i in 1:length(gammalist)){
+        patterns.vec[,i] <- c(b[1:3 + (i-1)*3], 0)
+    }
+    patterns <- expand.grid(as.data.frame(patterns.vec))
     pattern.id <- rowSums(patterns)
     patterns <- cbind(patterns, pattern.id)
     data.new.0 <- merge(patterns, counts.d, by = "pattern.id")
     data.new.0 <- data.new.0[,-1]
 
     b<-2
-    patterns.2 <- t((c(1/b^1, 1/b^4, 1/b^7, 1/b^10, 1/b^13, 1/b^16)) * t(data.new.0[,1:6]))
-    data.new.1 <- cbind(patterns.2, data.new.0[,7])
-    names <- c("gamma.1", "gamma.2", "gamma.3", "gamma.4", "gamma.5", "gamma.6", "counts")
+    patterns.2vec <- c()
+    for(i in 1:length(gammalist)){
+        patterns.2vec <- c(patterns.2vec, 1/b^(1 + (i-1)*3))
+    }
+    patterns.2 <- t((patterns.2vec) * t(data.new.0[,1:length(gammalist)]))
+    data.new.1 <- cbind(patterns.2, data.new.0[,length(gammalist)+1])
+    names <- c(paste0("gamma.", 1:length(gammalist)), "counts")
     colnames(data.new.1) <- names
     data.new.1 <- data.new.1[, colSums(data.new.1) != 0]
     nc <- ncol(data.new.1)
