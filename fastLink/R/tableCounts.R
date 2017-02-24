@@ -61,6 +61,7 @@ tableCounts <- function(gammalist, nr1 = y, nr2 = z, n.cores = NULL) {
     ind <- as.matrix(expand.grid(ind.i, ind.j))
 
     ## Run main function
+    cat("Starting gamma calculation\n")
     if(Sys.info()[['sysname']] == 'Darwin') {
         cat("Parallelizing gamma calculation using", nc, "cores.\n")
     	cl <- makeCluster(nc)
@@ -102,6 +103,7 @@ tableCounts <- function(gammalist, nr1 = y, nr2 = z, n.cores = NULL) {
         
         temp <- do.call('rbind', gammas_mat)
     }
+    cat("Ending gamma calculation\n")
     
     rm(gammas); rm(gammas_mat); gc()
 
