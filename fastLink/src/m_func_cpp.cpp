@@ -14,7 +14,8 @@ typedef Eigen::Triplet<double> Trip;
 typedef Eigen::SparseMatrix<double> SpMat;
 typedef Eigen::SparseMatrix<double>::InnerIterator InIt;
 
-arma::mat indexing(std::vector<arma::vec> s, int l1, int l2, int l3, int l4){
+arma::mat indexing(const std::vector<arma::vec> s, const int l1, const int l2,
+		   const int l3, const int l4){
   
   // Get elements, declare matrix object
   arma::vec s0 = s[0]; arma::vec s1 = s[1];
@@ -51,11 +52,12 @@ arma::mat indexing(std::vector<arma::vec> s, int l1, int l2, int l3, int l4){
   return index_out;
 }
 
-std::vector<arma::vec> indexing_na(std::vector<arma::vec> s,
-				   int l1, int l2, int l3, int l4){
+std::vector<arma::vec> indexing_na(const std::vector<arma::vec> s,
+				   const int l1, const int l2,
+				   const int l3, const int l4){
 
   // Unpack
-  arma::vec s0 = s[0]; arma::vec s1 = s[1];
+  const arma::vec s0 = s[0]; const arma::vec s1 = s[1];
 
   // Subset
   arma::uvec s0_l1 = s0 > l1;
@@ -147,10 +149,10 @@ arma::vec getNotIn(const arma::vec vec1, const arma::vec vec2){
   return as<arma::vec>(output);		
 }
 
-std::vector<SpMat> create_sparse_na(std::vector< std::vector<arma::vec> > nas,
-				    arma::vec dims){
+std::vector<SpMat> create_sparse_na(const std::vector< std::vector<arma::vec> > nas,
+				    const arma::vec dims){
 
-  int i; int j; int k; int val; int nobs_a = dims[0]; int nobs_b = dims[1];
+  int i; int j; int k; int val; const int nobs_a = dims[0]; const int nobs_b = dims[1];
   arma::vec nas_a; arma::vec nas_b; std::vector<SpMat> list_out(nas.size());
   arma::vec nobs_a_notnull_inb; std::vector<arma::vec> nas_extract(2);
 

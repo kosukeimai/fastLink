@@ -120,7 +120,9 @@ tableCounts <- function(gammalist, nr1 = y, nr2 = z, n.cores = NULL) {
     for(i in 1:length(gammalist)){
         patterns.vec[,i] <- c(b[1:3 + (i-1)*3], 0)
     }
+    cat("Getting patterns vector\n")
     patterns <- expand.grid(as.data.frame(patterns.vec))
+    cat("Expanding grid\n")
     pattern.id <- rowSums(patterns)
     patterns <- cbind(patterns, pattern.id)
     data.new.0 <- merge(patterns, counts.d, by = "pattern.id")
