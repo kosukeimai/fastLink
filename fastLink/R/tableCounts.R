@@ -131,7 +131,11 @@ tableCounts <- function(gammalist, nr1 = y, nr2 = z, n.cores = NULL) {
     data.new.1 <- cbind(patterns.2, data.new.0[,length(gammalist)+1])
     names <- c(paste0("gamma.", 1:length(gammalist)), "counts")
     colnames(data.new.1) <- names
-    data.new.1 <- data.new.1[, colSums(data.new.1) != 0]
+    sub.nc <- which(colSums(data.new.1) == 0)
+    sub.nc <- sub.nc[sub.nc > length(gammalist)]
+    if(length(sub.nc) > 0){
+        data.new.1 <- data.new.1[, -sub.nc]
+    }
     nc <- ncol(data.new.1)
     na.data.new <- data.new.1[, -c(nc)]
     na.data.new[na.data.new == 4] <- NA

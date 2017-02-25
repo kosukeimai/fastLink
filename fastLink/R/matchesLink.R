@@ -65,7 +65,10 @@ matchesLink <- function(gammalist, nr1 = w, nr2 = p, em = y, cut = z, n.cores = 
     }
 
     ncol <- ncol(list)
-    power <- c(1, 4, 7, 10, 13, 16)
+    power <- rep(NA, length(gammalist))
+    for(i in 1:length(gammalist)){
+        power[i] <- 1 + (i-1)*3
+    }
     power.s <- power[1:ncol]
     base <- 2^(power.s)
     list <- t(base * t(list))
