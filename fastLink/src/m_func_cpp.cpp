@@ -296,14 +296,12 @@ std::vector< std::vector<arma::vec> > m_func_par(const std::vector< std::vector<
 						 const int threads = 1){
 
   // Declare objects (shared)
-  int n; int m;
   std::vector< std::vector<arma::vec> > ind_out(ind.n_rows);
 
   // Declare objects (private)
+  int n; int m;
   std::vector< std::vector<arma::vec> > temp_feature;
   std::vector< std::vector<arma::vec> > ptemp_feature;
-  std::vector<arma::mat> indlist;
-  std::vector<arma::mat> pindlist;
 
   // Declare objects (firstprivate)
   std::vector< std::vector<arma::mat> > templist(temp.size());
@@ -325,13 +323,13 @@ std::vector< std::vector<arma::vec> > m_func_par(const std::vector< std::vector<
 #endif
   for(int i = 0; i < ind.n_rows; i++){
 
-    Rcout << "In loop " << i << std::endl;
+    // Rcout << "In loop " << i << std::endl;
 
     // Get indices of the rows
     n = ind(i,0)-1; m = ind(i, 1)-1;
     lims(0) = nlim1(n); lims(1) = nlim2(m);
     lims_2(0) = limit1(n), lims_2(1) = limit2(m);
-    Rcout << "Extracted objects for loop " << i << std::endl;
+    // Rcout << "Extracted objects for loop " << i << std::endl;
     
     // Loop over the number of features
     for(int j = 0; j < temp.size(); j++){
@@ -339,12 +337,12 @@ std::vector< std::vector<arma::vec> > m_func_par(const std::vector< std::vector<
       // Within this, loop over the list of each feature
       temp_feature = temp[j];
       ptemp_feature = ptemp[j];
-      Rcout << "Extracted features for loop " << i
-	    << " and feature " << j << std::endl;
-      indlist.resize(temp_feature.size());
-      pindlist.resize(ptemp_feature.size());
-      Rcout << "Resized containers for loop " << i
-	    << " and feature " << j << std::endl;
+      // Rcout << "Extracted features for loop " << i
+      // 	    << " and feature " << j << std::endl;
+      std::vector<arma::mat> indlist(temp_feature.size());
+      std::vector<arma::mat> pindlist(ptemp_feature.size());
+      // Rcout << "Resized containers for loop " << i
+      // 	    << " and feature " << j << std::endl;
       int k;
       for(k = 0; k < temp_feature.size(); k++){
     	if(temp_feature.size() > 0){
@@ -358,21 +356,21 @@ std::vector< std::vector<arma::vec> > m_func_par(const std::vector< std::vector<
     				 limit2[m], limit2[m+1]);
     	}
       }
-      Rcout << "Extracted indices for loop " << i
-	    << " and feature " << j << std::endl;
+      // Rcout << "Extracted indices for loop " << i
+      // 	    << " and feature " << j << std::endl;
       templist[j] = indlist;
       ptemplist[j] = pindlist;
       natemplist[j] = indexing_na(natemp[j], limit1[n], limit1[n+1],
        				  limit2[m], limit2[m+1]);
-      Rcout << "Stored indices for loop " << i
-	    << " and feature " << j << std::endl;
+      // Rcout << "Stored indices for loop " << i
+      // 	    << " and feature " << j << std::endl;
     }
 
     // Run m_func
     mf_out = m_func(templist, ptemplist, natemplist, lims, lims_2, listid, matchesLink);
-    Rcout << "Ran m_func() for loop " << i << std::endl;
+    // Rcout << "Ran m_func() for loop " << i << std::endl;
     ind_out[i] = mf_out;
-    Rcout << "Stored m_func() for loop " << i << std::endl;
+    // Rcout << "Stored m_func() for loop " << i << std::endl;
 
   }
 
