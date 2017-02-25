@@ -211,9 +211,11 @@ std::vector<arma::vec> m_func(const std::vector< std::vector<arma::mat> > matche
   // Create sparse matches, pmatches object
   std::vector<SpMat> matches_up  = unpack_matches(matches,  lims, true);
   std::vector<SpMat> pmatches_up = unpack_matches(pmatches, lims, false);
+  Rcout << "Unpacked matches" << std::endl;
 
   // Create sparse NA matrix
   std::vector<SpMat> nas_sp = create_sparse_na(nas, lims);
+  Rcout << "Created sparse NA matrix" << std::endl;
   
   // Add up everything
   SpMat sp(lims(0), lims(1));
@@ -225,6 +227,7 @@ std::vector<arma::vec> m_func(const std::vector< std::vector<arma::mat> > matche
     match_pmatch_na = match_pmatch + nas_sp[i];
     sp = sp + match_pmatch_na;
   }
+  Rcout << "Added up matrices" << std::endl;
 
   std::vector<arma::vec> nz_out(2);
   if(matchesLink == false){
@@ -238,6 +241,7 @@ std::vector<arma::vec> m_func(const std::vector< std::vector<arma::mat> > matche
 	counter++;
       }
     }
+    Rcout << "Got all non-zero values" << std::endl;
     
     // Get unique values and create table
     arma::vec nz_unique = unique(nz);
@@ -248,6 +252,7 @@ std::vector<arma::vec> m_func(const std::vector< std::vector<arma::mat> > matche
       nz_unique_counts(i) = nz_unique_i.n_elem;
     }
     int num_zeros = lims(0)*lims(1) - sum(nz_unique_counts);
+    Rcout << "Got unique values" << std::endl;
 
     // Add zeros, create nz_out
     nz_unique.resize(nz_unique.n_elem + 1);
@@ -255,6 +260,7 @@ std::vector<arma::vec> m_func(const std::vector< std::vector<arma::mat> > matche
     nz_unique_counts(nz_unique_counts.n_elem-1) = num_zeros;
     nz_out[0] = nz_unique;
     nz_out[1] = nz_unique_counts;
+    Rcout << "Created nz_out" << std::endl;
     
   }else{
 
@@ -369,9 +375,11 @@ std::vector< std::vector<arma::vec> > m_func_par(const std::vector< std::vector<
     }
 
     // Run m_func
-    Rcout << "Start m_func() for loop " << i << std::endl;
+    Rcout << "Start m_func() for loop " << i << std::endl
+	  << "--------------------" << std::endl;
     mf_out = m_func(templist, ptemplist, natemplist, lims, lims_2, listid, matchesLink);
-    Rcout << "Ran m_func() for loop " << i << std::endl;
+    Rcout << "Ran m_func() for loop " << i << std::endl
+	  << "--------------------" << std::endl;
     ind_out[i] = mf_out;
     Rcout << "Stored m_func() for loop " << i << std::endl;
 
