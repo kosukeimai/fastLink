@@ -61,7 +61,6 @@ tableCounts <- function(gammalist, nr1 = y, nr2 = z, n.cores = NULL) {
     ind <- as.matrix(expand.grid(ind.i, ind.j))
 
     ## Run main function
-    cat("Starting gamma calculation\n")
     if(Sys.info()[['sysname']] == 'Darwin') {
         cat("Parallelizing gamma calculation using", nc, "cores.\n")
     	cl <- makeCluster(nc)
@@ -103,15 +102,12 @@ tableCounts <- function(gammalist, nr1 = y, nr2 = z, n.cores = NULL) {
         
         temp <- do.call('rbind', gammas_mat)
     }
-    cat("Ending gamma calculation\n")
     
     rm(gammas); rm(gammas_mat); gc()
 
     counts.f <- as.matrix(tapply(as.numeric(temp[, 2]), temp[, 1], sum))
     counts.d <- cbind( as.numeric(row.names(counts.f)), counts.f)
-    cat("Dimensions of count.d are ", dim(counts.d), " and class of counts.d is ", class(counts.d), "\n")
     colnames(counts.d) <- c("pattern.id", "count")
-    cat("Constructing counts matrices\n")
 
     ## Merge Counts
     seq <- 1:(length(gammalist)*3)
@@ -120,17 +116,11 @@ tableCounts <- function(gammalist, nr1 = y, nr2 = z, n.cores = NULL) {
     for(i in 1:length(gammalist)){
         patterns.vec[,i] <- c(b[1:3 + (i-1)*3], 0)
     }
-    cat("Getting patterns vector\n")
     patterns <- expand.grid(as.data.frame(patterns.vec))
-    cat("Expanding grid\n")
     pattern.id <- rowSums(patterns)
-    cat("Got rowsums\n")
     patterns <- cbind(patterns, pattern.id)
-    cat("Created patterns\n")
     data.new.0 <- merge(patterns, counts.d, by = "pattern.id")
-    cat("Merged patterns and counts.d\n")
     data.new.0 <- data.new.0[,-1]
-    cat("Created data.new.0\n")
 
     b<-2
     patterns.2vec <- c()
@@ -140,7 +130,6 @@ tableCounts <- function(gammalist, nr1 = y, nr2 = z, n.cores = NULL) {
     patterns.2 <- t((patterns.2vec) * t(data.new.0[,1:length(gammalist)]))
     data.new.1 <- cbind(patterns.2, data.new.0[,length(gammalist)+1])
     names <- c(paste0("gamma.", 1:length(gammalist)), "counts")
-    cat("Dimensions of data.new.1 are ", dim(data.new.1), " and class of data.new.1 is ", class(data.new.1), "\n")
     cat(data.new.1)
     cat(names)
     colnames(data.new.1) <- names
@@ -150,7 +139,6 @@ tableCounts <- function(gammalist, nr1 = y, nr2 = z, n.cores = NULL) {
     na.data.new[na.data.new == 4] <- NA
     data.new <- cbind(na.data.new, data.new.1[, nc])
     colnames(data.new)[nc] <- "counts"
-    cat("Constructed output object\n")
     return(data.new)
     
 }
