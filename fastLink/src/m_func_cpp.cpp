@@ -360,9 +360,11 @@ std::vector< std::vector<arma::vec> > m_func_par(const std::vector< std::vector<
       	    << " and feature " << j << std::endl;
       templist[j] = indlist;
       ptemplist[j] = pindlist;
+      Rcout << "Stored indices for loop " << i
+      	    << " and feature " << j << std::endl;
       natemplist[j] = indexing_na(natemp[j], limit1[n], limit1[n+1],
        				  limit2[m], limit2[m+1]);
-      Rcout << "Stored indices for loop " << i
+      Rcout << "Stored NA indices for loop " << i
       	    << " and feature " << j << std::endl;
     }
 
