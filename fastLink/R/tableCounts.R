@@ -141,6 +141,8 @@ tableCounts <- function(gammalist, nr1 = y, nr2 = z, n.cores = NULL) {
     data.new.1 <- cbind(patterns.2, data.new.0[,length(gammalist)+1])
     names <- c(paste0("gamma.", 1:length(gammalist)), "counts")
     cat("Dimensions of data.new.1 are ", dim(data.new.1), " and class of data.new.1 is ", class(data.new.1), "\n")
+    data.new.1
+    names
     colnames(data.new.1) <- names
     data.new.1 <- data.new.1[, colSums(data.new.1) != 0]
     nc <- ncol(data.new.1)
