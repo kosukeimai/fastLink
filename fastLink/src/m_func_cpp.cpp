@@ -211,12 +211,12 @@ std::vector<arma::vec> m_func(const std::vector< std::vector<arma::mat> > matche
 			      ){
 
   // Create sparse matches, pmatches object
-  std::vector<SpMat> matches_up  = unpack_matches(matches,  lims, true);
-  std::vector<SpMat> pmatches_up = unpack_matches(pmatches, lims, false);
+  const std::vector<SpMat> matches_up  = unpack_matches(matches,  lims, true);
+  const std::vector<SpMat> pmatches_up = unpack_matches(pmatches, lims, false);
   Rcout << "Unpacked matches" << std::endl;
 
   // Create sparse NA matrix
-  std::vector<SpMat> nas_sp = create_sparse_na(nas, lims);
+  const std::vector<SpMat> nas_sp = create_sparse_na(nas, lims);
   Rcout << "Created sparse NA matrix" << std::endl;
   
   // Add up everything
