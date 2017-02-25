@@ -136,17 +136,24 @@ std::vector<SpMat> unpack_matches(const std::vector< std::vector<arma::mat> > x,
 }
 
 arma::vec getNotIn(const arma::vec vec1, const arma::vec vec2){
-  IntegerVector matches = match(as<NumericVector>(wrap(vec1)),
-				as<NumericVector>(wrap(vec2)));
-  int n_out = sum(is_na(matches)) ;
-  IntegerVector output(n_out); int i; int j;
-		
-  for(i = 0, j = 0; i < vec1.size(); i ++){
-    if(matches[i] == NA_INTEGER){
-      output[j++] = vec1[i];
+
+  int i; int j; bool match; arma::vec store_notin(vec1.n_elem); int counter = 0;
+  for(i = 0; i < vec1.n_elem; i++){
+    match = false;
+    for(j = 0; j < vec2.n_elem; j++){
+      if(vec1(i) == vec2(j)){
+	match = true;
+	break;
+      }
     }
-  }	
-  return as<arma::vec>(output);		
+    if(!match){
+      store_notin(counter) = vec1(i);
+      counter++;
+    }
+  }
+
+  return store_notin.subvec(0, counter-1);
+  
 }
 
 std::vector<SpMat> create_sparse_na(const std::vector< std::vector<arma::vec> > nas,
