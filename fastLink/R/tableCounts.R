@@ -109,6 +109,7 @@ tableCounts <- function(gammalist, nr1 = y, nr2 = z, n.cores = NULL) {
 
     counts.f <- as.matrix(tapply(as.numeric(temp[, 2]), temp[, 1], sum))
     counts.d <- cbind( as.numeric(row.names(counts.f)), counts.f)
+    cat("Dimensions of count.d are ", dim(counts.d), " and class of counts.d is ", class(counts.d), "\n")
     colnames(counts.d) <- c("pattern.id", "count")
     cat("Constructing counts matrices\n")
 
@@ -134,6 +135,7 @@ tableCounts <- function(gammalist, nr1 = y, nr2 = z, n.cores = NULL) {
     patterns.2 <- t((patterns.2vec) * t(data.new.0[,1:length(gammalist)]))
     data.new.1 <- cbind(patterns.2, data.new.0[,length(gammalist)+1])
     names <- c(paste0("gamma.", 1:length(gammalist)), "counts")
+    cat("Dimensions of data.new.1 are ", dim(data.new.1), " and class of data.new.1 is ", class(data.new.1), "\n")
     colnames(data.new.1) <- names
     data.new.1 <- data.new.1[, colSums(data.new.1) != 0]
     nc <- ncol(data.new.1)
