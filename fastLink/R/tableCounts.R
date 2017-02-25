@@ -110,6 +110,7 @@ tableCounts <- function(gammalist, nr1 = y, nr2 = z, n.cores = NULL) {
     counts.f <- as.matrix(tapply(as.numeric(temp[, 2]), temp[, 1], sum))
     counts.d <- cbind( as.numeric(row.names(counts.f)), counts.f)
     colnames(counts.d) <- c("pattern.id", "count")
+    cat("Constructing counts matrices\n")
 
     ## Merge Counts
     seq <- 1:(length(gammalist)*3)
@@ -123,6 +124,7 @@ tableCounts <- function(gammalist, nr1 = y, nr2 = z, n.cores = NULL) {
     patterns <- cbind(patterns, pattern.id)
     data.new.0 <- merge(patterns, counts.d, by = "pattern.id")
     data.new.0 <- data.new.0[,-1]
+    cat("Merged counts\n")
 
     b<-2
     patterns.2vec <- c()
@@ -139,6 +141,7 @@ tableCounts <- function(gammalist, nr1 = y, nr2 = z, n.cores = NULL) {
     na.data.new[na.data.new == 4] <- NA
     data.new <- cbind(na.data.new, data.new.1[, nc])
     colnames(data.new)[nc] <- "counts"
+    cat("Constructed output object\n")
     return(data.new)
     
 }
