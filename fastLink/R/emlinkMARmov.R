@@ -11,6 +11,8 @@
 #' @param p.gamma.k.u probability that conditional of being in the non-matched set we observed a specific agreement value for field k.
 #' @param tol convergence tolerance
 #' @param iter.max Max Number of Iterations (5000 by default)
+#' @param psi Value of psi parameter for beta prior on gamma
+#' @param mu Value of mu parameter for beta prior on gamma
 #'
 #' @author Ted Enamorado <ted.enamorado@gmail.com> and Kosuke Imai
 #'
@@ -22,6 +24,8 @@
 
 emlinkMARm <- function(patterns, p.m = NULL, p.gamma.k.m = NULL, p.gamma.k.u = NULL, tol = NULL, iter.max = NULL, psi = NULL, mu = NULL) {
 
+    options(digits=16)
+    
   ## EM Algorithm for a Fellegi-Sunter model that accounts for missing data (under MAR)
   ##
   ## Args:
@@ -36,13 +40,13 @@ emlinkMARm <- function(patterns, p.m = NULL, p.gamma.k.m = NULL, p.gamma.k.u = N
   ##   maximize the observed data log-likelihood of the agreement patterns
 
   ## Number of fields
-  I <- ncol(patterns) - 1
+  nfeatures <- ncol(patterns) - 1
 
   ## Patterns:
-  gamma.j.k <- patterns[, 1:I]
+  gamma.j.k <- patterns[, 1:nfeatures]
 
   ## Patterns counts:
-  n.j <- as.matrix(patterns[, (I + 1)]) # Counts
+  n.j <- as.matrix(patterns[, (nfeatures + 1)]) # Counts
 
   ## Number of unique patterns:
   N <- nrow(gamma.j.k)
@@ -56,12 +60,12 @@ emlinkMARm <- function(patterns, p.m = NULL, p.gamma.k.m = NULL, p.gamma.k.u = N
 
   ## psi
   if (is.null(psi)) {
-    psi <- 0
+    psi <- 1
   }
 
   ## mu
   if (is.null(mu)) {
-    mu <- 0
+    mu <- 1
   }
 
 
@@ -81,7 +85,7 @@ emlinkMARm <- function(patterns, p.m = NULL, p.gamma.k.m = NULL, p.gamma.k.u = N
 
   if (is.null(p.gamma.k.m)) {
     p.gamma.k.m <- list()
-    for (i in 1:I) {
+    for (i in 1:nfeatures) {
       if(length(unique(na.omit(gamma.j.k[, i]))) == 3){
         p.gamma.k.m[[i]] <-  sort(rdirichlet(1, c(1, 50, 100)), decreasing = FALSE)
       }
@@ -99,7 +103,7 @@ emlinkMARm <- function(patterns, p.m = NULL, p.gamma.k.m = NULL, p.gamma.k.u = N
   ## Field specific probability of observing gamma.k conditional on U
   if (is.null(p.gamma.k.u)) {
     p.gamma.k.u <- list()
-    for (i in 1:I) {
+    for (i in 1:nfeatures) {
       if(length(unique(na.omit(gamma.j.k[, i]))) == 3){
         p.gamma.k.u[[i]] <-  sort(rdirichlet(1, c(1, 50, 100)), decreasing = TRUE)
       }
@@ -114,8 +118,8 @@ emlinkMARm <- function(patterns, p.m = NULL, p.gamma.k.m = NULL, p.gamma.k.u = N
     }
   }
 
-  p.gamma.k.j.m <- matrix(rep(NA, N * I), nrow = I, ncol = N)
-  p.gamma.k.j.u <- matrix(rep(NA, N * I), nrow = I, ncol = N)
+  p.gamma.k.j.m <- matrix(rep(NA, N * nfeatures), nrow = nfeatures, ncol = N)
+  p.gamma.k.j.u <- matrix(rep(NA, N * nfeatures), nrow = nfeatures, ncol = N)
 
   p.gamma.j.m <- matrix(rep(NA, N), nrow = N, ncol = 1)
   p.gamma.j.u <- matrix(rep(NA, N), nrow = N, ncol = 1)
@@ -126,15 +130,15 @@ emlinkMARm <- function(patterns, p.m = NULL, p.gamma.k.m = NULL, p.gamma.k.u = N
   ## The EM Algorithm presented in the paper starts here:
   while (abs(delta) >= tol) {
 
-    if((count %% 10) == 0) {
+    #if((count %% 10) == 0) {
       cat(paste("iteration number", count, "\n"))
       cat(paste("Diff", delta, "\n"))
-    }
+    #}
 
     ## Old Paramters
     p.old <- c(p.m, p.u, unlist(p.gamma.k.m), unlist(p.gamma.k.u))
 
-    for (i in 1:I) {
+    for (i in 1:nfeatures) {
       temp.01 <- temp.02 <- gamma.j.k[, i]
       temp.1 <- unique(na.omit(temp.01))
       temp.2 <- p.gamma.k.m[[i]]
@@ -168,11 +172,11 @@ emlinkMARm <- function(patterns, p.m = NULL, p.gamma.k.m = NULL, p.gamma.k.u = N
 
     ## M-step
     num.prod <- exp(log(n.j) + log(zeta.j))
-    l.p.m <- log(sum(num.prod) + mu - 1) - log(psi - mu + sum(n.j))
+    l.p.m <- log(max(sum(num.prod) + mu - 1, 1e-10)) - log(psi - mu + sum(n.j))
     p.m <- exp(l.p.m)
     p.u <- 1 - p.m
 
-    for (i in 1:I) {
+    for (i in 1:nfeatures) {
       temp.01 <- temp.02 <- gamma.j.k[, i]
       temp.1 <- unique(na.omit(temp.01))
       for (l in 1:length(temp.1)) {
@@ -183,7 +187,7 @@ emlinkMARm <- function(patterns, p.m = NULL, p.gamma.k.m = NULL, p.gamma.k.u = N
       }
     }
 
-    for (i in 1:I) {
+    for (i in 1:nfeatures) {
       p.gamma.k.m[[i]] <- sort(p.gamma.k.m[[i]], decreasing = F)
       p.gamma.k.u[[i]] <- sort(p.gamma.k.u[[i]], decreasing = T)
     }
