@@ -1,4 +1,4 @@
-#' emlinkMARm
+#' emlinkMARmov
 #'
 #' Expectation-Maximization algorithm for Record Linkage under the
 #' Missing at Random (MAR) assumption.
@@ -20,7 +20,7 @@
 # Function: EM Algorithm under MAR
 # -----------------------------------
 
-emlinkMARm <- function(patterns, p.m = NULL, p.gamma.k.m = NULL, p.gamma.k.u = NULL, tol = NULL, iter.max = NULL, psi = NULL, mu = NULL) {
+emlinkMARmov <- function(patterns, p.m = NULL, p.gamma.k.m = NULL, p.gamma.k.u = NULL, tol = NULL, iter.max = NULL, psi = NULL, mu = NULL) {
 
   ## EM Algorithm for a Fellegi-Sunter model that accounts for missing data (under MAR)
   ##
