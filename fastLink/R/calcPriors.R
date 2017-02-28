@@ -11,7 +11,7 @@
 #' (if state = FALSE) for the later of the two voter files.
 #' @param year_start The year of the voter file for geography A.
 #' @param year_end The year of the voter file for geography B.
-#' @param var User-specified variance for the prior probability.
+#' @param var_prior User-specified variance for the prior probability.
 #' @param L Number of agreement categories for \eqn{\pi_{k,l}}. Default is NULL.
 #' @param county Whether prior is being calculated on the county or state level.
 #' Default is FALSE (for a state-level calculation).
@@ -23,8 +23,9 @@
 #' @author Ben Fifield <benfifield@gmail.com>
 #'
 #' @export
-calcPriors <- function(geo_a, geo_b, year_start, year_end, var,
-                       L = NULL, county = FALSE, state_a = NULL, state_b = NULL){
+calcPriors <- function(geo_a, geo_b, year_start, year_end, var_prior,
+                       L = NULL, county = FALSE, state_a = NULL, state_b = NULL,
+                       denom_mu = NULL){
     
     if(county & (is.null(state_a) | is.null(state_b))){
         stop("If calculating priors on the county level, provide arguments for 'state_a' and 'state_b'.")
@@ -83,10 +84,24 @@ calcPriors <- function(geo_a, geo_b, year_start, year_end, var,
                           inf$y1_statefips == 96] - a_b
             denom_b <- nm_b + is_b + a_b + na_b
         }else{
-            fips_a <- countyfips$fips[countyfips$name == gsub(" County", "", geo_a) &
-                                      countyfips$state == state_a]
-            fips_b <- countyfips$fips[countyfips$name == gsub(" County", "", geo_b ) &
-                                      countyfips$state == state_b]
+            
+            countyfips_sub <- subset(countyfips, state != "PR")
+            countyfips_sub$state <- factor(countyfips_sub$state)
+            
+            namesvec <- as.character(countyfips_sub$name)
+            namesvec <- ifelse(
+                word(namesvec,-1) == "County", gsub("\\s*\\w*$", "", namesvec),
+                namesvec
+            )
+            namesvec <- gsub("\xb1", "n", namesvec)
+            namesvec <- gsub("\x97", "o", namesvec)
+            namesvec <- gsub("\x92", "i", namesvec)
+            namesvec <- tolower(namesvec)
+            
+            fips_a <- unique(countyfips_sub$fips[namesvec == geo_a &
+                                                 countyfips_sub$state == state_a])
+            fips_b <- unique(countyfips_sub$fips[namesvec == geo_b &
+                                                 countyfips_sub$state == state_b])
 
             ## QOI's for geo A
             denom_a <- outf$n[outf$y1_fips == fips_a &
@@ -104,7 +119,11 @@ calcPriors <- function(geo_a, geo_b, year_start, year_end, var,
             
         }
         ## Calculate mean
-        mean <- b_a / (denom_a * denom_b)
+        if(is.null(denom_mu)){
+            meancalc <- b_a / (as.double(denom_a) * as.double(denom_b))
+        }else{
+            meancalc <- b_a / denom_mu
+        }
         
     }
 
@@ -148,7 +167,11 @@ calcPriors <- function(geo_a, geo_b, year_start, year_end, var,
         }
         
         ## Calculate mean
-        mean <- num / (as.double(denom_a) * as.double(denom_b))
+        if(is.null(denom_mu)){
+            meancalc <- num / (as.double(denom_a) * as.double(denom_b))
+        }else{
+            meancalc <- num / denom_mu
+        }
         if(!county){
             dir_mean <- is_a / (nm_a + is_a)
         }else{
@@ -159,20 +182,36 @@ calcPriors <- function(geo_a, geo_b, year_start, year_end, var,
     }
 
     ## Get optimal parameters
-    alpha <- mean^2 * ((1 - mean)/var - (1/mean))
-    beta <- alpha * (1/mean - 1)
+    mu <- meancalc^2 * ((1 - meancalc)/var_prior - (1/meancalc))
+    psi <- mu * (1/meancalc - 1)
+    if(mu < 0 | psi < 0){
+        cat("Your provided variance is too large given the observed mean. The function will adaptively choose a new prior variance.\n")
+        i <- 1
+        repeat{
+            var_prior <- 1/(10^i)
+            mu <- meancalc^2 * ((1 - meancalc)/var_prior - (1/meancalc))
+            psi <- mu * (1/meancalc - 1)
+            if(mu > 0 & psi > 0){
+                break
+            }else{
+                i <- i + 1
+            }
+        }
+    }
 
     if(geo_a == geo_b){
-        alpha_1 <- (dir_mean * (1 - dir_mean)^2 + var * dir_mean - var) /
-            (var * L - var)
+        alpha_1 <- (
+            dir_mean * (1 - dir_mean)^2 + var_prior * dir_mean - var_prior
+        ) /
+            (var_prior * L - var_prior)
         alpha_0 <- ((L - 1) * alpha_1 * dir_mean) / (1 - dir_mean)
     }
 
     if(geo_a == geo_b){
-        return(list(gamma_priors = list(alpha = alpha, beta = beta),
+        return(list(gamma_priors = list(mu = mu, psi = psi),
                     pi_prior = list(alpha_0 = alpha_0, alpha_1 = alpha_1)))
     }else{
-        return(gamma_priors = list(alpha = alpha, beta= beta))
+        return(gamma_priors = list(mu = mu, psi = psi))
     }
 
 }

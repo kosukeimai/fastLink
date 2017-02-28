@@ -8,9 +8,9 @@ Description: This packages provides functions to perform link (merge
     probabilistically) two datasets when a unique identifier is missing.
 License: GPL(>= 3)
 Imports: Matrix, parallel, foreach, doParallel, gtools, data.table,
-        stringdist, Rcpp (>= 0.12.9), RcppEigen (>= 0.3.2.9.0)
+        stringdist, stringr, Rcpp (>= 0.12.9), RcppEigen (>= 0.3.2.9.0)
 Depends: Matrix, parallel, foreach, doParallel, gtools, data.table,
-        stringdist
+        stringdist, stringr
 LinkingTo: RcppArmadillo, Rcpp, RcppEigen
 Encoding: UTF-8
 LazyData: true

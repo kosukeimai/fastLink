@@ -4,8 +4,8 @@
 \alias{calcPriors}
 \title{calcPriors}
 \usage{
-calcPriors(geo_a, geo_b, year_start, year_end, var, L = NULL,
-  county = FALSE, state_a = NULL, state_b = NULL)
+calcPriors(geo_a, geo_b, year_start, year_end, var_prior, L = NULL,
+  county = FALSE, state_a = NULL, state_b = NULL, denom_mu = NULL)
 }
 \arguments{
 \item{geo_a}{The state code (if state = TRUE) or county name
@@ -18,7 +18,7 @@ calcPriors(geo_a, geo_b, year_start, year_end, var, L = NULL,
 
 \item{year_end}{The year of the voter file for geography B.}
 
-\item{var}{User-specified variance for the prior probability.}
+\item{var_prior}{User-specified variance for the prior probability.}
 
 \item{L}{Number of agreement categories for \eqn{\pi_{k,l}}. Default is NULL.}
 
