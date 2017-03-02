@@ -4,7 +4,7 @@
 \alias{gammaKpar}
 \title{gammaKpar}
 \usage{
-gammaKpar(matAp, matBp, n.cores = NULL)
+gammaKpar(matAp, matBp, n.cores = NULL, calc.prior = FALSE, var = NULL)
 }
 \arguments{
 \item{matAp}{vector storing the comparison field in data set 1}
