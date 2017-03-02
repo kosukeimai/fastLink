@@ -15,9 +15,8 @@
 ## in parallel
 ## ------------------------
 
-gammaKpar <- function(matAp, matBp, n.cores = NULL,
-                      calc.prior = FALSE, var = NULL) {
-    matAp <- temp.1.1$first.name; matBp <- temp.1.2$first.name; n.cores = 4
+gammaKpar <- function(matAp, matBp, n.cores = NULL, calc.prior = FALSE, var = NULL) {
+
     requireNamespace('parallel')
 
     if(is.null(n.cores)) {
