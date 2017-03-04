@@ -4,7 +4,8 @@
 \alias{gammaCK3par}
 \title{gammaCK3par}
 \usage{
-gammaCK3par(matAp, matBp, n.cores = NULL, cut.a = NULL, cut.p = NULL)
+gammaCK3par(matAp, matBp, n.cores = NULL, cut.a = NULL, cut.p = NULL,
+  calc.prior = FALSE, var = NULL)
 }
 \arguments{
 \item{matAp}{vector storing the comparison field in data set 1}

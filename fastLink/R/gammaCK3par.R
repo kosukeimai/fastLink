@@ -21,7 +21,8 @@
 ## in parallel
 ## ------------------------
 
-gammaCK3par <- function(matAp, matBp, n.cores = NULL, cut.a = NULL, cut.p = NULL) {
+gammaCK3par <- function(matAp, matBp, n.cores = NULL, cut.a = NULL, cut.p = NULL,
+                        calc.prior = FALSE, var = NULL) {
 
   	requireNamespace('parallel')
   	requireNamespace('stringdist')
@@ -147,8 +148,8 @@ gammaCK3par <- function(matAp, matBp, n.cores = NULL, cut.a = NULL, cut.p = NULL
             nrow(matrix.1)
         dir_mean <- numerator / denominator
         alpha_1 <- (dir_mean * (1 - dir_mean)^2 + var * dir_mean - var) /
-            (var * 2 - var)
-        alpha_0 <- ((2 - 1) * alpha_1 * dir_mean) / (1 - dir_mean)
+            (var * 3 - var)
+        alpha_0 <- ((3 - 1) * alpha_1 * dir_mean) / (1 - dir_mean)
     }
     
     na.list <- list()

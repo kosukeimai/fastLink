@@ -4,7 +4,8 @@
 \alias{gammaCKpar}
 \title{gammaCKpar}
 \usage{
-gammaCKpar(matAp, matBp, n.cores = NULL, cut.a = NULL, cut.p = NULL)
+gammaCKpar(matAp, matBp, n.cores = NULL, cut.a = NULL, cut.p = NULL,
+  calc.prior = FALSE, var = NULL)
 }
 \arguments{
 \item{matAp}{vector storing the comparison field in data set 1}
