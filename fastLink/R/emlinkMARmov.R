@@ -22,10 +22,10 @@
 # Function: EM Algorithm under MAR
 # -----------------------------------
 
-emlinkMARmov <- function(patterns, p.m = NULL, p.gamma.k.m = NULL, p.gamma.k.u = NULL, tol = NULL, iter.max = NULL, psi = NULL, mu = NULL) {
+emlinkMARmov <- function(patterns, p.m = NULL, p.gamma.k.m = NULL, p.gamma.k.u = NULL, tol = NULL, iter.max = NULL, psi = NULL, mu = NULL, alpha0 = NULL, alpha1 = NULL, pos.ad = NULL) {
 
     options(digits=16)
-    
+
   ## EM Algorithm for a Fellegi-Sunter model that accounts for missing data (under MAR)
   ##
   ## Args:
@@ -68,7 +68,21 @@ emlinkMARmov <- function(patterns, p.m = NULL, p.gamma.k.m = NULL, p.gamma.k.u =
     mu <- 1
   }
 
+  ## alpha0
+  if (is.null(alpha0)) {
+    alpha0 <- 1
+  }
 
+  ## alpha1
+  if (is.null(alpha1)) {
+    alpha1 <- 1
+  }
+
+  ## address indicator
+  if (is.null(pos.ad)) {
+    pos.ad <- rep(0, (nfeatures))
+  }
+  
   ## Maximum number of iterations:
   if (is.null(iter.max)) {
     iter.max <- 5000
@@ -172,16 +186,18 @@ emlinkMARmov <- function(patterns, p.m = NULL, p.gamma.k.m = NULL, p.gamma.k.u =
 
     ## M-step
     num.prod <- exp(log(n.j) + log(zeta.j))
-    l.p.m <- log(max(sum(num.prod) + mu - 1, 1e-10)) - log(psi - mu + sum(n.j))
+    l.p.m <- log(sum(num.prod) + mu - 1) - log(psi - mu + sum(n.j))
     p.m <- exp(l.p.m)
     p.u <- 1 - p.m
 
     for (i in 1:nfeatures) {
       temp.01 <- temp.02 <- gamma.j.k[, i]
       temp.1 <- unique(na.omit(temp.01))
+      temp.2 <- rep(alpha1, (length(temp.1) - 1))
+      temp.3 <- c(alpha0, temp.2)
       for (l in 1:length(temp.1)) {
-        p.gamma.k.m[[i]][l] <- sum(num.prod * ifelse(is.na(gamma.j.k[, i]), 0, 1) * ifelse(is.na(gamma.j.k[, i]), 0, ifelse(gamma.j.k[, i] == temp.1[l], 1, 0)))/
-          sum(num.prod * ifelse(is.na(gamma.j.k[, i]), 0, 1))
+        p.gamma.k.m[[i]][l] <- (sum(num.prod * ifelse(is.na(gamma.j.k[, i]), 0, 1) * ifelse(is.na(gamma.j.k[, i]), 0, ifelse(gamma.j.k[, i] == temp.1[l], 1, 0))) + pos.ad[i] * (temp.3[l] - 1))/
+          (sum(num.prod * ifelse(is.na(gamma.j.k[, i]), 0, 1)) + (pos.ad[i]  * sum(temp.3 - 1)))
         p.gamma.k.u[[i]][l] <- sum((n.j - num.prod) * ifelse(is.na(gamma.j.k[, i]), 0, 1) * ifelse(is.na(gamma.j.k[, i]), 0, ifelse(gamma.j.k[, i] == temp.1[l], 1, 0)))/
           sum((n.j - num.prod) * ifelse(is.na(gamma.j.k[, i]), 0, 1))
       }
