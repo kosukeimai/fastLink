@@ -5,7 +5,8 @@
 \title{emlinkMARmov}
 \usage{
 emlinkMARmov(patterns, p.m = NULL, p.gamma.k.m = NULL, p.gamma.k.u = NULL,
-  tol = NULL, iter.max = NULL, psi = NULL, mu = NULL)
+  tol = NULL, iter.max = NULL, psi = NULL, mu = NULL, alpha0 = NULL,
+  alpha1 = NULL, pos.ad = NULL)
 }
 \arguments{
 \item{patterns}{table that holds the counts for each unique agreement

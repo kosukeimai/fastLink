@@ -14,7 +14,6 @@
 #' @param em parameters obtained from the Expectation-Maximization algorithm under the MAR assumption. These estimates are
 #' produced by emlinkMAR
 #' @param cut is the interval of weight values for the agreements that we want to examine closer.
-#' @n.cores number of cores
 #' @param n.cores Number of cores to parallelize over. Default is NULL.
 #'
 #' @return \code{matchesLink} returns an nmatches X 2 matrix with the indices of the

@@ -4,7 +4,7 @@
 \alias{tableCounts}
 \title{tableCounts}
 \usage{
-tableCounts(gammalist, nr1 = y, nr2 = z, n.cores = NULL)
+tableCounts(gammalist, nr1, nr2, n.cores = NULL)
 }
 \arguments{
 \item{gammalist}{A list of objects produced by either gammaKpar or
@@ -13,6 +13,12 @@ gammaCKpar.}
 \item{nr1}{number of observations in dataset 1}
 
 \item{nr2}{number of observations in dataset 2}
+
+\item{n.cores}{Number of cores to parallelize over. Default is NULL.}
+}
+\value{
+\code{tableCounts} returns counts of all unique mathching patterns, which can be
+fed directly into \code{emlinkMAR} to get posterior matching probabilities for each unique pattern.
 }
 \description{
 Count pairs with the same pattern in the cross product between two datasets.

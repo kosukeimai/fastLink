@@ -5,7 +5,7 @@
 \title{emlinkMAR}
 \usage{
 emlinkMAR(patterns, p.m = NULL, p.gamma.k.m = NULL, p.gamma.k.u = NULL,
-  tol = NULL, iter.max = NULL)
+tol = NULL, iter.max = NULL)
 }
 \arguments{
 \item{patterns}{table that holds the counts for each unique agreement
@@ -20,6 +20,10 @@ pattern. This object is produced by the function: tableCounts.}
 \item{tol}{convergence tolerance}
 
 \item{iter.max}{Max Number of Iterations (5000 by default)}
+}
+\value{
+\code{emlinkMAR} returns the posterior matching probabities for each unique matching pattern
+found in \code{tableCounts}.
 }
 \description{
 Expectation-Maximization algorithm for Record Linkage under the

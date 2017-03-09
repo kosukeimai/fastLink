@@ -4,13 +4,22 @@
 \alias{gammaCKpar}
 \title{gammaCKpar}
 \usage{
-gammaCKpar(matAp, matBp, n.cores = NULL, cut.a = NULL, cut.p = NULL,
-  calc.prior = FALSE, var = NULL)
+gammaCKpar(matAp, matBp, n.cores = NULL, cut.a = 0.92, cut.b = 0.88)
 }
 \arguments{
 \item{matAp}{vector storing the comparison field in data set 1}
 
 \item{matBp}{vector storing the comparison field in data set 2}
+
+\item{n.cores}{Number of cores to parallelize over. Default is NULL.}
+
+\item{cut.a}{Lower bound for full match, ranging between 0 and 1. Default is 0.92}
+
+\item{cut.p}{Lower bound for partial match, ranging between 0 and 1. Default is 0.88}
+}
+\value{
+\code{gammaCKpar} returns a list with the indices corresponding to each
+matching pattern, which can be fed directly into \code{tableCounts} and \code{matchesLink}.
 }
 \description{
 Field comparisons for string variables. Three possible agreement patterns are considered:

@@ -4,12 +4,18 @@
 \alias{gammaKpar}
 \title{gammaKpar}
 \usage{
-gammaKpar(matAp, matBp, n.cores = NULL, calc.prior = FALSE, var = NULL)
+gammaKpar(matAp, matBp, n.cores = NULL)
 }
 \arguments{
 \item{matAp}{vector storing the comparison field in data set 1}
 
 \item{matBp}{vector storing the comparison field in data set 2}
+
+\item{n.cores}{Number of cores to parallelize over. Default is NULL.}
+}
+\value{
+\code{gammaKpar} returns a list with the indices corresponding to each
+matching pattern, which can be fed directly into \code{tableCounts} and \code{matchesLink}.
 }
 \description{
 Field comparisons: 0 disagreement, 2 total agreement.

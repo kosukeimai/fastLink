@@ -4,8 +4,9 @@
 \alias{fastLink}
 \title{fastLink}
 \usage{
-fastLink(df_a, df_b, varnames, partial_match, n.cores = NULL,
-  tol.em = 1e-04, match = 0.85, verbose = FALSE)
+fastLink(df_a, df_b, varnames, stringdist_match,
+partial_match = NULL, n.cores = NULL, tol.em = 1e-04,
+match = 0.85, verbose = FALSE)
 }
 \arguments{
 \item{df_a}{Dataset A - to be matched to Dataset B}
@@ -15,9 +16,13 @@ fastLink(df_a, df_b, varnames, partial_match, n.cores = NULL,
 \item{varnames}{A vector of variable names to use for matching.
 Must be present in both df_a and df_b}
 
-\item{partial_match}{A vector of booleans, indicating whether to use
-partial matching or exact matching when determining matching patterns on
-each variable.}
+\item{stringdist_match}{A vector of booleans, indicating whether to use
+string distance matching when determining matching patterns on
+each variable. Must be same length as varnames.}
+
+\item{partial_match}{A vector of booleans, indicating whether to include
+a partial matching category for the string distances. Must be same length
+as varnames. Default is FALSE for all variables.}
 
 \item{n.cores}{Number of cores to parallelize over. Default is NULL.}
 
@@ -26,6 +31,14 @@ each variable.}
 \item{match}{A number between 0 and 1. The closer to 1 the more centainty you have about a given pair being a match}
 
 \item{verbose}{Whether to print elapsed time for each step. Default is FALSE.}
+}
+\value{
+\code{fastLink} returns a list of class 'fastLink' containing the following components:
+\item{matches}{An nmatches X 2 matrix containing the indices of the successful matches in \code{df_a}
+in the first column, and the indices of the corresponding successful matches in \code{df_b} in the
+second column.}
+\item{EM}{A matrix with the output of the EM algorithm, which contains the exact matching
+patterns and the associated posterior probabilities of a match for each matching pattern.}
 }
 \description{
 Run the fastLink algorithm to probabilistically match

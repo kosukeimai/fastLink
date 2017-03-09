@@ -4,8 +4,7 @@
 \alias{matchesLink}
 \title{matchesLink}
 \usage{
-matchesLink(gammalist, nr1 = w, nr2 = p, em = y, cut = z,
-  n.cores = NULL)
+matchesLink(gammalist, nr1, nr2, em, cut, n.cores = NULL)
 }
 \arguments{
 \item{gammalist}{A list of objects produced by either gammaKpar or
@@ -19,6 +18,12 @@ gammaCKpar.}
 produced by emlinkMAR}
 
 \item{cut}{is the interval of weight values for the agreements that we want to examine closer.}
+
+\item{n.cores}{Number of cores to parallelize over. Default is NULL.}
+}
+\value{
+\code{matchesLink} returns an nmatches X 2 matrix with the indices of the
+matches rows in dataset A and dataset B.
 }
 \description{
 matchesLink produces two dataframes that store
