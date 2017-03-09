@@ -1,0 +1,7 @@
+README.md
+\.git
+\.gitignore
+\.travis\.yml
+\.DS_Store
+\.\.Rcheck
+builder.sh
