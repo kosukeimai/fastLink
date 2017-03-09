@@ -103,3 +103,48 @@ fields
 - `tol`: Convergence tolerance for the EM algorithm
 - `iter.max`: Maximum number of iterations for the EM algorithm
 
+#### 4) Finding the matches
+Once we've run the EM algorithm and selected our lower bound for
+accepting a match, we then run `matchesLink()` to get the paired
+indices of `dfA` and `dfB` that match. We run the function as follows:
+```
+matches.out <- matchesLink(gammalist, nr1 = nrow(dfA), nr2 =
+nrow(dfB), em = em.out, cut = match.ut)
+```
+As with the other functions above, `matchesLink()` accepts an `n.cores`
+argument. This returns a matrix where each row is a match with the relevant indices of
+`dfA` (column 1) and `dfB` (column 2).
+
+The datasets can then be subsetted down to the matches as follows:
+```
+dfA.match <- dfA[matches.out[,1],]
+dfB.match <- dfB[matches.out[,2],]
+```
+
+### Running the algorithm using the `fastLink()` wrapper
+`fastLink` also includes a wrapper to automate running the four steps
+above. Running the code below would return equivalent results to the
+step-by-step process above:
+```
+matches.out <- fastLink(dfA, dfB,
+varnames = c("firstname", "lastname", "streetname", "age"),
+stringdist_match = c(TRUE, TRUE, TRUE, FALSE),
+partial_match = c(TRUE, TRUE, FALSE, FALSE))
+```
+- `varnames` should be a vector of variable names to be used for
+matching. These variable names should exist in both `dfA` and `dfB`
+- `stringdist_match` should be a vector of booleans of the same length
+  as `varnames`. `TRUE` means that string-distance matching using the
+  Jaro-Winkler similarity will be used.
+- `partial_match` is another vector of booleans of the same length as
+  `varnames`. A `TRUE` for an entry in `partial_match` and a `TRUE`
+  for that same entry for `stringdist_match` means that a partial
+  match category will be included in the gamma calculation.
+
+Other arguments that can be provided include:
+- `n.cores`
+- `tol.em`: Convergence tolerance for the EM algorithm. Default is 1e-04
+- `match`: Lower bound for the posterior probability of a match that
+will be accepted. Default is 0.85.
+- `verbose`: Whether to print out runtime for each step and EM
+  output. Default is FALSE.
