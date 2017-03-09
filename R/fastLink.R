@@ -105,7 +105,7 @@ fastLink <- function(df_a, df_b, varnames, stringdist_match, partial_match = NUL
     EM$cumsum.u <- 1 - cumsum(EM[, "p.gamma.j.u"])
     if(verbose){
         cat("EM output is:\n")
-        EM
+        print(EM)
         cat("\n\n")
     }
 
