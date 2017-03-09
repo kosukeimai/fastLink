@@ -104,28 +104,6 @@ EM <- EM[order(EM[, "weights"]), ]
 match.ut <- EM$weights[ EM$zeta.j >= 0.85 ][1]
 ```
 
-The code following `emlinkMAR()` sorts the linkage patterns by the
-Felligi-Sunter weight, and then selects the lowest weight that is
-still classified as a positive match according to the posterior
-probability that a linkage pattern is in the matched set. In this
-case, we've chosen that probability to be 0.85.
-
-The EM object looks like:
-```{r}
-EM
-```
-where the first six columns are indicators for the matching pattern. `0` indicates no match on that field, `1` indicates a partial match, `2` indicates a complete match, and `NA` indicates an NA. Other columns are: 
-
-- `counts`: Tallies the number of pairwise comparisons between `dfA` and `dfB` that fall in each pattern
-
-- `weights`: The Felligi-Sunter weight for each matching pattern
-
-- `p.gamma.j.m`: Posterior probability of being in the matched set given that matching pattern
-
-- `p.gamma.j.u`: Posterior probability of being in the unmatched set given that matching pattern
-
-- `zeta.j`: The posterior probability of a particular pattern representing a true match
-
 As with the other functions above, `emlinkMAR()` accepts an `n.cores`
 argument. Other optional arguments include:
 
@@ -145,6 +123,28 @@ fields
 - `tol`: Convergence tolerance for the EM algorithm
 
 - `iter.max`: Maximum number of iterations for the EM algorithm
+
+The code following `emlinkMAR()` sorts the linkage patterns by the
+Felligi-Sunter weight, and then selects the lowest weight that is
+still classified as a positive match according to the posterior
+probability that a linkage pattern is in the matched set. In this
+case, we've chosen that probability to be 0.85.
+
+The EM object looks like:
+```{r}
+EM
+```
+where the first six columns are indicators for the matching pattern. `0` indicates no match on that field, `1` indicates a partial match, `2` indicates a complete match, and `NA` indicates an NA. Other columns are: 
+
+- `counts`: Tallies the number of pairwise comparisons between `dfA` and `dfB` that fall in each pattern
+
+- `weights`: The Felligi-Sunter weight for each matching pattern
+
+- `p.gamma.j.m`: Probability of being in the matched set given that matching pattern
+
+- `p.gamma.j.u`: Probability of being in the unmatched set given that matching pattern
+
+- `zeta.j`: Posterior probability of a particular pattern representing a true match
 
 #### 4) Finding the matches
 Once we've run the EM algorithm and selected our lower bound for
