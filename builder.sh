@@ -1,7 +1,6 @@
 #!/bin/bash
 
 # Build documentation, compile C++ attributes
-cd fastLink
 R -e 'library(devtools);document()'
 R -e 'library(Rcpp);compileAttributes(verbose = TRUE)'
 
