@@ -108,8 +108,8 @@ Once we've run the EM algorithm and selected our lower bound for
 accepting a match, we then run `matchesLink()` to get the paired
 indices of `dfA` and `dfB` that match. We run the function as follows:
 ```
-matches.out <- matchesLink(gammalist, nr1 = nrow(dfA), nr2 =
-nrow(dfB), em = em.out, cut = match.ut)
+matches.out <- matchesLink(gammalist, nr1 = nrow(dfA), nr2 = nrow(dfB),
+                                               em = em.out, cut = match.ut)
 ```
 As with the other functions above, `matchesLink()` accepts an `n.cores`
 argument. This returns a matrix where each row is a match with the relevant indices of
@@ -126,10 +126,9 @@ dfB.match <- dfB[matches.out[,2],]
 above. Running the code below would return equivalent results to the
 step-by-step process above:
 ```
-matches.out <- fastLink(dfA, dfB,
-varnames = c("firstname", "lastname", "streetname", "age"),
-stringdist_match = c(TRUE, TRUE, TRUE, FALSE),
-partial_match = c(TRUE, TRUE, FALSE, FALSE))
+matches.out <- fastLink(dfA, dfB, varnames = c("firstname", "lastname", "streetname", "age"),
+                                        stringdist_match = c(TRUE, TRUE, TRUE, FALSE),
+                                        partial_match = c(TRUE, TRUE, FALSE, FALSE))
 ```
 - `varnames` should be a vector of variable names to be used for
 matching. These variable names should exist in both `dfA` and `dfB`
@@ -147,4 +146,11 @@ Other arguments that can be provided include:
 - `match`: Lower bound for the posterior probability of a match that
 will be accepted. Default is 0.85.
 - `verbose`: Whether to print out runtime for each step and EM
-  output. Default is FALSE.
+output. Default is FALSE.
+
+The output from `fastLink()` will be a list of length 2 with two
+entries:
+- `matches`: A matrix where each row is a match with the relevant
+indices of `dfA` (column 1) and `dfB` (column 2).
+- `EM`: The output from `emlinkMAR()`
+
