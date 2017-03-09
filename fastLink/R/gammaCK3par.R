@@ -7,9 +7,9 @@
 #'
 #' @param matAp vector storing the comparison field in data set 1
 #' @param matBp vector storing the comparison field in data set 2
-#' @n.cores
-#' @cut.a
-#' @cut.p
+#' @param n.cores Number of cores to parallelize over. Default is NULL.
+#' @param cut.a Lower bound for full match, ranging between 0 and 1. Default is 0.92
+#' @param cut.p Lower bound for partial match, ranging between 0 and 1. Default is 0.88
 #'
 #' @author Ted Enamorado <ted.enamorado@gmail.com>, Ben Fifield <benfifield@gmail.com>, and Kosuke Imai
 #'
