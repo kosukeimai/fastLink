@@ -25,7 +25,8 @@ have four commonly named fields:
 - `streetname`
 - `age`
 
-#### Running the algorithm piece-by-piece
+### Running the algorithm step-by-step
+#### 1) Agreement calculation variable-by-variable
 The first step for running the `fastLink` algorithm is to determine
 which observations agree, partially agree, disagree, and are missing
 on which variables. All functions provide the indices of the NA's. There are three separate
@@ -54,6 +55,7 @@ agreement using `cut.a`. For both functions, the default is 0.92. For
 `gammaCKpar()`, the user can also specify the lower bound for a
 partial agreement using `cut.p` - here, the default is 0.88.
 
+#### 2) Counting unique agreement patterns
 Once we have run the gamma calculations, we then use the
 `tableCounts()` function to count the number of unique matching
 patterns in our data. This is the only input necessary for the EM
@@ -62,9 +64,42 @@ algorithm. We run `tableCounts()` as follows:
 gammalist <- list(g_firstname, g_lastname, g_streetname, g_age)
 tc <- tableCounts(gammalist, nr1 = nrow(dfA), nr2 = nrow(dfB))
 ```
-As with the functions above, `tableCounts()` also includes an `n.cores
+As with the functions above, `tableCounts()` also includes an `n.cores`
 argument. If left unspecified, the function will automatically
 determine the number of available cores for parallelization.
 
+#### 3) Running the EM algorithm
+We next run the EM algorithm to calculate the Felligi-Sunter
+weights. The only required input to this function is the output from
+`tableCounts()`, as follows:
+```
+## Run EM algorithm
+em.out <- emlinkMAR(tc)
 
+## Postprocessing of EM algorithm
+EM <- data.frame(em.out$patterns.w)
+EM$zeta.j <- em.out$zeta.j
+EM <- EM[order(EM[, "weights"]), ] 
+match.ut <- EM$weights[ EM$zeta.j >= 0.85 ][1]
+```
+The code following `emlinkMAR()` sorts the linkage patterns by the
+Felligi-Sunter weight, and then selects the lowest weight that is
+still classified as a positive match according to the posterior
+probability that a linkage pattern is in the matched set. In this
+case, we've chosen that probability to be 0.85.
+
+As with the other functions above, `emlinkMAR()` accepts an `n.cores`
+argument. Other optional arguments include:
+- `p.m`: Starting values for the probability of being in the matched
+set
+- `p.gamma.k.m`: Starting values for the probability that conditional
+on being in the matched set, we observed a specific agreement value
+for field k. A vector with length equal to the number of linkage
+fields
+- `p.gamma.k.u`: Starting values for the probability that conditional
+on being in the unmatched set, we observed a specific agreement value
+for field k. A vector with length equal to the number of linkage
+fields
+- `tol`: Convergence tolerance for the EM algorithm
+- `iter.max`: Maximum number of iterations for the EM algorithm
 
