@@ -21,6 +21,32 @@
 #'
 #' @author Ted Enamorado <ted.enamorado@gmail.com>, Ben Fifield <benfifield@gmail.com>, and Kosuke Imai
 #'
+#' @examples
+#' \dontrun{
+#' ## Calculate gammas
+#' g1 <- gammaCKpar(dfA$firstname, dfB$firstname)
+#' g2 <- gammaCKpar(dfA$middlename, dfB$middlename)
+#' g3 <- gammaCKpar(dfA$lastname, dfB$lastname)
+#' g4 <- gammaKpar(dfA$birthyear, dfB$birthyear)
+#'
+#' ## Run tableCounts
+#' tc <- tableCounts(list(g1, g2, g3, g4), nr1 = nrow(dfA), nr2 = nrow(dfB))
+#'
+#' ## Run EM
+#' em <- emlinkMAR(tc)
+#' EM <- data.frame(resultsEM$patterns.w)
+#' EM$zeta.j <- resultsEM$zeta.j
+#' EM <- EM[order(EM[, "weights"]), ]
+#' EM$cumsum.m <- cumsum(EM[, "p.gamma.j.m"])
+#' EM$cumsum.u <- 1 - cumsum(EM[, "p.gamma.j.u"])
+#'
+#' match.ut <- EM$weights[ EM$zeta.j >= 0.85][1]
+#'
+#' ## Get matches
+#' ml <- matchesLink(list(g1, g2, g3, g4), nr1 = nrow(dfA), nr2 = nrow(dfB),
+#' em = em, cut = match.ut)
+#' }
+#'
 #' @export
 
 ## ------------------------

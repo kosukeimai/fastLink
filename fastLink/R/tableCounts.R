@@ -15,6 +15,17 @@
 #' @return \code{tableCounts} returns counts of all unique mathching patterns, which can be
 #' fed directly into \code{emlinkMAR} to get posterior matching probabilities for each unique pattern.
 #'
+#' @examples
+#' \dontrun{
+#' ## Calculate gammas
+#' g1 <- gammaCKpar(dfA$firstname, dfB$firstname)
+#' g2 <- gammaCKpar(dfA$middlename, dfB$middlename)
+#' g3 <- gammaCKpar(dfA$lastname, dfB$lastname)
+#' g4 <- gammaKpar(dfA$birthyear, dfB$birthyear)
+#'
+#' ## Run tableCounts
+#' tc <- tableCounts(list(g1, g2, g3, g4), nr1 = nrow(dfA), nr2 = nrow(dfB))
+#' }
 #' @export
 
 ## ------------------------

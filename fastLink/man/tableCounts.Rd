@@ -23,6 +23,18 @@ fed directly into \code{emlinkMAR} to get posterior matching probabilities for e
 \description{
 Count pairs with the same pattern in the cross product between two datasets.
 }
+\examples{
+\dontrun{
+## Calculate gammas
+g1 <- gammaCKpar(dfA$firstname, dfB$firstname)
+g2 <- gammaCKpar(dfA$middlename, dfB$middlename)
+g3 <- gammaCKpar(dfA$lastname, dfB$lastname)
+g4 <- gammaKpar(dfA$birthyear, dfB$birthyear)
+
+## Run tableCounts
+tc <- tableCounts(list(g1, g2, g3, g4), nr1 = nrow(dfA), nr2 = nrow(dfB))
+}
+}
 \author{
 Ted Enamorado <ted.enamorado@gmail.com>, Ben Fifield <benfifield@gmail.com>, and Kosuke Imai
 }

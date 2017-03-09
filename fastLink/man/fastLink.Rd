@@ -44,6 +44,13 @@ patterns and the associated posterior probabilities of a match for each matching
 Run the fastLink algorithm to probabilistically match
 two datasets.
 }
+\examples{
+\dontrun{
+fastLink(dfA, dfB, varnames = c("firstname", "lastname", "streetname", "birthyear"),
+stringdist_match = c(TRUE, TRUE, TRUE, FALSE), partial_match = c(TRUE, TRUE, FALSE, FALSE),
+verbose = TRUE)
+}
+}
 \author{
 Ted Enamorado <ted.enamorado@gmail.com>, Ben Fifield <benfifield@gmail.com>, and Kosuke Imai
 }

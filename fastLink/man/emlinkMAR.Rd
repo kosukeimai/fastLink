@@ -29,6 +29,21 @@ found in \code{tableCounts}.
 Expectation-Maximization algorithm for Record Linkage under the
 Missing at Random (MAR) assumption.
 }
+\examples{
+\dontrun{
+## Calculate gammas
+g1 <- gammaCKpar(dfA$firstname, dfB$firstname)
+g2 <- gammaCKpar(dfA$middlename, dfB$middlename)
+g3 <- gammaCKpar(dfA$lastname, dfB$lastname)
+g4 <- gammaKpar(dfA$birthyear, dfB$birthyear)
+
+## Run tableCounts
+tc <- tableCounts(list(g1, g2, g3, g4), nr1 = nrow(dfA), nr2 = nrow(dfB))
+
+## Run EM
+em <- emlinkMAR(tc)
+}
+}
 \author{
 Ted Enamorado <ted.enamorado@gmail.com> and Kosuke Imai
 }

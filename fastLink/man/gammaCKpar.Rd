@@ -27,6 +27,12 @@ Field comparisons for string variables. Three possible agreement patterns are co
 The distance between strings is calculated using a Jaro-Winkler distance as implemented
 in the stringdist package.
 }
+\examples{
+\dontrun{
+g1 <- gammaCKpar(dfA$firstname, dfB$lastname)
+}
+
+}
 \author{
 Ted Enamorado <ted.enamorado@gmail.com>, Ben Fifield <benfifield@gmail.com>, and Kosuke Imai
 }

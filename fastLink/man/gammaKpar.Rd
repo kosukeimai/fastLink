@@ -20,6 +20,11 @@ matching pattern, which can be fed directly into \code{tableCounts} and \code{ma
 \description{
 Field comparisons: 0 disagreement, 2 total agreement.
 }
+\examples{
+\dontrun{
+g1 <- gammaKpar(dfA$birthyear, dfB$birthyear)
+}
+}
 \author{
 Ted Enamorado <ted.enamorado@gmail.com>, Ben Fifield <benfifield@gmail.com>, and Kosuke Imai
 }

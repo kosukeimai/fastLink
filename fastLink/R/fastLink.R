@@ -31,6 +31,12 @@
 #'
 #' @author Ted Enamorado <ted.enamorado@gmail.com>, Ben Fifield <benfifield@gmail.com>, and Kosuke Imai
 #'
+#' @examples
+#' \dontrun{
+#' fastLink(dfA, dfB, varnames = c("firstname", "lastname", "streetname", "birthyear"),
+#' stringdist_match = c(TRUE, TRUE, TRUE, FALSE), partial_match = c(TRUE, TRUE, FALSE, FALSE),
+#' verbose = TRUE)
+#' }
 #' @export
 fastLink <- function(df_a, df_b, varnames, stringdist_match, partial_match = NULL, n.cores = NULL, tol.em = 1e-04, match = 0.85, verbose = FALSE){
 

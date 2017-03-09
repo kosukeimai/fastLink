@@ -18,6 +18,11 @@
 #'
 #' @author Ted Enamorado <ted.enamorado@gmail.com>, Ben Fifield <benfifield@gmail.com>, and Kosuke Imai
 #'
+#' @examples
+#' \dontrun{
+#' g1 <- gammaCKpar(dfA$firstname, dfB$lastname)
+#' }
+#'
 #' @export
 
 ## ------------------------
