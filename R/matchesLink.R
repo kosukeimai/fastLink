@@ -81,7 +81,7 @@ matchesLink <- function(gammalist, nr1, nr2, em, cut, n.cores = NULL) {
         u.b <- 1e10
     }
 
-    tablem <- em$patterns.w[em$patterns.w[, "weights"] > l.b & em$patterns.w[, "weights"] <= u.b, ]
+    tablem <- em$patterns.w[em$patterns.w[, "weights"] >= l.b & em$patterns.w[, "weights"] < u.b, ]
     list <- tablem
     list[is.na(list)] <- 4
 
