@@ -2,13 +2,18 @@
 #'
 #' Count pairs with the same pattern in the cross product between two datasets.
 #'
+#' @usage tableCounts(gammalist, nr1, nr2, n.cores = NULL)
+#'
 #' @param gammalist A list of objects produced by either gammaKpar or
 #' gammaCKpar. 
 #' @param nr1 number of observations in dataset 1
 #' @param nr2 number of observations in dataset 2
-#' @n.cores number of cores
+#' @param n.cores Number of cores to parallelize over. Default is NULL.
 #'
 #' @author Ted Enamorado <ted.enamorado@gmail.com>, Ben Fifield <benfifield@gmail.com>, and Kosuke Imai
+#'
+#' @return \code{tableCounts} returns counts of all unique mathching patterns, which can be
+#' fed directly into \code{emlinkMAR} to get posterior matching probabilities for each unique pattern.
 #'
 #' @export
 
@@ -18,7 +23,7 @@
 ## functions that does the trick
 ## ------------------------
 
-tableCounts <- function(gammalist, nr1 = y, nr2 = z, n.cores = NULL) {
+tableCounts <- function(gammalist, nr1, nr2, n.cores = NULL) {
     
     ## Lists of indices:
     ##     temp - exact

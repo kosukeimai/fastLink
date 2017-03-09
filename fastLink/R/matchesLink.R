@@ -5,6 +5,8 @@
 #' to the an interval of the Fellegi-Sunter
 #' weights
 #'
+#' @usage matchesLink(gammalist, nr1, nr2, em, cut, n.cores = NULL)
+#'
 #' @param gammalist A list of objects produced by either gammaKpar or
 #' gammaCKpar. 
 #' @param nr1 number of observations in dataset 1
@@ -13,6 +15,10 @@
 #' produced by emlinkMAR
 #' @param cut is the interval of weight values for the agreements that we want to examine closer.
 #' @n.cores number of cores
+#' @param n.cores Number of cores to parallelize over. Default is NULL.
+#'
+#' @return \code{matchesLink} returns an nmatches X 2 matrix with the indices of the
+#' matches rows in dataset A and dataset B.
 #'
 #' @author Ted Enamorado <ted.enamorado@gmail.com>, Ben Fifield <benfifield@gmail.com>, and Kosuke Imai
 #'
@@ -23,7 +29,7 @@
 ## we use matchesLink
 ## ------------------------
 
-matchesLink <- function(gammalist, nr1 = w, nr2 = p, em = y, cut = z, n.cores = NULL) {
+matchesLink <- function(gammalist, nr1, nr2, em, cut, n.cores = NULL) {
 
     if(is.null(n.cores)) {
         n.cores <- detectCores() - 1

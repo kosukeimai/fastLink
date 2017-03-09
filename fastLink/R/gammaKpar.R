@@ -2,8 +2,15 @@
 #'
 #' Field comparisons: 0 disagreement, 2 total agreement.
 #'
+#' @usage gammaKpar(matAp, matBp, n.cores = NULL)
+#' 
 #' @param matAp vector storing the comparison field in data set 1
 #' @param matBp vector storing the comparison field in data set 2
+#' @param n.cores Number of cores to parallelize over. Default is NULL.
+#'
+#'
+#' @return \code{gammaKpar} returns a list with the indices corresponding to each
+#' matching pattern, which can be fed directly into \code{tableCounts} and \code{matchesLink}.
 #'
 #' @author Ted Enamorado <ted.enamorado@gmail.com>, Ben Fifield <benfifield@gmail.com>, and Kosuke Imai
 #'

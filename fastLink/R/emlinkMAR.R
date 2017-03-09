@@ -3,15 +3,20 @@
 #' Expectation-Maximization algorithm for Record Linkage under the
 #' Missing at Random (MAR) assumption.
 #'
+#' @usage emlinkMAR(patterns, p.m = NULL, p.gamma.k.m = NULL, p.gamma.k.u = NULL,
+#' tol = NULL, iter.max = NULL)
+#'
 #' @param patterns table that holds the counts for each unique agreement
 #' pattern. This object is produced by the function: tableCounts.
-#'
 #' @param p.m probability of finding a match
 #' @param p.gamma.k.m probability that conditional of being in the matched set we observed a specific agreement value for field k.
 #' @param p.gamma.k.u probability that conditional of being in the non-matched set we observed a specific agreement value for field k.
 #' @param tol convergence tolerance
 #' @param iter.max Max Number of Iterations (5000 by default)
 #'
+#' @return \code{emlinkMAR} returns the posterior matching probabities for each unique matching pattern
+#' found in \code{tableCounts}.
+#' 
 #' @author Ted Enamorado <ted.enamorado@gmail.com> and Kosuke Imai
 #'
 #' @export

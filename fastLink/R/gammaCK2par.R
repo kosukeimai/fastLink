@@ -5,10 +5,15 @@
 #' The distance between strings is calculated using a Jaro-Winkler distance as implemented
 #' in the stringdist package.
 #'
+#' @usage gammaCK2par(matAp, matBp, n.cores = NULL, cut.a = 0.92)
+#'
 #' @param matAp vector storing the comparison field in data set 1
 #' @param matBp vector storing the comparison field in data set 2
-#' @n.cores
-#' @cut.a
+#' @param n.cores Number of cores to parallelize over. Default is NULL.
+#' @param cut.a Lower bound for full match, ranging between 0 and 1. Default is 0.92
+#'
+#' @return \code{gammaCK2par} returns a list with the indices corresponding to each
+#' matching pattern, which can be fed directly into \code{tableCounts} and \code{matchesLink}.
 #'
 #' @author Ted Enamorado <ted.enamorado@gmail.com>, Ben Fifield <benfifield@gmail.com>, and Kosuke Imai
 #'
