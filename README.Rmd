@@ -240,7 +240,9 @@ priors.out <- calcMoversPriors(geo.a = "CA", geo.b = "CA", year.start = 2014, ye
                                var.prior.gamma = 0.0001, var.prior.pi = 0.1, L = 3)
 names(priors.out)
 ```
-where each entry in the list outputs the optimal parameter values for the prior distributions, estimated from the IRS data.
+where each entry in the list outputs the optimal parameter values for the prior distributions, estimated from the IRS data. 
+
+If the provided variances are too large (forcing the parameter values for the $$\gamma$$ prior or the $$\pi_{k,l}$$ prior below 1), the function will choose new parameter values by testing the sequence $$1/(10^i)$$ until those restrictions are satisfied. The means and variances used to calculate optimal paramter values can be viewed in the `parameter_values` field of the output.
 
 The `calcMoversPriors()` function accepts the following functions:
 
