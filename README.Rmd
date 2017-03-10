@@ -48,10 +48,12 @@ The `fastLink` wrapper runs the entire algorithm from start to finish, as seen b
 library(fastLink)
 data(samplematch)
 
-matches.out <- fastLink(dfA, dfB, 
-                        varnames = c("firstname", "middlename", "lastname", "housenum", "streetname", "city", "birthyear"),
-                        stringdist_match = c(TRUE, TRUE, TRUE, FALSE, TRUE, TRUE, FALSE),
-                        partial_match = c(TRUE, FALSE, TRUE, FALSE, TRUE, FALSE, FALSE))
+matches.out <- fastLink(
+  df_a = dfA, df_b = dfB, 
+  varnames = c("firstname", "middlename", "lastname", "housenum", "streetname", "city", "birthyear"),
+  stringdist_match = c(TRUE, TRUE, TRUE, FALSE, TRUE, TRUE, FALSE),
+  partial_match = c(TRUE, FALSE, TRUE, FALSE, TRUE, FALSE, FALSE)
+)
 ```
 
 - `varnames` should be a vector of variable names to be used for
@@ -67,6 +69,10 @@ matching. These variable names should exist in both `dfA` and `dfB`
   match category will be included in the gamma calculation.
 
 Other arguments that can be provided include:
+
+- `priors_obj`: The output from `precalcPriors()` or `calcMoversPriors()`, allowing the inclusion of auxiliary information on moving behavior to aid matching. We will discuss this option further at the end of this vignette.
+
+- `address_field`: A boolean vector the same length as `varnames`, where TRUE indicates an address matching field. Default is NULL. Should be specified in conjunction with `priors_obj`. We will discuss this option further at the end of this vignette.
 
 - `n.cores`: The number of registered cores to parallelize over. If left unspecified. the function will
 estimate this on its own.
@@ -163,7 +169,7 @@ weights. The only required input to this function is the output from
 `tableCounts()`, as follows:
 ```{r}
 ## Run EM algorithm
-em.out <- emlinkMAR(tc)
+em.out <- emlinkMARmov(tc)
 
 ## Postprocessing of EM algorithm
 EM <- data.frame(em.out$patterns.w)
@@ -172,7 +178,7 @@ EM <- EM[order(EM[, "weights"]), ]
 match.ut <- EM$weights[ EM$zeta.j >= 0.85 ][1]
 ```
 
-As with the other functions above, `emlinkMAR()` accepts an `n.cores`
+As with the other functions above, `emlinkMARmov()` accepts an `n.cores`
 argument. Other optional arguments include:
 
 - `p.m`: Starting values for the probability of being in the matched
@@ -192,7 +198,9 @@ fields
 
 - `iter.max`: Maximum number of iterations for the EM algorithm
 
-The code following `emlinkMAR()` sorts the linkage patterns by the
+and additional arguments that allow the user to specify priors calculated from auxiliary information. We will discuss these further at the end of this vignette.
+
+The code following `emlinkMARmov()` sorts the linkage patterns by the
 Felligi-Sunter weight, and then selects the lowest weight that is
 still classified as a positive match according to the posterior
 probability that a linkage pattern is in the matched set. In this
@@ -215,3 +223,82 @@ The datasets can then be subsetted down to the matches as follows:
 dfA.match <- dfA[matches.out[,1],]
 dfB.match <- dfB[matches.out[,2],]
 ```
+
+## Using Auxiliary Information to Inform `fastLink`
+The `fastLink` algorithm also incorporates a number of functionalities to incorporate auxiliary
+information on migration behavior to inform the matching of data sets over time. Auxiliary information is incorporated into the algorithm as priors on two parameters of the model:
+
+- $$\gamma$$: $${\rm Pr}((a, b) \in {\rm Matched \ Set})$$, equivalent to the probability that a randomly
+selected pair of observations from dataset A and dataset B are a true match. When matching, for example, the same state to itself in subsequent years, the prior for this quantity is equal to the number of non-movers to the number of in-state movers, divided by the size of the cross-product of A and B. When matching two different states in subsequent years to find movers, the numerator is the size of the outflow from state A to state B, divided by the size of the cross-product of A and B.
+
+- $$\pi_{k,l}$$: $${\rm Pr}({\rm Address \ Does \ Not \ Match} | (a, b) \in {\rm Matched \ Set})$$, can be used when trying to find movers within the same geography over time. For example, when trying to find movers within the same state over time, this quantity is equal to the estimated number of in-state movers divided by the number of in-state movers and non-movers.
+
+The functions `calcMoversPriors()` and `precalcPriors()` can be used to find optimal parameter values for the corresponding prior distributions. `calcMoversPriors()` uses the IRS Statistics of Income Migration Data to estimate these parameters, while `precalcPriors()` accomodates any additional auxiliary information if the prior means are already known. 
+
+Below, we'll walk through an example where we incorporate the auxiliary moving information for California into our estimates. First, we use `calcMoversPriors()` to estimate optimal parameter values for the priors:
+```{r}
+priors.out <- calcMoversPriors(geo.a = "CA", geo.b = "CA", year.start = 2014, year.end = 2015, 
+                               var.prior.gamma = 0.0001, var.prior.pi = 0.1, L = 3)
+names(priors.out)
+```
+where each entry in the list outputs the optimal parameter values for the prior distributions, estimated from the IRS data.
+
+The `calcMoversPriors()` function accepts the following functions:
+
+- `geo.a`: The state name or county name of dataset A
+
+- `geo.b`: The state name or county name of dataset B
+
+- `year.start`: The year of dataset A
+
+- `year.end`: The year of dataset B
+
+- 'L': The number of matching categories for address. For instance, if partial matches are being calculated, L = 3 (no match, partial match, full match)
+
+- `var.prior.gamma`: The prior variance for gamma
+
+- `var.prior.pi`: The prior variance for pi
+
+- `county`: Boolean, whether the geographies in `geo.a` or `geo.b` refer to counties or states. Default is FALSE
+
+- `state.a`: If `county = TRUE`, the name of the state for `geo.a`
+
+- `state.b`: If `county = TRUE`, the name of the state for `geo.b`
+
+- `denom.mu`: If known, the denominator for mu. Can be set as the size of the cross-product of dataset A and dataset B
+
+If the prior means are already known and do not need to be estimated from the IRS data, the user can run `precalcPriors()`, which will calculate the same paramters from that data. `precalcPriors()` takes the following arguments:
+
+- 'L': The number of matching categories for address. For instance, if partial matches are being calculated, L = 3 (no match, partial match, full match)
+
+- `gamma.mean`: The estimated prior mean for gamma
+
+- `pi.mean`: The estimated prior mean for pi
+
+- `var.prior.gamma`: The prior variance for gamma
+
+- `var.prior.pi`: The prior variance for pi
+
+### Incorporating Auxiliary Information with `fastLink()` Wrapper
+We can re-run the full match above while incorporating auxiliary information as follows:
+```{r}
+matches.out.aux <- fastLink(
+  df_a = dfA, df_b = dfB, 
+  varnames = c("firstname", "middlename", "lastname", "housenum", "streetname", "city", "birthyear"),
+  stringdist_match = c(TRUE, TRUE, TRUE, FALSE, TRUE, TRUE, FALSE),
+  partial_match = c(TRUE, FALSE, TRUE, FALSE, TRUE, FALSE, FALSE),
+  priors_obj = priors.out, 
+  address_field = c(FALSE, FALSE, FALSE, TRUE, TRUE, TRUE, FALSE)
+)
+```
+where `priors_obj` is an input for the the optimal prior parameters calculated by `calcMoversPriors()` or `precalcPriors()`, and `address_field` is a vector of booleans of the same length as `varnames`, where `TRUE` indicates an address-related field used for matching.
+
+### Incorporating Auxiliary Information when Running Algorithm Step-by-Step
+If we are running the algorithm step-by-step, we can incorporate the prior information into the EM algorithm as follows:
+```{r eval = FALSE}
+em.out.aux <- emlinkMARmov(tc, 
+                           psi = priors.out$gamma_prior$psi, mu = priors.out$gamma_prior$mu,
+                           alpha0 = priors.out$pi_prior$alpha_0, alpha1 = priors.out$pi_prior$alpha_1,
+                           pos.ad = c(FALSE, FALSE, FALSE, TRUE, TRUE, TRUE, FALSE))
+```
+All other steps are the same. The newly specified arguments include the optimal parameter values (`psi`, `mu`, `alpha0`, `alpha1`) and a vector of boolean indicators where an address field is set to TRUE (`pos.ad`).

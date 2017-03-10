@@ -24,6 +24,12 @@ each variable. Must be same length as varnames.}
 a partial matching category for the string distances. Must be same length
 as varnames. Default is FALSE for all variables.}
 
+\item{priors_obj}{A list containing priors for auxiliary movers information,
+as output from calcMoversPriors() or precalcPriors(). Default is NULL}
+
+\item{address_field}{A vector of booleans for whether a given field is an address field. To be used when 'alpha0' and 'alpha1' are included in 'priors_obj'.
+Default is FALSE for all fields. Address fields should be set to TRUE while non-address fields are set to FALSE.}
+
 \item{n.cores}{Number of cores to parallelize over. Default is NULL.}
 
 \item{tol.em}{Convergence tolerance for the EM Algorithm. Default is 1e-04.}

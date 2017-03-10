@@ -13,6 +13,8 @@
 #' @param iter.max Max Number of Iterations (5000 by default)
 #' @param psi Value of psi parameter for beta prior on gamma
 #' @param mu Value of mu parameter for beta prior on gamma
+#' @param pos.ad Binary indicators for whether a given field is an address field. To be used when 'alpha0' and 'alpha1' are specified.
+#' Default is 0 for all fields. Address fields should be set to 1 while non-address fields are set to 0.
 #'
 #' @author Ted Enamorado <ted.enamorado@gmail.com> and Kosuke Imai
 #'
@@ -144,10 +146,10 @@ emlinkMARmov <- function(patterns, p.m = NULL, p.gamma.k.m = NULL, p.gamma.k.u =
   ## The EM Algorithm presented in the paper starts here:
   while (abs(delta) >= tol) {
 
-    #if((count %% 10) == 0) {
-      cat(paste("iteration number", count, "\n"))
-      cat(paste("Diff", delta, "\n"))
-    #}
+    if((count %% 10) == 0) {
+      cat(paste("Iteration number", count, "\n"))
+      cat(paste("Maximum difference in log-likelihood =", delta, "\n"))
+    }
 
     ## Old Paramters
     p.old <- c(p.m, p.u, unlist(p.gamma.k.m), unlist(p.gamma.k.u))

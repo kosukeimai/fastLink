@@ -17,6 +17,10 @@
 #' @param partial_match A vector of booleans, indicating whether to include
 #' a partial matching category for the string distances. Must be same length
 #' as varnames. Default is FALSE for all variables.
+#' @param priors_obj A list containing priors for auxiliary movers information,
+#' as output from calcMoversPriors() or precalcPriors(). Default is NULL
+#' @param address_field A vector of booleans for whether a given field is an address field. To be used when 'alpha0' and 'alpha1' are included in 'priors_obj'.
+#' Default is FALSE for all fields. Address fields should be set to TRUE while non-address fields are set to FALSE.
 #' @param n.cores Number of cores to parallelize over. Default is NULL.
 #' @param tol.em Convergence tolerance for the EM Algorithm. Default is 1e-04.
 #' @param match A number between 0 and 1. The closer to 1 the more centainty you have about a given pair being a match 
@@ -38,7 +42,10 @@
 #' verbose = TRUE)
 #' }
 #' @export
-fastLink <- function(df_a, df_b, varnames, stringdist_match, partial_match = NULL, n.cores = NULL, tol.em = 1e-04, match = 0.85, verbose = FALSE){
+fastLink <- function(df_a, df_b, varnames,
+                     stringdist_match, partial_match = NULL,
+                     priors_obj = NULL, address_field = NULL,
+                     n.cores = NULL, tol.em = 1e-04, match = 0.85, verbose = FALSE){
 
     cat("\n")
     cat(c(paste(rep("=", 20), sep = "", collapse = ""), "\n"))
@@ -91,7 +98,29 @@ fastLink <- function(df_a, df_b, varnames, stringdist_match, partial_match = NUL
     ## Run EM algorithm
     cat("Running the EM algorithm.\n")
     start <- Sys.time()
-    resultsEM <- emlinkMAR(patterns = counts, tol = tol.em)
+    if(is.null(priors_obj)){
+        psi <- NULL; mu <- NULL
+        alpha0 <- NULL; alpha1 <- NULL
+        address_field <- rep(FALSE, length(varnames))
+    }else{
+        if("gamma_prior" %in% names(priors_obj)){
+            mu <- priors_obj$gamma_priors$mu
+            psi <- priors_obj$gamma_priors$psi
+        }else{
+            mu <- NULL; psi <- NULL
+        }
+        if("pi_prior" %in% names(priors_obj)){
+            alpha0 <- priors_obj$pi_priors$alpha_0
+            alpha1 <- priors_obj$pi_priors$alpha_1
+        }else{
+            alpha0 <- NULL; alpha1 <- NULL
+            address_field <- rep(FALSE, length(varnames))
+        }
+    }
+    resultsEM <- emlinkMARmov(patterns = counts, tol = tol.em,
+                              mu = mu, psi = psi,
+                              alpha0 = alpha0, alpha1 = alpha1,
+                              pos.ad = address_field)
     end <- Sys.time()
     if(verbose){
         cat("Running the EM algorithm took", round(difftime(end, start, units = "secs"), 2), "seconds.\n\n")

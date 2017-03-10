@@ -4,9 +4,9 @@
 \alias{calcMoversPriors}
 \title{calcMoversPriors}
 \usage{
-calcMoversPriors(geo.a, geo.b, year.start, year.end, var.prior, L,
-  county = FALSE, state.a = NULL, state.b = NULL, denom.mu = NULL,
-  return.means = FALSE)
+calcMoversPriors(geo.a, geo.b, year.start, year.end, L, var.prior.gamma,
+  var.prior.pi = NULL, county = FALSE, state.a = NULL, state.b = NULL,
+  denom.mu = NULL, return.means = FALSE)
 }
 \arguments{
 \item{geo.a}{The state code (if state = TRUE) or county name
@@ -19,18 +19,20 @@ calcMoversPriors(geo.a, geo.b, year.start, year.end, var.prior, L,
 
 \item{year.end}{The year of the voter file for geography B.}
 
-\item{var.prior}{User-specified variance for the prior probability.}
-
 \item{L}{Number of agreement categories for \eqn{\pi_{k,l}}. Default is NULL.}
+
+\item{var.prior.gamma}{User-specified variance for the prior probability on gamma.}
+
+\item{var.prior.pi}{User-specified variance for the prior probability on gamma.}
 
 \item{county}{Whether prior is being calculated on the county or state level.
 Default is FALSE (for a state-level calculation).}
 
 \item{state.a}{If \code{county = TRUE} (indicating a county-level match),
-the state code of \code{geo_a}. Default is NULL.}
+the state code of \code{geo.a}. Default is NULL.}
 
 \item{state.b}{If \code{county = TRUE} (indicating a county-level match),
-the state code of \code{geo_b}. Default is NULL.}
+the state code of \code{geo.b}. Default is NULL.}
 
 \item{denom.mu}{If provided, serves as the default for calculating the
 prior mean of the beta distribution.}
@@ -42,7 +44,7 @@ FALSE.}
 calcMoversPriors estimates optimal \eqn{\alpha} and \eqn{\beta} values
 for the Beta prior on \eqn{\gamma}, and optimal \eqn{\alpha_1} and
 \eqn{\alpha_2} values for the Dirichlet prior on \eqn{\pi_{k,l}} when matching
-state voter files over time.
+state voter files over time, using IRS movers data.
 }
 \author{
 Ben Fifield <benfifield@gmail.com>

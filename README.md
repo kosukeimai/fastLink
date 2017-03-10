@@ -41,10 +41,12 @@ The `fastLink` wrapper runs the entire algorithm from start to finish, as seen b
 library(fastLink)
 data(samplematch)
 
-matches.out <- fastLink(dfA, dfB, 
-                        varnames = c("firstname", "middlename", "lastname", "housenum", "streetname", "city", "birthyear"),
-                        stringdist_match = c(TRUE, TRUE, TRUE, FALSE, TRUE, TRUE, FALSE),
-                        partial_match = c(TRUE, FALSE, TRUE, FALSE, TRUE, FALSE, FALSE))
+matches.out <- fastLink(
+  df_a = dfA, df_b = dfB, 
+  varnames = c("firstname", "middlename", "lastname", "housenum", "streetname", "city", "birthyear"),
+  stringdist_match = c(TRUE, TRUE, TRUE, FALSE, TRUE, TRUE, FALSE),
+  partial_match = c(TRUE, FALSE, TRUE, FALSE, TRUE, FALSE, FALSE)
+)
 ```
 
     FALSE 
@@ -66,6 +68,10 @@ matches.out <- fastLink(dfA, dfB,
 -   `partial_match` is another vector of booleans of the same length as `varnames`. A `TRUE` for an entry in `partial_match` and a `TRUE` for that same entry for `stringdist_match` means that a partial match category will be included in the gamma calculation.
 
 Other arguments that can be provided include:
+
+-   `priors_obj`: The output from `precalcPriors()` or `calcMoversPriors()`, allowing the inclusion of auxiliary information on moving behavior to aid matching. We will discuss this option further at the end of this vignette.
+
+-   `address_field`: A boolean vector the same length as `varnames`, where TRUE indicates an address matching field. Default is NULL. Should be specified in conjunction with `priors_obj`. We will discuss this option further at the end of this vignette.
 
 -   `n.cores`: The number of registered cores to parallelize over. If left unspecified. the function will estimate this on its own.
 
@@ -102,14 +108,14 @@ matches.out$EM
     ## 9        0       0       1       0       0       0       0     12
     ## 6        0      NA       0       0       0       0       0  48474
     ## 26       0       0       0       0       0       2       0  13032
+    ## 4        0       2       0       0       0       0       0    691
     ## 7        1      NA       0       0       0       0       0     48
     ## 43       0       0       0       0       0       0       2   1203
-    ## 4        0       2       0       0       0       0       0    691
-    ## 27       1       0       0       0       0       2       0      9
     ## 14       0       0       0       2       0       0       0     15
-    ## 44       1       0       0       0       0       0       2      2
     ## 22       0      NA       0       0       1       0       0     17
     ## 23       0       0       0       0       2       0       0     43
+    ## 27       1       0       0       0       0       2       0      9
+    ## 44       1       0       0       0       0       0       2      2
     ## 39       0       0       0       0       1       2       0      4
     ## 3        2       0       0       0       0       0       0   1181
     ## 10       0      NA       1       0       0       0       0      3
@@ -119,158 +125,158 @@ matches.out$EM
     ## 17       0      NA       0      NA       0       0       0    323
     ## 30       0      NA       0       0       0       2       0   6701
     ## 47       0      NA       0       0       0       0       2    593
+    ## 15       0      NA       0       2       0       0       0      8
+    ## 29       0       2       0       0       0       2       0     75
+    ## 25       0      NA       0       0       2       0       0     27
     ## 31       1      NA       0       0       0       2       0      3
     ## 53       0       0       0       0       0       2       2    150
-    ## 29       0       2       0       0       0       2       0     75
-    ## 15       0      NA       0       2       0       0       0      8
     ## 46       0       2       0       0       0       0       2     10
-    ## 25       0      NA       0       0       2       0       0     27
     ## 37       0       0       0       2       0       2       0      4
     ## 40       0      NA       0       0       1       2       0      3
     ## 41       0       0       0       0       2       2       0      3
+    ## 24       0       2       0       0       2       0       0      1
     ## 8        2      NA       0       0       0       0       0    559
     ## 52       0       0       0       0       2       0       2      1
     ## 28       2       0       0       0       0       2       0    153
-    ## 24       0       2       0       0       2       0       0      1
-    ## 45       2       0       0       0       0       0       2     19
     ## 5        2       2       0       0       0       0       0      9
     ## 13       0      NA       2       0       0       0       0     36
+    ## 45       2       0       0       0       0       0       2     19
     ## 34       0      NA       1       0       0       2       0      1
     ## 35       0       0       2       0       0       2       0      8
-    ## 49       0       0       2       0       0       0       2      1
     ## 12       0       2       2       0       0       0       0      1
+    ## 49       0       0       2       0       0       0       2      1
     ## 38       0      NA       0      NA       0       2       0     20
     ## 51       0      NA       0      NA       0       0       2      3
     ## 56       0      NA       0       0       0       2       2     92
-    ## 55       0       2       0       0       0       2       2      3
     ## 42       0      NA       0       0       2       2       0      4
     ## 18       2      NA       0      NA       0       0       0      4
     ## 50       0      NA       0       2       0       0       2      1
+    ## 55       0       2       0       0       0       2       2      3
     ## 32       2      NA       0       0       0       2       0     74
     ## 48       2      NA       0       0       0       0       2      5
-    ## 54       2       0       0       0       0       2       2      3
     ## 16       2      NA       0       2       0       0       0      1
     ## 36       0      NA       2       0       0       2       0      3
+    ## 54       2       0       0       0       0       2       2      3
     ## 58       2      NA       2       2       2       2       2      7
     ## 57       2       2       2       2       2       2       2     43
-    ##       weights   p.gamma.j.m  p.gamma.j.u        zeta.j      cumsum.m
-    ## 1  -349.07432 7.176063e-153 2.863757e-01 4.798220e-156 7.176063e-153
-    ## 2  -344.46910 8.354451e-153 3.333864e-03 4.798441e-154 1.553051e-152
-    ## 19 -339.22753 6.128749e-152 1.294239e-04 9.067500e-152 7.681801e-152
-    ## 20 -334.62231 7.135157e-152 1.506697e-06 9.067919e-150 1.481696e-151
-    ## 9  -330.88267 3.721671e-148 1.867486e-04 3.816021e-148 3.723153e-148
-    ## 6  -301.98817 2.032623e-132 2.883068e-01 1.349995e-135 2.032623e-132
-    ## 26 -299.70012 2.618994e-132 3.769145e-02 1.330521e-134 4.651617e-132
-    ## 7  -297.38296 2.366402e-132 3.356344e-03 1.350057e-133 7.018019e-132
-    ## 43 -297.31453 2.609071e-132 3.455779e-03 1.445673e-133 9.627090e-132
-    ## 4  -296.98222 2.032623e-132 1.931057e-03 2.015543e-133 1.165971e-131
-    ## 27 -295.09490 3.049061e-132 4.387877e-04 1.330582e-132 1.470877e-131
-    ## 14 -293.13440 2.348056e-132 4.757317e-05 9.450972e-132 1.705683e-131
-    ## 44 -292.70931 3.037509e-132 4.023070e-05 1.445740e-131 2.009434e-131
-    ## 22 -292.14138 1.735971e-131 1.302966e-04 2.551171e-131 3.745405e-131
-    ## 23 -291.72946 2.240791e-131 1.114028e-04 3.851547e-131 5.986196e-131
-    ## 39 -289.85333 2.236764e-131 1.703417e-05 2.514370e-130 8.222959e-131
-    ## 3  -289.26975 7.647767e-130 3.249315e-04 4.506848e-130 8.470063e-130
-    ## 10 -283.79653 1.054165e-127 1.880079e-04 1.073650e-127 1.062635e-127
-    ## 11 -281.85055 1.221703e-127 3.112477e-05 7.516050e-127 2.284338e-127
-    ## 33 -281.50848 1.358270e-127 2.457899e-05 1.058162e-126 3.642609e-127
-    ## 21 -279.42296 6.531610e-129 1.468487e-07 8.516877e-126 3.707925e-127
-    ## 17 -254.75122 6.650881e-112 2.883547e-01 4.416541e-115 6.650881e-112
-    ## 30 -252.61398 7.418312e-112 3.794561e-02 3.743465e-114 1.406919e-111
-    ## 47 -250.22839 7.390207e-112 3.479082e-03 4.067449e-113 2.145940e-111
-    ## 31 -248.00876 8.636480e-112 4.417465e-04 3.743638e-112 3.009588e-111
-    ## 53 -247.94033 9.522131e-112 4.548337e-04 4.008775e-112 3.961801e-111
-    ## 29 -247.60802 7.418312e-112 2.541568e-04 5.588993e-112 4.703632e-111
-    ## 15 -246.04826 6.650881e-112 4.789396e-05 2.659062e-111 5.368720e-111
-    ## 46 -245.22243 7.390207e-112 2.330262e-05 6.072702e-111 6.107741e-111
-    ## 25 -244.64332 6.347051e-111 1.121540e-04 1.083645e-110 1.245479e-110
-    ## 37 -243.76021 8.569524e-112 6.261361e-06 2.620705e-110 1.331174e-110
-    ## 40 -242.76719 6.335644e-111 1.714904e-05 7.074263e-110 1.964739e-110
-    ## 41 -242.35526 8.178045e-111 1.466233e-05 1.068014e-109 2.782543e-110
-    ## 8  -242.18361 2.166234e-109 3.271226e-04 1.268017e-109 2.444488e-109
-    ## 52 -239.96967 8.147062e-111 1.344330e-06 1.160447e-108 2.525959e-109
-    ## 28 -239.89555 2.791148e-109 4.276598e-05 1.249725e-108 5.317107e-109
-    ## 24 -239.63736 6.347051e-111 7.511992e-07 1.617883e-108 5.380577e-109
-    ## 45 -237.50997 2.780573e-109 3.921043e-06 1.357885e-107 8.161150e-109
-    ## 5  -237.17765 2.166234e-109 2.191042e-06 1.893149e-107 1.032738e-108
-    ## 13 -234.76441 3.460480e-107 3.133465e-05 2.114665e-106 3.563754e-107
-    ## 34 -234.42233 3.847308e-107 2.474473e-05 2.977175e-106 7.411061e-107
-    ## 35 -232.47636 4.458758e-107 4.096498e-06 2.084161e-105 1.186982e-106
-    ## 49 -230.09077 4.441865e-107 3.755916e-07 2.264538e-104 1.631168e-106
-    ## 12 -229.75845 3.460480e-107 2.098771e-07 3.157196e-104 1.977216e-106
-    ## 38 -205.37702  2.427322e-91 3.795191e-02  1.224683e-93  2.427322e-91
-    ## 51 -202.99143  2.418126e-91 3.479660e-03  1.330676e-92  4.845448e-91
-    ## 56 -200.85419  2.697148e-91 4.579007e-04  1.127882e-91  7.542596e-91
-    ## 55 -195.84823  2.697148e-91 3.066984e-06  1.683928e-89  1.023974e-90
-    ## 42 -195.26912  2.316435e-90 1.476120e-05  3.004891e-89  3.340410e-90
-    ## 18 -194.94665  7.088063e-89 3.271769e-04  4.148347e-89  7.422104e-89
-    ## 50 -194.28847  2.418126e-91 5.779504e-07  8.011586e-89  7.446285e-89
-    ## 32 -192.80941  7.905940e-89 4.305436e-05  3.516143e-88  1.535223e-88
-    ## 48 -190.42382  7.875988e-89 3.947483e-06  3.820454e-87  2.322821e-88
-    ## 54 -188.13577  1.014805e-88 5.160695e-07  3.765343e-86  3.337626e-88
-    ## 16 -186.24369  7.088063e-89 5.434210e-08  2.497591e-85  4.046432e-88
-    ## 36 -185.39021  1.262945e-86 4.124122e-06  5.863856e-85  1.303410e-86
-    ## 58   39.45891  5.000000e-01 3.649075e-18  1.000000e+00  5.000000e-01
-    ## 57   44.46487  5.000000e-01 2.444122e-20  1.000000e+00  1.000000e+00
-    ##        cumsum.u
-    ## 1  7.136243e-01
-    ## 2  7.102904e-01
-    ## 19 7.101610e-01
-    ## 20 7.101595e-01
-    ## 9  7.099727e-01
-    ## 6  4.216659e-01
-    ## 26 3.839745e-01
-    ## 7  3.806181e-01
-    ## 43 3.771623e-01
-    ## 4  3.752313e-01
-    ## 27 3.747925e-01
-    ## 14 3.747449e-01
-    ## 44 3.747047e-01
-    ## 22 3.745744e-01
-    ## 23 3.744630e-01
-    ## 39 3.744459e-01
-    ## 3  3.741210e-01
-    ## 10 3.739330e-01
-    ## 11 3.739019e-01
-    ## 33 3.738773e-01
-    ## 21 3.738772e-01
-    ## 17 8.552246e-02
-    ## 30 4.757685e-02
-    ## 47 4.409777e-02
-    ## 31 4.365602e-02
-    ## 53 4.320119e-02
-    ## 29 4.294703e-02
-    ## 15 4.289914e-02
-    ## 46 4.287584e-02
-    ## 25 4.276368e-02
-    ## 37 4.275742e-02
-    ## 40 4.274027e-02
-    ## 41 4.272561e-02
-    ## 8  4.239849e-02
-    ## 52 4.239714e-02
-    ## 28 4.235438e-02
-    ## 24 4.235362e-02
-    ## 45 4.234970e-02
-    ## 5  4.234751e-02
-    ## 13 4.231618e-02
-    ## 34 4.229143e-02
-    ## 35 4.228734e-02
-    ## 49 4.228696e-02
-    ## 12 4.228675e-02
-    ## 38 4.334840e-03
-    ## 51 8.551801e-04
-    ## 56 3.972794e-04
-    ## 55 3.942124e-04
-    ## 42 3.794512e-04
-    ## 18 5.227433e-05
-    ## 50 5.169638e-05
-    ## 32 8.642016e-06
-    ## 48 4.694533e-06
-    ## 54 4.178464e-06
-    ## 16 4.124122e-06
-    ## 36 0.000000e+00
-    ## 58 0.000000e+00
-    ## 57 0.000000e+00
+    ##                weights            p.gamma.j.m           p.gamma.j.u
+    ## 1  -418.56521773105476 4.746482228464756e-183 2.863757478838720e-01
+    ## 2  -411.36873388974891 7.375249103916368e-182 3.333863768687974e-03
+    ## 19 -408.09735008825902 7.543748884093731e-182 1.294238890798555e-04
+    ## 20 -400.90086624695317 1.172173928386854e-180 1.506697469301736e-06
+    ## 9  -399.29492632604416 7.238928202814724e-178 1.867486300460568e-04
+    ## 6  -362.94484188802454 6.837743822925882e-159 2.883068048486992e-01
+    ## 26 -358.31552342184369 9.157738859720653e-158 3.769145106752195e-02
+    ## 4  -357.93888418347944 6.837743822925882e-159 1.931056964827189e-03
+    ## 7  -355.74835804671869 1.062472407468706e-157 3.356344306575284e-03
+    ## 43 -355.61169199772507 1.254152786484739e-157 3.455779167934082e-03
+    ## 14 -354.11238763210298 7.732255788607250e-159 4.757317474627734e-05
+    ## 22 -352.47697424522880 1.086746349213660e-157 1.302966057965100e-04
+    ## 23 -352.13632120319318 1.306276431102175e-157 1.114028412332929e-04
+    ## 27 -351.11903958053784 1.422961302035611e-156 4.387877256779533e-04
+    ## 44 -348.41520815641923 1.948746201813462e-156 4.023070055930163e-05
+    ## 39 -347.84765577904795 1.455471209594744e-156 1.703417352296155e-05
+    ## 3  -347.06042981918591 6.100455909442464e-155 3.249315259387583e-04
+    ## 10 -343.67455048301395 1.042834128958919e-153 1.880078925547961e-04
+    ## 11 -341.75119952930976 1.181533486741306e-153 3.112477167434274e-05
+    ## 33 -339.04523201683315 1.396659903371903e-152 2.457899072571613e-05
+    ## 21 -336.59256217639023 9.695666231157930e-154 1.468486842283143e-07
+    ## 17 -307.19496888147387 1.113902501072594e-134 2.883546988135652e-01
+    ## 30 -302.69514757881348 1.319256436788072e-133 3.794560785152411e-02
+    ## 47 -299.99131615469486 1.806722337937744e-133 3.479081792127839e-03
+    ## 15 -298.49201178907276 1.113902501072594e-134 4.789396486594211e-05
+    ## 29 -297.68918987426832 1.319256436788072e-133 2.541567840021710e-04
+    ## 25 -296.51594536016296 1.881811237854693e-133 1.121540404324386e-04
+    ## 31 -295.49866373750757 2.049906517063739e-132 4.417465100722750e-04
+    ## 53 -295.36199768851401 2.419729634705303e-132 4.548336665057549e-04
+    ## 46 -294.98535845014970 1.806722337937744e-133 2.330262419375648e-05
+    ## 37 -293.86269332289191 1.491841239475829e-133 6.261361170859708e-06
+    ## 40 -292.22727993601774 2.096740026365271e-132 1.714903645973134e-05
+    ## 41 -291.88662689398211 2.520295633448560e-132 1.466232657672632e-05
+    ## 24 -291.50998765561781 1.881811237854693e-133 7.511991991456039e-07
+    ## 8  -291.44005397615570 8.788267332313185e-131 3.271225679208135e-04
+    ## 52 -289.18279546986349 3.451546107475957e-132 1.344330380025045e-06
+    ## 28 -286.81073550997490 1.177006032149002e-129 4.276598420332113e-05
+    ## 5  -286.43409627161054 8.788267332313185e-131 2.191041982055012e-06
+    ## 13 -286.13082368627954 1.702107563385652e-129 3.133464875913262e-05
+    ## 45 -284.10690408585623 1.611910338939421e-129 3.921042918758394e-06
+    ## 34 -283.42485617380288 2.012016935350239e-128 2.474472903135143e-05
+    ## 35 -281.50150522009869 2.279619854195023e-128 4.096498454286010e-06
+    ## 12 -281.12486598173439 1.702107563385652e-129 2.098770847899037e-07
+    ## 49 -278.79767379598007 3.121940509615967e-128 3.755916426362859e-07
+    ## 38 -246.94527457226286 2.149134396593197e-109 3.795191143360645e-02
+    ## 51 -244.24144314814421 2.943240611361930e-109 3.479659742485983e-03
+    ## 56 -239.74162184548379 3.485842897216220e-108 4.579006500964880e-04
+    ## 42 -236.26625105095187 3.630717459809173e-108 1.476119594002186e-05
+    ## 18 -235.69018096960505 1.431652488754559e-106 3.271769100192702e-04
+    ## 50 -235.53848605574305 2.943240611361930e-109 5.779503581448722e-07
+    ## 55 -234.73566414093867 3.485842897216220e-108 3.066983590733346e-06
+    ## 32 -231.19035966694463 1.695585349000019e-105 4.305435901251417e-05
+    ## 48 -228.48652824282601 2.322104967989883e-105 3.947482857522776e-06
+    ## 16 -226.98722387720392 1.431652488754559e-106 5.434209845680956e-08
+    ## 36 -225.88112937706848 3.284001883155257e-104 4.124121505225226e-06
+    ## 54 -223.85720977664519 3.109977713761539e-104 5.160695289252128e-07
+    ## 58   39.45891089494345  5.000000000000000e-01 3.649074589734563e-18
+    ## 57   44.46486859948860  5.000000000000000e-01 2.444122297210018e-20
+    ##                    zeta.j               cumsum.m              cumsum.u
+    ## 1  3.173699286399242e-186 4.746482228464756e-183 7.136242521161280e-01
+    ## 2  4.236029691986085e-183 7.849897326762844e-182 7.102903883474400e-01
+    ## 19 1.116099539024507e-181 1.539364621085657e-181 7.101609644583602e-01
+    ## 20 1.489690849659486e-178 1.326110390495420e-180 7.101594577608908e-01
+    ## 9  7.422445134811631e-178 7.252189306719677e-178 7.099727091308448e-01
+    ## 6  4.541382522194825e-162 6.837743822925882e-159 4.216659042821456e-01
+    ## 26 4.652383952567625e-160 9.841513242013241e-158 3.839744532146235e-01
+    ## 4  6.780284105636933e-160 1.052528762430583e-157 3.820433962497963e-01
+    ## 7  6.061516694138339e-159 2.115001169899289e-157 3.786870519432211e-01
+    ## 43 6.949196888727884e-159 3.369153956384029e-157 3.752312727752870e-01
+    ## 14 3.112248234325248e-158 3.446476514270101e-157 3.751836996005408e-01
+    ## 22 1.597074732718699e-157 4.533222863483761e-157 3.750534029947442e-01
+    ## 23 2.245272076070681e-157 5.839499294585936e-157 3.749420001535110e-01
+    ## 27 6.209673564868704e-157 2.006911231494205e-156 3.745032124278330e-01
+    ## 44 9.275297279190790e-156 3.955657433307667e-156 3.744629817272737e-01
+    ## 39 1.636110770506231e-155 5.411128642902410e-156 3.744459475537507e-01
+    ## 3  3.595014066223159e-155 6.641568773732706e-155 3.741210160278120e-01
+    ## 10 1.062109531033343e-153 1.109249816696246e-153 3.739330081352572e-01
+    ## 11 7.268922056889604e-153 2.290783303437553e-153 3.739018833635829e-01
+    ## 33 1.088069836420705e-151 1.625738233715658e-152 3.738773043728572e-01
+    ## 21 1.264263933036515e-150 1.722694896027238e-152 3.738771575241728e-01
+    ## 17 7.396909373187515e-138 1.113902501072594e-134 8.552245871060771e-02
+    ## 30 6.657295875281746e-136 1.430646686895331e-133 4.757685085908359e-02
+    ## 47 9.943904083479458e-135 3.237369024833075e-133 4.409776906695573e-02
+    ## 15 4.453449574339787e-134 3.348759274940334e-133 4.404987510208980e-02
+    ## 29 9.939342741795732e-134 4.668015711728406e-133 4.379571831808760e-02
+    ## 25 3.212856179391905e-133 6.549826949583098e-133 4.368356427765518e-02
+    ## 31 8.885688419467992e-133 2.704889212022049e-132 4.324181776758296e-02
+    ## 53 1.018695508641943e-132 5.124618846727352e-132 4.278698410107717e-02
+    ## 46 1.484624879663412e-132 5.305291080521126e-132 4.276368147688336e-02
+    ## 37 4.562301729036671e-132 5.454475204468709e-132 4.275742011571260e-02
+    ## 40 2.341181122418865e-131 7.551215230833981e-132 4.274027107925282e-02
+    ## 41 3.291385488418758e-131 1.007151086428254e-131 4.272560875267606e-02
+    ## 24 4.796794275832156e-131 1.025969198806801e-131 4.272485755347699e-02
+    ## 8  5.144259923224687e-131 9.814236531119986e-131 4.239773498555610e-02
+    ## 52 4.916293674149688e-130 1.015939114186758e-130 4.239639065517609e-02
+    ## 28 5.269997010311126e-129 1.278599943567678e-129 4.235362467097281e-02
+    ## 5  7.680380065374523e-129 1.366482616890810e-129 4.235143362899074e-02
+    ## 13 1.040141254901559e-128 3.068590180276462e-129 4.232009898023159e-02
+    ## 45 7.871716350377702e-128 4.680500519215883e-129 4.231617793731279e-02
+    ## 34 1.556965828244840e-127 2.480066987271827e-128 4.229143320828144e-02
+    ## 35 1.065564607045882e-126 4.759686841466850e-128 4.228733670982721e-02
+    ## 12 1.552930893568042e-126 4.929897597805415e-128 4.228712683274238e-02
+    ## 49 1.591618045182001e-125 8.051838107421382e-128 4.228675124109982e-02
+    ## 38 1.084326502321417e-111 2.149134396593197e-109 4.334839807493274e-03
+    ## 51 1.619642409809870e-110 5.092375007955128e-109 8.551800650073993e-04
+    ## 56 1.457695125121226e-108 3.995080398011732e-108 3.972794149108561e-04
+    ## 42 4.709784759686494e-107 7.625797857820905e-108 3.825182189708398e-04
+    ## 18 8.378863541717763e-107 1.507910467332768e-106 5.534130895157308e-05
+    ## 50 9.751364301820793e-107 1.510853707944130e-106 5.476335859344594e-05
+    ## 55 2.176338821806009e-106 1.545712136916292e-106 5.169637500268554e-05
+    ## 32 7.541064907192743e-105 1.850156562691648e-105 8.642015990156793e-06
+    ## 48 1.126397677514034e-103 4.172261530681531e-105 4.694533132676426e-06
+    ## 16 5.044653704772138e-103 4.315426779556987e-105 4.640191034188668e-06
+    ## 36 1.524762129621255e-102 3.715544561110956e-104 5.160695289996298e-07
+    ## 54 1.153929327350091e-101 6.825522274872495e-104 0.000000000000000e+00
+    ## 58  9.999999999999627e-01  5.000000000000000e-01 0.000000000000000e+00
+    ## 57  1.000000000000000e+00  1.000000000000000e+00 0.000000000000000e+00
 
 where the first seven columns are indicators for the matching pattern for that field. `0` indicates no match on that field, `1` indicates a partial match, `2` indicates a complete match, and `NA` indicates an NA. Other columns are:
 
@@ -331,7 +337,7 @@ We next run the EM algorithm to calculate the Felligi-Sunter weights. The only r
 
 ``` r
 ## Run EM algorithm
-em.out <- emlinkMAR(tc)
+em.out <- emlinkMARmov(tc)
 
 ## Postprocessing of EM algorithm
 EM <- data.frame(em.out$patterns.w)
@@ -340,7 +346,7 @@ EM <- EM[order(EM[, "weights"]), ]
 match.ut <- EM$weights[ EM$zeta.j >= 0.85 ][1]
 ```
 
-As with the other functions above, `emlinkMAR()` accepts an `n.cores` argument. Other optional arguments include:
+As with the other functions above, `emlinkMARmov()` accepts an `n.cores` argument. Other optional arguments include:
 
 -   `p.m`: Starting values for the probability of being in the matched set
 
@@ -352,7 +358,9 @@ As with the other functions above, `emlinkMAR()` accepts an `n.cores` argument. 
 
 -   `iter.max`: Maximum number of iterations for the EM algorithm
 
-The code following `emlinkMAR()` sorts the linkage patterns by the Felligi-Sunter weight, and then selects the lowest weight that is still classified as a positive match according to the posterior probability that a linkage pattern is in the matched set. In this case, we've chosen that probability to be 0.85.
+and additional arguments that allow the user to specify priors calculated from auxiliary information. We will discuss these further at the end of this vignette.
+
+The code following `emlinkMARmov()` sorts the linkage patterns by the Felligi-Sunter weight, and then selects the lowest weight that is still classified as a positive match according to the posterior probability that a linkage pattern is in the matched set. In this case, we've chosen that probability to be 0.85.
 
 #### 4) Finding the matches
 
@@ -373,3 +381,118 @@ The datasets can then be subsetted down to the matches as follows:
 dfA.match <- dfA[matches.out[,1],]
 dfB.match <- dfB[matches.out[,2],]
 ```
+
+Using Auxiliary Information to Inform `fastLink`
+------------------------------------------------
+
+The `fastLink` algorithm also incorporates a number of functionalities to incorporate auxiliary information on migration behavior to inform the matching of data sets over time. Auxiliary information is incorporated into the algorithm as priors on two parameters of the model:
+
+-   
+    *γ*
+    :
+    $${\\rm Pr}((a, b) \\in {\\rm Matched \\ Set})$$
+    , equivalent to the probability that a randomly selected pair of observations from dataset A and dataset B are a true match. When matching, for example, the same state to itself in subsequent years, the prior for this quantity is equal to the number of non-movers to the number of in-state movers, divided by the size of the cross-product of A and B. When matching two different states in subsequent years to find movers, the numerator is the size of the outflow from state A to state B, divided by the size of the cross-product of A and B.
+
+-   
+    *π*<sub>*k*, *l*</sub>
+    :
+    $${\\rm Pr}({\\rm Address \\ Does \\ Not \\ Match} | (a, b) \\in {\\rm Matched \\ Set})$$
+    , can be used when trying to find movers within the same geography over time. For example, when trying to find movers within the same state over time, this quantity is equal to the estimated number of in-state movers divided by the number of in-state movers and non-movers.
+
+The functions `calcMoversPriors()` and `precalcPriors()` can be used to find optimal parameter values for the corresponding prior distributions. `calcMoversPriors()` uses the IRS Statistics of Income Migration Data to estimate these parameters, while `precalcPriors()` accomodates any additional auxiliary information if the prior means are already known.
+
+Below, we'll walk through an example where we incorporate the auxiliary moving information for California into our estimates. First, we use `calcMoversPriors()` to estimate optimal parameter values for the priors:
+
+``` r
+priors.out <- calcMoversPriors(geo.a = "CA", geo.b = "CA", year.start = 2014, year.end = 2015, 
+                               var.prior.gamma = 0.0001, var.prior.pi = 0.1, L = 3)
+```
+
+    ## Your provided variance for gamma is too large given the observed mean. The function will adaptively choose a new prior variance.
+    ## Your provided variance for pi is too large given the observed mean. The function will adaptively choose a new prior variance.
+
+``` r
+names(priors.out)
+```
+
+    ## [1] "gamma_prior" "pi_prior"
+
+where each entry in the list outputs the optimal parameter values for the prior distributions, estimated from the IRS data.
+
+The `calcMoversPriors()` function accepts the following functions:
+
+-   `geo.a`: The state name or county name of dataset A
+
+-   `geo.b`: The state name or county name of dataset B
+
+-   `year.start`: The year of dataset A
+
+-   `year.end`: The year of dataset B
+
+-   'L': The number of matching categories for address. For instance, if partial matches are being calculated, L = 3 (no match, partial match, full match)
+
+-   `var.prior.gamma`: The prior variance for gamma
+
+-   `var.prior.pi`: The prior variance for pi
+
+-   `county`: Boolean, whether the geographies in `geo.a` or `geo.b` refer to counties or states. Default is FALSE
+
+-   `state.a`: If `county = TRUE`, the name of the state for `geo.a`
+
+-   `state.b`: If `county = TRUE`, the name of the state for `geo.b`
+
+-   `denom.mu`: If known, the denominator for mu. Can be set as the size of the cross-product of dataset A and dataset B
+
+If the prior means are already known and do not need to be estimated from the IRS data, the user can run `precalcPriors()`, which will calculate the same paramters from that data. `precalcPriors()` takes the following arguments:
+
+-   'L': The number of matching categories for address. For instance, if partial matches are being calculated, L = 3 (no match, partial match, full match)
+
+-   `gamma.mean`: The estimated prior mean for gamma
+
+-   `pi.mean`: The estimated prior mean for pi
+
+-   `var.prior.gamma`: The prior variance for gamma
+
+-   `var.prior.pi`: The prior variance for pi
+
+### Incorporating Auxiliary Information with `fastLink()` Wrapper
+
+We can re-run the full match above while incorporating auxiliary information as follows:
+
+``` r
+matches.out.aux <- fastLink(
+  df_a = dfA, df_b = dfB, 
+  varnames = c("firstname", "middlename", "lastname", "housenum", "streetname", "city", "birthyear"),
+  stringdist_match = c(TRUE, TRUE, TRUE, FALSE, TRUE, TRUE, FALSE),
+  partial_match = c(TRUE, FALSE, TRUE, FALSE, TRUE, FALSE, FALSE),
+  priors_obj = priors.out, 
+  address_field = c(FALSE, FALSE, FALSE, TRUE, TRUE, TRUE, FALSE)
+)
+```
+
+    ## 
+    ## ==================== 
+    ## fastLink(): Fast Probabilistic Record Linkage
+    ## ==================== 
+    ## 
+    ## Calculating matches for each variable.
+    ## Getting counts for zeta parameters.
+    ## Parallelizing gamma calculation using 1 cores.
+    ## Running the EM algorithm.
+    ## Getting the indices of estimated matches.
+    ## Parallelizing gamma calculation using 1 cores.
+
+where `priors_obj` is an input for the the optimal prior parameters calculated by `calcMoversPriors()` or `precalcPriors()`, and `address_field` is a vector of booleans of the same length as `varnames`, where `TRUE` indicates an address-related field used for matching.
+
+### Incorporating Auxiliary Information when Running Algorithm Step-by-Step
+
+If we are running the algorithm step-by-step, we can incorporate the prior information into the EM algorithm as follows:
+
+``` r
+em.out.aux <- emlinkMARmov(tc, 
+                           psi = priors.out$gamma_prior$psi, mu = priors.out$gamma_prior$mu,
+                           alpha0 = priors.out$pi_prior$alpha_0, alpha1 = priors.out$pi_prior$alpha_1,
+                           pos.ad = c(FALSE, FALSE, FALSE, TRUE, TRUE, TRUE, FALSE))
+```
+
+All other steps are the same. The newly specified arguments include the optimal parameter values (`psi`, `mu`, `alpha0`, `alpha1`) and a vector of boolean indicators where an address field is set to TRUE (`pos.ad`).
