@@ -22,8 +22,6 @@
 #' the state code of \code{geo.b}. Default is NULL.
 #' @param denom.mu If provided, serves as the default for calculating the
 #' prior mean of the beta distribution.
-#' @param return.means Whether to return the estimated match rates. Default is
-#' FALSE.
 #'
 #' @author Ben Fifield <benfifield@gmail.com>
 #'
@@ -31,7 +29,7 @@
 calcMoversPriors <- function(geo.a, geo.b, year.start, year.end, L,
                              var.prior.gamma, var.prior.pi = NULL,
                              county = FALSE, state.a = NULL, state.b = NULL,
-                             denom.mu = NULL, return.means = FALSE){
+                             denom.mu = NULL){
 
     if(geo.a == geo.b & is.null(var.prior.pi)){
         stop("Please provide a prior variance for pi.")
@@ -153,14 +151,14 @@ calcMoversPriors <- function(geo.a, geo.b, year.start, year.end, L,
     ## Get optimal parameters
     mu <- meancalc^2 * ((1 - meancalc)/var.prior.gamma - (1/meancalc))
     psi <- mu * (1/meancalc - 1)
-    if(mu < 0 | psi < 0){
+    if(mu < 1 | psi < 1){
         cat("Your provided variance for gamma is too large given the observed mean. The function will adaptively choose a new prior variance.\n")
         i <- 1
         repeat{
             var.prior.gamma <- 1/(10^i)
             mu <- meancalc^2 * ((1 - meancalc)/var.prior.gamma - (1/meancalc))
             psi <- mu * (1/meancalc - 1)
-            if(mu > 0 & psi > 0){
+            if(mu > 1 & psi > 1){
                 break
             }else{
                 i <- i + 1
@@ -174,7 +172,7 @@ calcMoversPriors <- function(geo.a, geo.b, year.start, year.end, L,
         ) /
             (var.prior.pi * L - var.prior.pi)
         alpha_0 <- ((L - 1) * alpha_1 * dir_mean) / (1 - dir_mean)
-        if(alpha_1 < 0 | alpha_0 < 0){
+        if(alpha_1 < 1 | alpha_0 < 1){
             cat("Your provided variance for pi is too large given the observed mean. The function will adaptively choose a new prior variance.\n")
             i <- 1
             repeat{
@@ -184,7 +182,7 @@ calcMoversPriors <- function(geo.a, geo.b, year.start, year.end, L,
                 ) /
                     (var.prior.pi * L - var.prior.pi)
                 alpha_0 <- ((L - 1) * alpha_1 * dir_mean) / (1 - dir_mean)
-                if(alpha_1 > 0 & alpha_0 > 0){
+                if(alpha_1 > 1 & alpha_0 > 1){
                     break
                 }else{
                     i <- i + 1
@@ -197,11 +195,10 @@ calcMoversPriors <- function(geo.a, geo.b, year.start, year.end, L,
     if(geo.a == geo.b){
         out[["gamma_prior"]] <- list(mu = mu, psi = psi)
         out[["pi_prior"]] <- list(alpha_0 = alpha_0, alpha_1 = alpha_1)
+        out[["parameter_values"]] <- list(gamma.mean = meancalc, gamma.var = var.prior.gamma, pi.mean = dir_mean, pi.var = var.prior.pi)
     }else{
         out[["gamma_prior"]] <- list(mu = mu, psi = psi)
-    }
-    if(return.means){
-        out[["est_matchrate"]] <- meancalc
+        out[["parameter_values"]] <- list(gamma.mean = meancalc, gamma.var = var.prior.gamma)
     }
 
     return(out)
@@ -241,21 +238,21 @@ precalcPriors <- function(L, var.prior.gamma = NULL, var.prior.pi = NULL, gamma.
     if(!is.null(gamma.mean)){
         mu <- gamma.mean^2 * ((1 - gamma.mean)/var.prior.gamma - (1/gamma.mean))
         psi <- mu * (1/gamma.mean - 1)
-        if(mu < 0 | psi < 0){
+        if(mu < 1 | psi < 1){
             cat("Your provided variance for gamma is too large given the observed mean. The function will adaptively choose a new prior variance.\n")
             i <- 1
             repeat{
                 var.prior.gamma <- 1/(10^i)
                 mu <- gamma.mean^2 * ((1 - gamma.mean)/var.prior.gamma - (1/gamma.mean))
                 psi <- mu * (1/gamma.mean - 1)
-                if(mu > 0 & psi > 0){
+                if(mu > 1 & psi > 1){
                     break
                 }else{
                     i <- i + 1
                 }
             }
         }
-        out[["gamma_priors"]] <- list(mu = mu, psi = psi)
+        out[["gamma_prior"]] <- list(mu = mu, psi = psi)
     }
 
     ## Calculate pi priors
@@ -265,7 +262,7 @@ precalcPriors <- function(L, var.prior.gamma = NULL, var.prior.pi = NULL, gamma.
         ) /
             (var.prior.pi * L - var.prior.pi)
         alpha_0 <- ((L - 1) * alpha_1 * pi.mean) / (1 - pi.mean)
-        if(alpha_1 < 0 | alpha_0 < 0){
+        if(alpha_1 < 1 | alpha_0 < 1){
             cat("Your provided variance for pi is too large given the observed mean. The function will adaptively choose a new prior variance.\n")
             i <- 1
             repeat{
@@ -275,7 +272,7 @@ precalcPriors <- function(L, var.prior.gamma = NULL, var.prior.pi = NULL, gamma.
                 ) /
                     (var.prior.pi * L - var.prior.pi)
                 alpha_0 <- ((L - 1) * alpha_1 * pi.mean) / (1 - pi.mean)
-                if(alpha_1 > 0 & alpha_0 > 0){
+                if(alpha_1 > 1 & alpha_0 > 1){
                     break
                 }else{
                     i <- i + 1
@@ -283,6 +280,13 @@ precalcPriors <- function(L, var.prior.gamma = NULL, var.prior.pi = NULL, gamma.
             }
         }
         out[["pi_prior"]] <- list(alpha_0 = alpha_0, alpha_1 = alpha_1)
+    }
+    if(!is.null(gamma.mean) & !is.null(pi.mean)){
+        out[["parameter_values"]] <- list(gamma.mean = gamma.mean, gamma.var = var.prior.gamma, pi.mean = pi.mean, pi.var = var.prior.pi)
+    }else if(!is.null(gamma.mean)){
+        out[["parameter_values"]] <- list(gamma.mean = gamma.mean, gamma.var = var.prior.gamma)
+    }else if(!is.null(pi.mean)){
+        out[["parameter_values"]] <- list(pi.mean = pi.mean, pi.var = var.prior.pi)
     }
 
     return(out)

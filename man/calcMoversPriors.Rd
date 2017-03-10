@@ -6,7 +6,7 @@
 \usage{
 calcMoversPriors(geo.a, geo.b, year.start, year.end, L, var.prior.gamma,
   var.prior.pi = NULL, county = FALSE, state.a = NULL, state.b = NULL,
-  denom.mu = NULL, return.means = FALSE)
+  denom.mu = NULL)
 }
 \arguments{
 \item{geo.a}{The state code (if state = TRUE) or county name
@@ -36,9 +36,6 @@ the state code of \code{geo.b}. Default is NULL.}
 
 \item{denom.mu}{If provided, serves as the default for calculating the
 prior mean of the beta distribution.}
-
-\item{return.means}{Whether to return the estimated match rates. Default is
-FALSE.}
 }
 \description{
 calcMoversPriors estimates optimal \eqn{\alpha} and \eqn{\beta} values

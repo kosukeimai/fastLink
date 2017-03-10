@@ -228,10 +228,9 @@ dfB.match <- dfB[matches.out[,2],]
 The `fastLink` algorithm also incorporates a number of functionalities to incorporate auxiliary
 information on migration behavior to inform the matching of data sets over time. Auxiliary information is incorporated into the algorithm as priors on two parameters of the model:
 
-- $$\gamma$$: $${\rm Pr}((a, b) \in {\rm Matched \ Set})$$, equivalent to the probability that a randomly
-selected pair of observations from dataset A and dataset B are a true match. When matching, for example, the same state to itself in subsequent years, the prior for this quantity is equal to the number of non-movers to the number of in-state movers, divided by the size of the cross-product of A and B. When matching two different states in subsequent years to find movers, the numerator is the size of the outflow from state A to state B, divided by the size of the cross-product of A and B.
+- $$\gamma$$: The probability that a randomly selected pair of observations from dataset A and dataset B are a true match. When matching, for example, the same state to itself in subsequent years, the prior for this quantity is equal to the number of non-movers to the number of in-state movers, divided by the size of the cross-product of A and B. When matching two different states in subsequent years to find movers, the numerator is the size of the outflow from state A to state B, divided by the size of the cross-product of A and B.
 
-- $$\pi_{k,l}$$: $${\rm Pr}({\rm Address \ Does \ Not \ Match} | (a, b) \in {\rm Matched \ Set})$$, can be used when trying to find movers within the same geography over time. For example, when trying to find movers within the same state over time, this quantity is equal to the estimated number of in-state movers divided by the number of in-state movers and non-movers.
+- $$\pi_{k,l}$$: The probability that an address field does not match conditional on being in the matched set. Specified when trying to find movers within the same geography over time. For example, when trying to find movers within the same state over time, this quantity is equal to the estimated number of in-state movers divided by the number of in-state movers and non-movers.
 
 The functions `calcMoversPriors()` and `precalcPriors()` can be used to find optimal parameter values for the corresponding prior distributions. `calcMoversPriors()` uses the IRS Statistics of Income Migration Data to estimate these parameters, while `precalcPriors()` accomodates any additional auxiliary information if the prior means are already known. 
 
@@ -295,10 +294,10 @@ where `priors_obj` is an input for the the optimal prior parameters calculated b
 
 ### Incorporating Auxiliary Information when Running Algorithm Step-by-Step
 If we are running the algorithm step-by-step, we can incorporate the prior information into the EM algorithm as follows:
-```{r eval = FALSE}
+```{r}
 em.out.aux <- emlinkMARmov(tc, 
                            psi = priors.out$gamma_prior$psi, mu = priors.out$gamma_prior$mu,
                            alpha0 = priors.out$pi_prior$alpha_0, alpha1 = priors.out$pi_prior$alpha_1,
                            address_field = c(FALSE, FALSE, FALSE, TRUE, TRUE, TRUE, FALSE))
 ```
-All other steps are the same. The newly specified arguments include the optimal parameter values (`psi`, `mu`, `alpha0`, `alpha1`) and a vector of boolean indicators where an address field is set to TRUE (`address_fieldd`).
+All other steps are the same. The newly specified arguments include the optimal parameter values (`psi`, `mu`, `alpha0`, `alpha1`) and a vector of boolean indicators where an address field is set to TRUE (`address_field`).
