@@ -254,7 +254,7 @@ The `calcMoversPriors()` function accepts the following functions:
 
 - `year.end`: The year of dataset B
 
-- 'L': The number of matching categories for address. For instance, if partial matches are being calculated, L = 3 (no match, partial match, full match)
+- `L`: The number of matching categories for address. For instance, if partial matches are being calculated, L = 3 (no match, partial match, full match)
 
 - `var.prior.gamma`: The prior variance for gamma
 
