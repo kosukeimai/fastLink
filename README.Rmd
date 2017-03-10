@@ -107,7 +107,7 @@ where the first seven columns are indicators for the matching pattern for that f
 
 - `counts`: Tallies the number of pairwise comparisons between `dfA` and `dfB` that fall in each pattern
 
-- `weights`: The Felligi-Sunter weight for each matching pattern
+- `weights`: The Fellegi-Sunter weight for each matching pattern
 
 - `p.gamma.j.m`: Probability of being in the matched set given that matching pattern
 
@@ -164,7 +164,7 @@ argument. If left unspecified, the function will automatically
 determine the number of available cores for parallelization.
 
 #### 3) Running the EM algorithm
-We next run the EM algorithm to calculate the Felligi-Sunter
+We next run the EM algorithm to calculate the Fellegi-Sunter
 weights. The only required input to this function is the output from
 `tableCounts()`, as follows:
 ```{r}
@@ -201,7 +201,7 @@ fields
 and additional arguments that allow the user to specify priors calculated from auxiliary information. We will discuss these further at the end of this vignette.
 
 The code following `emlinkMARmov()` sorts the linkage patterns by the
-Felligi-Sunter weight, and then selects the lowest weight that is
+Fellegi-Sunter weight, and then selects the lowest weight that is
 still classified as a positive match according to the posterior
 probability that a linkage pattern is in the matched set. In this
 case, we've chosen that probability to be 0.85.
@@ -242,7 +242,7 @@ names(priors.out)
 ```
 where each entry in the list outputs the optimal parameter values for the prior distributions, estimated from the IRS data. 
 
-If the provided variances are too large (forcing the parameter values for the $$\gamma$$ prior or the $$\pi_{k,l}$$ prior below 1), the function will choose new parameter values by testing the sequence $$1/(10^i)$$ until those restrictions are satisfied. The means and variances used to calculate optimal paramter values can be viewed in the `parameter_values` field of the output.
+If the provided variances are too large (forcing the parameter values for the $$\gamma$$ prior or the $$\pi_{k,l}$$ prior below 1), the function will choose new parameter values by testing the sequence $$1/(10^i)$$ to find new variance values that satisfy those restrictions. The means and variances used to calculate optimal paramter values can be viewed in the `parameter_values` field of the output.
 
 The `calcMoversPriors()` function accepts the following functions:
 
@@ -270,7 +270,7 @@ The `calcMoversPriors()` function accepts the following functions:
 
 If the prior means are already known and do not need to be estimated from the IRS data, the user can run `precalcPriors()`, which will calculate the same paramters from that data. `precalcPriors()` takes the following arguments:
 
-- 'L': The number of matching categories for address. For instance, if partial matches are being calculated, L = 3 (no match, partial match, full match)
+- `L`: The number of matching categories for address. For instance, if partial matches are being calculated, L = 3 (no match, partial match, full match)
 
 - `gamma.mean`: The estimated prior mean for gamma
 
