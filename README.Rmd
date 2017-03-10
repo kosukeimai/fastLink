@@ -43,7 +43,7 @@ have seven commonly named fields:
 
 ### Running the algorithm using the `fastLink()` wrapper
 The `fastLink` wrapper runs the entire algorithm from start to finish, as seen below:
-```{r comment = FALSE, message = FALSE}
+```{r eval = TRUE, echo = TRUE, tidy=TRUE, warning=FALSE, error=FALSE, message=FALSE}
 ## Load the package and data
 library(fastLink)
 data(samplematch)
