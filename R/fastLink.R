@@ -120,7 +120,7 @@ fastLink <- function(df_a, df_b, varnames,
     resultsEM <- emlinkMARmov(patterns = counts, tol = tol.em,
                               mu = mu, psi = psi,
                               alpha0 = alpha0, alpha1 = alpha1,
-                              pos.ad = address_field)
+                              address_field = address_field)
     end <- Sys.time()
     if(verbose){
         cat("Running the EM algorithm took", round(difftime(end, start, units = "secs"), 2), "seconds.\n\n")

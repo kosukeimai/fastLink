@@ -299,6 +299,6 @@ If we are running the algorithm step-by-step, we can incorporate the prior infor
 em.out.aux <- emlinkMARmov(tc, 
                            psi = priors.out$gamma_prior$psi, mu = priors.out$gamma_prior$mu,
                            alpha0 = priors.out$pi_prior$alpha_0, alpha1 = priors.out$pi_prior$alpha_1,
-                           pos.ad = c(FALSE, FALSE, FALSE, TRUE, TRUE, TRUE, FALSE))
+                           address_field = c(FALSE, FALSE, FALSE, TRUE, TRUE, TRUE, FALSE))
 ```
-All other steps are the same. The newly specified arguments include the optimal parameter values (`psi`, `mu`, `alpha0`, `alpha1`) and a vector of boolean indicators where an address field is set to TRUE (`pos.ad`).
+All other steps are the same. The newly specified arguments include the optimal parameter values (`psi`, `mu`, `alpha0`, `alpha1`) and a vector of boolean indicators where an address field is set to TRUE (`address_fieldd`).

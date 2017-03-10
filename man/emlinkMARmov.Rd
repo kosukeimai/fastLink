@@ -6,7 +6,7 @@
 \usage{
 emlinkMARmov(patterns, p.m = NULL, p.gamma.k.m = NULL, p.gamma.k.u = NULL,
   tol = NULL, iter.max = NULL, psi = NULL, mu = NULL, alpha0 = NULL,
-  alpha1 = NULL, pos.ad = NULL)
+  alpha1 = NULL, address_field = NULL)
 }
 \arguments{
 \item{patterns}{table that holds the counts for each unique agreement
@@ -26,7 +26,7 @@ pattern. This object is produced by the function: tableCounts.}
 
 \item{mu}{Value of mu parameter for beta prior on gamma}
 
-\item{pos.ad}{Binary indicators for whether a given field is an address field. To be used when 'alpha0' and 'alpha1' are specified.
+\item{address_field}{Binary indicators for whether a given field is an address field. To be used when 'alpha0' and 'alpha1' are specified.
 Default is 0 for all fields. Address fields should be set to 1 while non-address fields are set to 0.}
 }
 \description{

@@ -13,7 +13,7 @@
 #' @param iter.max Max Number of Iterations (5000 by default)
 #' @param psi Value of psi parameter for beta prior on gamma
 #' @param mu Value of mu parameter for beta prior on gamma
-#' @param pos.ad Binary indicators for whether a given field is an address field. To be used when 'alpha0' and 'alpha1' are specified.
+#' @param address_field Binary indicators for whether a given field is an address field. To be used when 'alpha0' and 'alpha1' are specified.
 #' Default is 0 for all fields. Address fields should be set to 1 while non-address fields are set to 0.
 #'
 #' @author Ted Enamorado <ted.enamorado@gmail.com> and Kosuke Imai
@@ -24,7 +24,7 @@
 # Function: EM Algorithm under MAR
 # -----------------------------------
 
-emlinkMARmov <- function(patterns, p.m = NULL, p.gamma.k.m = NULL, p.gamma.k.u = NULL, tol = NULL, iter.max = NULL, psi = NULL, mu = NULL, alpha0 = NULL, alpha1 = NULL, pos.ad = NULL) {
+emlinkMARmov <- function(patterns, p.m = NULL, p.gamma.k.m = NULL, p.gamma.k.u = NULL, tol = NULL, iter.max = NULL, psi = NULL, mu = NULL, alpha0 = NULL, alpha1 = NULL, address_field = NULL) {
 
     options(digits=16)
 
@@ -81,8 +81,8 @@ emlinkMARmov <- function(patterns, p.m = NULL, p.gamma.k.m = NULL, p.gamma.k.u =
   }
 
   ## address indicator
-  if (is.null(pos.ad)) {
-    pos.ad <- rep(0, (nfeatures))
+  if (is.null(address_field)) {
+    address_field <- rep(0, (nfeatures))
   }
   
   ## Maximum number of iterations:
@@ -198,8 +198,8 @@ emlinkMARmov <- function(patterns, p.m = NULL, p.gamma.k.m = NULL, p.gamma.k.u =
       temp.2 <- rep(alpha1, (length(temp.1) - 1))
       temp.3 <- c(alpha0, temp.2)
       for (l in 1:length(temp.1)) {
-        p.gamma.k.m[[i]][l] <- (sum(num.prod * ifelse(is.na(gamma.j.k[, i]), 0, 1) * ifelse(is.na(gamma.j.k[, i]), 0, ifelse(gamma.j.k[, i] == temp.1[l], 1, 0))) + pos.ad[i] * (temp.3[l] - 1))/
-          (sum(num.prod * ifelse(is.na(gamma.j.k[, i]), 0, 1)) + (pos.ad[i]  * sum(temp.3 - 1)))
+        p.gamma.k.m[[i]][l] <- (sum(num.prod * ifelse(is.na(gamma.j.k[, i]), 0, 1) * ifelse(is.na(gamma.j.k[, i]), 0, ifelse(gamma.j.k[, i] == temp.1[l], 1, 0))) + address_field[i] * (temp.3[l] - 1))/
+          (sum(num.prod * ifelse(is.na(gamma.j.k[, i]), 0, 1)) + (address_field[i]  * sum(temp.3 - 1)))
         p.gamma.k.u[[i]][l] <- sum((n.j - num.prod) * ifelse(is.na(gamma.j.k[, i]), 0, 1) * ifelse(is.na(gamma.j.k[, i]), 0, ifelse(gamma.j.k[, i] == temp.1[l], 1, 0)))/
           sum((n.j - num.prod) * ifelse(is.na(gamma.j.k[, i]), 0, 1))
       }
