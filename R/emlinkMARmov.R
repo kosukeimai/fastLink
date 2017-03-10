@@ -82,7 +82,7 @@ emlinkMARmov <- function(patterns, p.m = NULL, p.gamma.k.m = NULL, p.gamma.k.u =
 
   ## address indicator
   if (is.null(address_field)) {
-    address_field <- rep(0, (nfeatures))
+    address_field <- rep(FALSE, (nfeatures))
   }
   
   ## Maximum number of iterations:
