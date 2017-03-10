@@ -289,7 +289,7 @@ matches.out.aux <- fastLink(
   stringdist_match = c(TRUE, TRUE, TRUE, FALSE, TRUE, TRUE, FALSE),
   partial_match = c(TRUE, FALSE, TRUE, FALSE, TRUE, FALSE, FALSE),
   priors_obj = priors.out, 
-  address_field = c(FALSE, FALSE, FALSE, TRUE, TRUE, TRUE, FALSE)
+  address_field = c(FALSE, FALSE, FALSE, TRUE, TRUE, FALSE, FALSE)
 )
 ```
 where `priors_obj` is an input for the the optimal prior parameters calculated by `calcMoversPriors()` or `precalcPriors()`, and `address_field` is a vector of booleans of the same length as `varnames`, where `TRUE` indicates an address-related field used for matching.
@@ -300,6 +300,6 @@ If we are running the algorithm step-by-step, we can incorporate the prior infor
 em.out.aux <- emlinkMARmov(tc, 
                            psi = priors.out$gamma_prior$psi, mu = priors.out$gamma_prior$mu,
                            alpha0 = priors.out$pi_prior$alpha_0, alpha1 = priors.out$pi_prior$alpha_1,
-                           address_field = c(FALSE, FALSE, FALSE, TRUE, TRUE, TRUE, FALSE))
+                           address_field = c(FALSE, FALSE, FALSE, TRUE, TRUE, FALSE, FALSE))
 ```
 All other steps are the same. The newly specified arguments include the optimal parameter values (`psi`, `mu`, `alpha0`, `alpha1`) and a vector of boolean indicators where an address field is set to TRUE (`address_field`).
