@@ -20,7 +20,7 @@
 #' the state code of \code{geo.a}. Default is NULL.
 #' @param state.b If \code{county = TRUE} (indicating a county-level match),
 #' the state code of \code{geo.b}. Default is NULL.
-#' @param denom.mu If provided, serves as the default for calculating the
+#' @param denom.gamma.mean If provided, serves as the default for calculating the
 #' prior mean of the beta distribution.
 #'
 #' @author Ben Fifield <benfifield@gmail.com>
@@ -29,7 +29,7 @@
 calcMoversPriors <- function(geo.a, geo.b, year.start, year.end, L,
                              var.prior.gamma, var.prior.pi = NULL,
                              county = FALSE, state.a = NULL, state.b = NULL,
-                             denom.mu = NULL){
+                             denom.gamma.mean = NULL){
 
     if(geo.a == geo.b & is.null(var.prior.pi)){
         stop("Please provide a prior variance for pi.")
@@ -97,10 +97,10 @@ calcMoversPriors <- function(geo.a, geo.b, year.start, year.end, L,
                               grepl("Non-migrants", inf$y1_countyname)])
         }
         ## Calculate mean
-        if(is.null(denom.mu)){
+        if(is.null(denom.gamma.mean)){
             meancalc <- b_a / (as.double(denom_a) * as.double(denom_b))
         }else{
-            meancalc <- b_a / denom.mu
+            meancalc <- b_a / denom.gamma.mean
         }
     }
 
@@ -135,10 +135,10 @@ calcMoversPriors <- function(geo.a, geo.b, year.start, year.end, L,
                         inf$n[inf$y2_fips == infips &
                               grepl("Non-migrants", inf$y1_countyname)])
         }
-        if(is.null(denom.mu)){
+        if(is.null(denom.gamma.mean)){
             meancalc <- b_a / (as.double(denom_a) * as.double(denom_b))
         }else{
-            meancalc <- b_a / denom.mu
+            meancalc <- b_a / denom.gamma.mean
         }
         if(!county){
             dir_mean <- m_a / (nm_a + m_a)

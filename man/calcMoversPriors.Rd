@@ -6,7 +6,7 @@
 \usage{
 calcMoversPriors(geo.a, geo.b, year.start, year.end, L, var.prior.gamma,
   var.prior.pi = NULL, county = FALSE, state.a = NULL, state.b = NULL,
-  denom.mu = NULL)
+  denom.gamma.mean = NULL)
 }
 \arguments{
 \item{geo.a}{The state code (if state = TRUE) or county name
@@ -34,7 +34,7 @@ the state code of \code{geo.a}. Default is NULL.}
 \item{state.b}{If \code{county = TRUE} (indicating a county-level match),
 the state code of \code{geo.b}. Default is NULL.}
 
-\item{denom.mu}{If provided, serves as the default for calculating the
+\item{denom.gamma.mean}{If provided, serves as the default for calculating the
 prior mean of the beta distribution.}
 }
 \description{

@@ -2,7 +2,6 @@
 
 export(calcMoversPriors)
 export(deletion)
-export(emlinkMAR)
 export(emlinkMARmov)
 export(fastLink)
 export(gammaCK2par)
