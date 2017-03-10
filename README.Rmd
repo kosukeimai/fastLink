@@ -68,7 +68,8 @@ matching. These variable names should exist in both `dfA` and `dfB`
 
 Other arguments that can be provided include:
 
-- `n.cores`
+- `n.cores`: The number of registered cores to parallelize over. If left unspecified. the function will
+estimate this on its own.
 
 - `tol.em`: Convergence tolerance for the EM algorithm. Default is 1e-04
 
