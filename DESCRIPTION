@@ -1,8 +1,12 @@
 Package: fastLink
 Type: Package
-Title: Record Linkage under MAR
+Title: Fast Probabilistic Record Linkage with Missing Data
 Version: 0.1.0
-Author: Ted Enamorado <tede@princeton.edu> and Kosuke Imai <kimai@princeton.edu>
+Authors@R: c(
+  person("Ted", "Enamorado", , "tede@princeton.edu", c("aut", "cre")),
+  person("Ben", "Fifield", , "bfifield@princeton.edu", c("aut")),
+  person("Kosuke", "Imai", , "kimai@Princeton.Edu", c("aut", "cre"))
+  )
 Maintainer: Ted Enamorado <tede@princeton.edu>
 Description: This packages provides functions to perform link (merge
     probabilistically) two datasets when a unique identifier is missing.
@@ -15,5 +19,4 @@ LinkingTo: RcppArmadillo, Rcpp, RcppEigen
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 5.0.1
-NeedsCompilation: no
-Packaged: 2017-01-20 17:59:27 UTC; tedenamorado
+NeedsCompilation: yes
