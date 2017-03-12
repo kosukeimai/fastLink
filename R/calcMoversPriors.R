@@ -22,6 +22,8 @@
 #' the state code of \code{geo.b}. Default is NULL.
 #' @param denom.gamma.mean If provided, serves as the default for calculating the
 #' prior mean of the beta distribution.
+#' @param max.iter Maximum powers of 10 that should be tried to find a proper
+#' variance for priors before failing. Default is 100.
 #'
 #' @author Ben Fifield <benfifield@gmail.com>
 #'
@@ -29,7 +31,7 @@
 calcMoversPriors <- function(geo.a, geo.b, year.start, year.end, L,
                              var.prior.gamma, var.prior.pi = NULL,
                              county = FALSE, state.a = NULL, state.b = NULL,
-                             denom.gamma.mean = NULL){
+                             denom.gamma.mean = NULL, max.iter = 100){
 
     if(geo.a == geo.b & is.null(var.prior.pi)){
         stop("Please provide a prior variance for pi.")
@@ -158,7 +160,10 @@ calcMoversPriors <- function(geo.a, geo.b, year.start, year.end, L,
             var.prior.gamma <- 1/(10^i)
             mu <- meancalc^2 * ((1 - meancalc)/var.prior.gamma - (1/meancalc))
             psi <- mu * (1/meancalc - 1)
-            if(mu > 1 & psi > 1){
+            if((mu > 1 & psi > 1) | i == max.iter){
+                if(i == max.iter){
+                    mu <- 1; psi <- 1
+                }
                 break
             }else{
                 i <- i + 1
@@ -182,7 +187,10 @@ calcMoversPriors <- function(geo.a, geo.b, year.start, year.end, L,
                 ) /
                     (var.prior.pi * L - var.prior.pi)
                 alpha_0 <- ((L - 1) * alpha_1 * dir_mean) / (1 - dir_mean)
-                if(alpha_1 > 1 & alpha_0 > 1){
+                if((alpha_1 > 1 & alpha_0 > 1) | i == max.iter){
+                    if(i == max.iter){
+                        alpha_1 <- 1; alpha_0 <- 1
+                    }
                     break
                 }else{
                     i <- i + 1
@@ -217,11 +225,13 @@ calcMoversPriors <- function(geo.a, geo.b, year.start, year.end, L,
 #' @param var.prior.pi User-specified variance for the prior probability on pi.
 #' @param gamma.mean Prior mean for \eqn{\gamma}
 #' @param pi.mean Prior mean for \eqn{pi_{k,l}}
+#' @param max.iter Maximum powers of 10 that should be tried to find a proper
+#' variance for priors before failing. Default is 100.
 #'
 #' @author Ben Fifield <benfifield@gmail.com>
 #'
 #' @export
-precalcPriors <- function(L, var.prior.gamma = NULL, var.prior.pi = NULL, gamma.mean = NULL, pi.mean = NULL){
+precalcPriors <- function(L, var.prior.gamma = NULL, var.prior.pi = NULL, gamma.mean = NULL, pi.mean = NULL, max.iter = 100){
 
     if(is.null(gamma.mean) & is.null(pi.mean)){
         stop("Provide an argument for either 'pi.mean' or 'gamma.mean'")
@@ -245,7 +255,10 @@ precalcPriors <- function(L, var.prior.gamma = NULL, var.prior.pi = NULL, gamma.
                 var.prior.gamma <- 1/(10^i)
                 mu <- gamma.mean^2 * ((1 - gamma.mean)/var.prior.gamma - (1/gamma.mean))
                 psi <- mu * (1/gamma.mean - 1)
-                if(mu > 1 & psi > 1){
+                if((mu > 1 & psi > 1) | i == max.iter){
+                    if(i == max.iter){
+                        mu <- 1; psi <- 1
+                    }
                     break
                 }else{
                     i <- i + 1
@@ -272,7 +285,10 @@ precalcPriors <- function(L, var.prior.gamma = NULL, var.prior.pi = NULL, gamma.
                 ) /
                     (var.prior.pi * L - var.prior.pi)
                 alpha_0 <- ((L - 1) * alpha_1 * pi.mean) / (1 - pi.mean)
-                if(alpha_1 > 1 & alpha_0 > 1){
+                if((alpha_1 > 1 & alpha_0 > 1) | i == max.iter){
+                    if(i == max.iter){
+                        alpha_1 <- 1; alpha_0 <- 1
+                    }
                     break
                 }else{
                     i <- i + 1

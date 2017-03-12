@@ -5,7 +5,7 @@
 \title{precalcPriors}
 \usage{
 precalcPriors(L, var.prior.gamma = NULL, var.prior.pi = NULL,
-  gamma.mean = NULL, pi.mean = NULL)
+  gamma.mean = NULL, pi.mean = NULL, max.iter = 100)
 }
 \arguments{
 \item{L}{Number of agreement categories for \eqn{\pi_{k,l}}. Default is NULL.}
@@ -17,6 +17,9 @@ precalcPriors(L, var.prior.gamma = NULL, var.prior.pi = NULL,
 \item{gamma.mean}{Prior mean for \eqn{\gamma}}
 
 \item{pi.mean}{Prior mean for \eqn{pi_{k,l}}}
+
+\item{max.iter}{Maximum powers of 10 that should be tried to find a proper
+variance for priors before failing. Default is 100.}
 }
 \author{
 Ben Fifield <benfifield@gmail.com>
