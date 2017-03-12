@@ -1,0 +1,10 @@
+language: r
+cache: packages
+sudo: required
+
+r_build_args: --resave-data
+
+notifications:
+  email:
+    on_success: change
+    on_failure: change
