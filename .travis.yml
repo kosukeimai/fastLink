@@ -1,0 +1,8 @@
+language: r
+cache: packages
+sudo: required
+
+notifications:
+  email:
+    on_success: change
+    on_failure: change
