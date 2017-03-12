@@ -4,7 +4,7 @@ output:
   md_document:
     variant: markdown_github
 ---
-# fastLink: Fast Probabilistic Record Linkage
+# fastLink: Fast Probabilistic Record Linkage [![Build Status](https://travis-ci.com/kosukeimai/fastLink.svg?token=JxpGcfuMTdnnLSenfvSD&branch=master)](https://travis-ci.com/kosukeimai/fastLink)
 
 ## Installation Instructions
 As `fastLink` is hosted on a private Github repo, you will need a
