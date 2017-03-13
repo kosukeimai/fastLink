@@ -34,6 +34,9 @@ gammaKpar <- function(matAp, matBp, n.cores = NULL, calc.prior = FALSE, var = NU
         n.cores <- detectCores() - 1
     }
 
+    matAp[matAp == ""] <- NA
+    matBp[matBp == ""] <- NA
+
     matrix.1 <- as.matrix(as.character(matAp))
     matrix.2 <- as.matrix(as.character(matBp))
 

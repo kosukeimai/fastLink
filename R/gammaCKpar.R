@@ -37,7 +37,10 @@ gammaCKpar <- function(matAp, matBp, n.cores = NULL, cut.a = NULL, cut.p = NULL,
   	requireNamespace('stringdist')
   	requireNamespace('Matrix')
   	requireNamespace('doParallel')
-  	requireNamespace('stats')
+        requireNamespace('stats')
+
+    matAp[matAp == ""] <- NA
+    matBp[matBp == ""] <- NA
 
 	if(is.null(n.cores)) {
 		n.cores <- detectCores() - 1

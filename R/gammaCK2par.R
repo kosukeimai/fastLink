@@ -37,6 +37,9 @@ gammaCK2par <- function(matAp, matBp, n.cores = NULL, cut.a = NULL, calc.prior =
   	requireNamespace('doParallel')
   	requireNamespace('stats')
 
+    matAp[matAp == ""] <- NA
+    matBp[matBp == ""] <- NA
+    
 	if(is.null(n.cores)) {
 		n.cores <- detectCores() - 1
 	}
