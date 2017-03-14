@@ -1,8 +1,9 @@
 #!/bin/bash
 
 # Build documentation, compile C++ attributes
-R -e 'library(devtools);document()'
-R -e 'library(Rcpp);compileAttributes(verbose = TRUE)'
+R -e 'sink("src/fastLink_init.c");tools::package_native_routine_registration_skeleton(".");sink()'
+R -e 'devtools::document()'
+R -e 'Rcpp::compileAttributes(verbose = TRUE)'
 
 # Clean up src folder before build
 cd src/

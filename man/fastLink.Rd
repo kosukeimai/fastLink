@@ -60,4 +60,3 @@ verbose = TRUE)
 \author{
 Ted Enamorado <ted.enamorado@gmail.com>, Ben Fifield <benfifield@gmail.com>, and Kosuke Imai
 }
-

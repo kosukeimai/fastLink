@@ -2,8 +2,8 @@
 % Please edit documentation in R/fastLink-package.R
 \docType{package}
 \name{fastLink-package}
-\alias{fastLink}
 \alias{fastLink-package}
+\alias{fastLink}
 \title{Record Linkage under MAR}
 \description{
 This packages provides functions to perform link (merge
@@ -19,4 +19,3 @@ Ted Enamorado \email{tede@princeton.edu} and Kosuke Imai \email{kimai@princeton.
 Maintainer: Ted Enamorado \email{tede@princeton.edu}
 }
 \keyword{package}
-

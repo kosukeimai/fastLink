@@ -7,7 +7,7 @@
 #' Date: \tab 2017-01-27\cr License: \tab GPL (>= 3)\cr }
 #'
 #' @name fastLink-package
-#' @useDynLib fastLink
+#' @useDynLib fastLink, .registration = TRUE
 #' @aliases fastLink-package fastLink
 #' @docType package
 #' @author Ted Enamorado \email{tede@@princeton.edu} and Kosuke Imai \email{kimai@@princeton.edu}
