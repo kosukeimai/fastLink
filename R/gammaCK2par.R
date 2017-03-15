@@ -37,6 +37,13 @@ gammaCK2par <- function(matAp, matBp, n.cores = NULL, cut.a = NULL, calc.prior =
   	requireNamespace('doParallel')
   	requireNamespace('stats')
 
+    if(any(class(matAp) %in% c("tbl_df", "data.table"))){
+        matAp <- as.data.frame(matAp)[,1]
+    }
+    if(any(class(matBp) %in% c("tbl_df", "data.table"))){
+        matBp <- as.data.frame(matBp)[,1]
+    }
+    
     matAp[matAp == ""] <- NA
     matBp[matBp == ""] <- NA
     

@@ -61,6 +61,12 @@ fastLink <- function(df_a, df_b, varnames,
     if(length(varnames) != length(partial_match)){
         stop("There must be one entry in partial_match for each entry in varnames.")
     }
+    if(any(class(df_a) %in% c("tbl_df", "data.table"))){
+        df_a <- as.data.frame(df_a)
+    }
+    if(any(class(df_b) %in% c("tbl_df", "data.table"))){
+        df_b <- as.data.frame(df_b)
+    }
 
     ## Create gammas
     cat("Calculating matches for each variable.\n")

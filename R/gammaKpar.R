@@ -28,6 +28,13 @@
 
 gammaKpar <- function(matAp, matBp, n.cores = NULL, calc.prior = FALSE, var = NULL) {
 
+    if(any(class(matAp) %in% c("tbl_df", "data.table"))){
+        matAp <- as.data.frame(matAp)[,1]
+    }
+    if(any(class(matBp) %in% c("tbl_df", "data.table"))){
+        matBp <- as.data.frame(matBp)[,1]
+    }
+
     requireNamespace('parallel')
 
     if(is.null(n.cores)) {
