@@ -4,9 +4,9 @@
 \alias{calcMoversPriors}
 \title{calcMoversPriors}
 \usage{
-calcMoversPriors(geo.a, geo.b, year.start, year.end, L, var.prior.gamma,
+calcMoversPriors(geo.a, geo.b, year.start, year.end, L, var.prior.lambda,
   var.prior.pi = NULL, county = FALSE, state.a = NULL, state.b = NULL,
-  denom.gamma.mean = NULL, max.iter = 100)
+  denom.lambda.mean = NULL, lambda.count = FALSE, max.iter = 100)
 }
 \arguments{
 \item{geo.a}{The state code (if state = TRUE) or county name
@@ -21,9 +21,9 @@ calcMoversPriors(geo.a, geo.b, year.start, year.end, L, var.prior.gamma,
 
 \item{L}{Number of agreement categories for \eqn{\pi_{k,l}}. Default is NULL.}
 
-\item{var.prior.gamma}{User-specified variance for the prior probability on gamma.}
+\item{var.prior.lambda}{User-specified variance for the prior probability on lambda.}
 
-\item{var.prior.pi}{User-specified variance for the prior probability on gamma.}
+\item{var.prior.pi}{User-specified variance for the prior probability on lambda.}
 
 \item{county}{Whether prior is being calculated on the county or state level.
 Default is FALSE (for a state-level calculation).}
@@ -34,15 +34,19 @@ the state code of \code{geo.a}. Default is NULL.}
 \item{state.b}{If \code{county = TRUE} (indicating a county-level match),
 the state code of \code{geo.b}. Default is NULL.}
 
-\item{denom.gamma.mean}{If provided, serves as the default for calculating the
+\item{denom.lambda.mean}{If provided, serves as the default for calculating the
 prior mean of the beta distribution.}
+
+\item{lambda.count}{Whether to base the hyperparameter calculations off of
+counts of "successes" (movers) and "failures" (non-movers) instead of
+proprotions. Default is FALSE.}
 
 \item{max.iter}{Maximum powers of 10 that should be tried to find a proper
 variance for priors before failing. Default is 100.}
 }
 \description{
 calcMoversPriors estimates optimal \eqn{\alpha} and \eqn{\beta} values
-for the Beta prior on \eqn{\gamma}, and optimal \eqn{\alpha_1} and
+for the Beta prior on \eqn{\lambda}, and optimal \eqn{\alpha_1} and
 \eqn{\alpha_2} values for the Dirichlet prior on \eqn{\pi_{k,l}} when matching
 state voter files over time, using IRS movers data.
 }
