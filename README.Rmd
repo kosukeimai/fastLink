@@ -237,7 +237,7 @@ The functions `calcMoversPriors()` and `precalcPriors()` can be used to find opt
 Below, we show an example where we incorporate the auxiliary moving information for California into our estimates. First, we use `calcMoversPriors()` to estimate optimal parameter values for the priors:
 ```{r}
 priors.out <- calcMoversPriors(geo.a = "CA", geo.b = "CA", year.start = 2014, year.end = 2015, 
-                               var.prior.lambda = 0.0001, var.prior.pi = 0.1, L = 3, lambda.count = TRUE)
+                               var.prior.lambda = 0.0001, var.prior.pi = 0.1, L = 3)
 names(priors.out)
 ```
 where each entry in the list outputs the optimal parameter values for the prior distributions, estimated from the IRS data. 
