@@ -1,7 +1,7 @@
 #' calcMoversPriors
 #'
 #' calcMoversPriors estimates optimal \eqn{\alpha} and \eqn{\beta} values
-#' for the Beta prior on \eqn{\gamma}, and optimal \eqn{\alpha_1} and
+#' for the Beta prior on \eqn{\lambda}, and optimal \eqn{\alpha_1} and
 #' \eqn{\alpha_2} values for the Dirichlet prior on \eqn{\pi_{k,l}} when matching
 #' state voter files over time, using IRS movers data.
 #'
@@ -11,8 +11,8 @@
 #' (if state = FALSE) for the later of the two voter files.
 #' @param year.start The year of the voter file for geography A.
 #' @param year.end The year of the voter file for geography B.
-#' @param var.prior.gamma User-specified variance for the prior probability on gamma.
-#' @param var.prior.pi User-specified variance for the prior probability on gamma.
+#' @param var.prior.lambda User-specified variance for the prior probability on lambda.
+#' @param var.prior.pi User-specified variance for the prior probability on lambda.
 #' @param L Number of agreement categories for \eqn{\pi_{k,l}}. Default is NULL.
 #' @param county Whether prior is being calculated on the county or state level.
 #' Default is FALSE (for a state-level calculation).
@@ -20,8 +20,11 @@
 #' the state code of \code{geo.a}. Default is NULL.
 #' @param state.b If \code{county = TRUE} (indicating a county-level match),
 #' the state code of \code{geo.b}. Default is NULL.
-#' @param denom.gamma.mean If provided, serves as the default for calculating the
+#' @param denom.lambda.mean If provided, serves as the default for calculating the
 #' prior mean of the beta distribution.
+#' @param lambda.count Whether to base the hyperparameter calculations off of
+#' counts of "successes" (movers) and "failures" (non-movers) instead of
+#' proprotions. Default is FALSE.
 #' @param max.iter Maximum powers of 10 that should be tried to find a proper
 #' variance for priors before failing. Default is 100.
 #'
@@ -29,9 +32,10 @@
 #'
 #' @export
 calcMoversPriors <- function(geo.a, geo.b, year.start, year.end, L,
-                             var.prior.gamma, var.prior.pi = NULL,
+                             var.prior.lambda, var.prior.pi = NULL,
                              county = FALSE, state.a = NULL, state.b = NULL,
-                             denom.gamma.mean = NULL, max.iter = 100){
+                             denom.lambda.mean = NULL, lambda.count = FALSE,
+                             max.iter = 100){
 
     if(geo.a == geo.b & is.null(var.prior.pi)){
         stop("Please provide a prior variance for pi.")
@@ -99,10 +103,10 @@ calcMoversPriors <- function(geo.a, geo.b, year.start, year.end, L,
                               grepl("Non-migrants", inf$y1_countyname)])
         }
         ## Calculate mean
-        if(is.null(denom.gamma.mean)){
+        if(is.null(denom.lambda.mean)){
             meancalc <- b_a / (as.double(denom_a) * as.double(denom_b))
         }else{
-            meancalc <- b_a / denom.gamma.mean
+            meancalc <- b_a / denom.lambda.mean
         }
     }
 
@@ -127,7 +131,7 @@ calcMoversPriors <- function(geo.a, geo.b, year.start, year.end, L,
                         inf$n[inf$y2_statefips == infips &
                               grepl("Same State", inf$y1_state_name)])            
         }else{
-            nm_a <- outf$n[outf$y1_fips == outfips & outf$y2_fips == infips]
+            b_a <- outf$n[outf$y1_fips == outfips & outf$y2_fips == infips]
             denom_a <- (outf$n[outf$y1_fips == outfips &
                                grepl("US and Foreign", outf$y2_countyname)] + 
                         outf$n[outf$y1_fips == outfips &
@@ -137,10 +141,10 @@ calcMoversPriors <- function(geo.a, geo.b, year.start, year.end, L,
                         inf$n[inf$y2_fips == infips &
                               grepl("Non-migrants", inf$y1_countyname)])
         }
-        if(is.null(denom.gamma.mean)){
+        if(is.null(denom.lambda.mean)){
             meancalc <- b_a / (as.double(denom_a) * as.double(denom_b))
         }else{
-            meancalc <- b_a / denom.gamma.mean
+            meancalc <- b_a / denom.lambda.mean
         }
         if(!county){
             dir_mean <- m_a / (nm_a + m_a)
@@ -149,16 +153,20 @@ calcMoversPriors <- function(geo.a, geo.b, year.start, year.end, L,
             dir_mean <- tab$est[tab$state == state.a]
         }
     }
+    if(lambda.count){
+        success.counts <- b_a
+        failure.counts <- min(denom_a, denom_b) - b_a
+    }
 
     ## Get optimal parameters
-    mu <- meancalc^2 * ((1 - meancalc)/var.prior.gamma - (1/meancalc))
+    mu <- meancalc^2 * ((1 - meancalc)/var.prior.lambda - (1/meancalc))
     psi <- mu * (1/meancalc - 1)
     if(mu < 1 | psi < 1){
-        cat("Your provided variance for gamma is too large given the observed mean. The function will adaptively choose a new prior variance.\n")
+        cat("Your provided variance for lambda is too large given the observed mean. The function will adaptively choose a new prior variance.\n")
         i <- 1
         repeat{
-            var.prior.gamma <- 1/(10^i)
-            mu <- meancalc^2 * ((1 - meancalc)/var.prior.gamma - (1/meancalc))
+            var.prior.lambda <- 1/(10^i)
+            mu <- meancalc^2 * ((1 - meancalc)/var.prior.lambda - (1/meancalc))
             psi <- mu * (1/meancalc - 1)
             if((mu > 1 & psi > 1) | i == max.iter){
                 if(i == max.iter){
@@ -201,12 +209,20 @@ calcMoversPriors <- function(geo.a, geo.b, year.start, year.end, L,
 
     out <- list()
     if(geo.a == geo.b){
-        out[["gamma_prior"]] <- list(mu = mu, psi = psi)
+        if(!lambda.count){
+            out[["lambda_prior"]] <- list(mu = mu, psi = psi)
+        }else{
+            out[["lambda_prior"]] <- list(mu = success.counts, psi = failure.counts)
+        }
         out[["pi_prior"]] <- list(alpha_0 = alpha_0, alpha_1 = alpha_1)
-        out[["parameter_values"]] <- list(gamma.mean = meancalc, gamma.var = var.prior.gamma, pi.mean = dir_mean, pi.var = var.prior.pi)
+        out[["parameter_values"]] <- list(lambda.mean = meancalc, lambda.var = var.prior.lambda, pi.mean = dir_mean, pi.var = var.prior.pi)
     }else{
-        out[["gamma_prior"]] <- list(mu = mu, psi = psi)
-        out[["parameter_values"]] <- list(gamma.mean = meancalc, gamma.var = var.prior.gamma)
+        if(!lambda.count){
+            out[["lambda_prior"]] <- list(mu = mu, psi = psi)
+        }else{
+            out[["lambda_prior"]] <- list(mu = success.counts, psi = failure.counts)
+        }
+        out[["parameter_values"]] <- list(lambda.mean = meancalc, lambda.var = var.prior.lambda)
     }
 
     return(out)
@@ -216,14 +232,14 @@ calcMoversPriors <- function(geo.a, geo.b, year.start, year.end, L,
 #' precalcPriors
 #'
 #' precalcPriors calculates optimal \eqn{\alpha} and \eqn{\beta} values
-#' for the Beta prior on \eqn{\gamma}, and optimal \eqn{\alpha_1} and
+#' for the Beta prior on \eqn{\lambda}, and optimal \eqn{\alpha_1} and
 #' \eqn{\alpha_2} values for the Dirichlet prior on \eqn{\pi_{k,l},
 #' when the prior means for those parameters are already known.
 #'
 #' @param L Number of agreement categories for \eqn{\pi_{k,l}}. Default is NULL.
-#' @param var.prior.gamma User-specified variance for the prior probability on gamma.
+#' @param var.prior.lambda User-specified variance for the prior probability on lambda.
 #' @param var.prior.pi User-specified variance for the prior probability on pi.
-#' @param gamma.mean Prior mean for \eqn{\gamma}
+#' @param lambda.mean Prior mean for \eqn{\lambda}
 #' @param pi.mean Prior mean for \eqn{pi_{k,l}}
 #' @param max.iter Maximum powers of 10 that should be tried to find a proper
 #' variance for priors before failing. Default is 100.
@@ -231,30 +247,30 @@ calcMoversPriors <- function(geo.a, geo.b, year.start, year.end, L,
 #' @author Ben Fifield <benfifield@gmail.com>
 #'
 #' @export
-precalcPriors <- function(L, var.prior.gamma = NULL, var.prior.pi = NULL, gamma.mean = NULL, pi.mean = NULL, max.iter = 100){
+precalcPriors <- function(L, var.prior.lambda = NULL, var.prior.pi = NULL, lambda.mean = NULL, pi.mean = NULL, max.iter = 100){
 
-    if(is.null(gamma.mean) & is.null(pi.mean)){
-        stop("Provide an argument for either 'pi.mean' or 'gamma.mean'")
+    if(is.null(lambda.mean) & is.null(pi.mean)){
+        stop("Provide an argument for either 'pi.mean' or 'lambda.mean'")
     }
-    if(!is.null(gamma.mean) & is.null(var.prior.gamma)){
-        stop("Please provide a prior variance for gamma.")
+    if(!is.null(lambda.mean) & is.null(var.prior.lambda)){
+        stop("Please provide a prior variance for lambda.")
     }
     if(!is.null(pi.mean) & is.null(var.prior.pi)){
         stop("Please provide a prior variance for pi.")
     }
 
-    ## Calculate gamma priors
+    ## Calculate lambda priors
     out <- list()
-    if(!is.null(gamma.mean)){
-        mu <- gamma.mean^2 * ((1 - gamma.mean)/var.prior.gamma - (1/gamma.mean))
-        psi <- mu * (1/gamma.mean - 1)
+    if(!is.null(lambda.mean)){
+        mu <- lambda.mean^2 * ((1 - lambda.mean)/var.prior.lambda - (1/lambda.mean))
+        psi <- mu * (1/lambda.mean - 1)
         if(mu < 1 | psi < 1){
-            cat("Your provided variance for gamma is too large given the observed mean. The function will adaptively choose a new prior variance.\n")
+            cat("Your provided variance for lambda is too large given the observed mean. The function will adaptively choose a new prior variance.\n")
             i <- 1
             repeat{
-                var.prior.gamma <- 1/(10^i)
-                mu <- gamma.mean^2 * ((1 - gamma.mean)/var.prior.gamma - (1/gamma.mean))
-                psi <- mu * (1/gamma.mean - 1)
+                var.prior.lambda <- 1/(10^i)
+                mu <- lambda.mean^2 * ((1 - lambda.mean)/var.prior.lambda - (1/lambda.mean))
+                psi <- mu * (1/lambda.mean - 1)
                 if((mu > 1 & psi > 1) | i == max.iter){
                     if(i == max.iter){
                         mu <- 1; psi <- 1
@@ -265,7 +281,7 @@ precalcPriors <- function(L, var.prior.gamma = NULL, var.prior.pi = NULL, gamma.
                 }
             }
         }
-        out[["gamma_prior"]] <- list(mu = mu, psi = psi)
+        out[["lambda_prior"]] <- list(mu = mu, psi = psi)
     }
 
     ## Calculate pi priors
@@ -297,10 +313,10 @@ precalcPriors <- function(L, var.prior.gamma = NULL, var.prior.pi = NULL, gamma.
         }
         out[["pi_prior"]] <- list(alpha_0 = alpha_0, alpha_1 = alpha_1)
     }
-    if(!is.null(gamma.mean) & !is.null(pi.mean)){
-        out[["parameter_values"]] <- list(gamma.mean = gamma.mean, gamma.var = var.prior.gamma, pi.mean = pi.mean, pi.var = var.prior.pi)
-    }else if(!is.null(gamma.mean)){
-        out[["parameter_values"]] <- list(gamma.mean = gamma.mean, gamma.var = var.prior.gamma)
+    if(!is.null(lambda.mean) & !is.null(pi.mean)){
+        out[["parameter_values"]] <- list(lambda.mean = lambda.mean, lambda.var = var.prior.lambda, pi.mean = pi.mean, pi.var = var.prior.pi)
+    }else if(!is.null(lambda.mean)){
+        out[["parameter_values"]] <- list(lambda.mean = lambda.mean, lambda.var = var.prior.lambda)
     }else if(!is.null(pi.mean)){
         out[["parameter_values"]] <- list(pi.mean = pi.mean, pi.var = var.prior.pi)
     }

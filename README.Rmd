@@ -228,7 +228,7 @@ dfB.match <- dfB[matches.out[,2],]
 The `fastLink` algorithm also includes several ways to incorporate auxiliary
 information on migration behavior to inform the matching of data sets over time. Auxiliary information is incorporated into the estimation as priors on two parameters of the model:
 
-- $$\gamma$$: The probability that a randomly selected pair of observations from dataset A and dataset B are a true match. When matching, for example, the same state to itself in subsequent years, the prior for this quantity is equal to the number of non-movers to the number of in-state movers, divided by the size of the cross-product of A and B. When matching two different states in subsequent years to find movers, the numerator is the size of the outflow from state A to state B, divided by the size of the cross-product of A and B.
+- $$\lambda$$: The probability that a randomly selected pair of observations from dataset A and dataset B are a true match. When matching, for example, the same state to itself in subsequent years, the prior for this quantity is equal to the number of non-movers to the number of in-state movers, divided by the size of the cross-product of A and B. When matching two different states in subsequent years to find movers, the numerator is the size of the outflow from state A to state B, divided by the size of the cross-product of A and B.
 
 - $$\pi_{k,l}$$: The probability that an address field does not match conditional on being in the matched set. Specified when trying to find movers within the same geography over time. For example, when trying to find movers within the same state over time, this quantity is equal to the estimated number of in-state movers divided by the number of in-state movers and non-movers.
 
@@ -237,12 +237,12 @@ The functions `calcMoversPriors()` and `precalcPriors()` can be used to find opt
 Below, we show an example where we incorporate the auxiliary moving information for California into our estimates. First, we use `calcMoversPriors()` to estimate optimal parameter values for the priors:
 ```{r}
 priors.out <- calcMoversPriors(geo.a = "CA", geo.b = "CA", year.start = 2014, year.end = 2015, 
-                               var.prior.gamma = 0.0001, var.prior.pi = 0.1, L = 3)
+                               var.prior.lambda = 0.0001, var.prior.pi = 0.1, L = 3, lambda.count = TRUE)
 names(priors.out)
 ```
 where each entry in the list outputs the optimal parameter values for the prior distributions, estimated from the IRS data. 
 
-If the provided variances are too large (forcing the parameter values for the $$\gamma$$ prior or the $$\pi_{k,l}$$ prior below 1), the function will choose new parameter values by testing the sequence $$1/(10^i)$$ to find new variance values that satisfy those restrictions. The means and variances used to calculate optimal paramter values can be viewed in the `parameter_values` field of the `calcMoversPriors()` and `precalcPriors()` output.
+If the provided variances are too large (forcing the parameter values for the $$\lambda$$ prior or the $$\pi_{k,l}$$ prior below 1), the function will choose new parameter values by testing the sequence $$1/(10^i)$$ to find new variance values that satisfy those restrictions. The means and variances used to calculate optimal paramter values can be viewed in the `parameter_values` field of the `calcMoversPriors()` and `precalcPriors()` output.
 
 The `calcMoversPriors()` function accepts the following functions:
 
@@ -256,7 +256,7 @@ The `calcMoversPriors()` function accepts the following functions:
 
 - `L`: The number of matching categories for address. For instance, if partial matches are being calculated, L = 3 (no match, partial match, full match)
 
-- `var.prior.gamma`: The prior variance for gamma
+- `var.prior.lambda`: The prior variance for lambda
 
 - `var.prior.pi`: The prior variance for pi
 
@@ -266,17 +266,17 @@ The `calcMoversPriors()` function accepts the following functions:
 
 - `state.b`: If `county = TRUE`, the name of the state for `geo.b`
 
-- `denom.gamma.mean`: If known, the denominator for the prior mean of gamma. Can be set as the size of the cross-product of dataset A and dataset B
+- `denom.lambda.mean`: If known, the denominator for the prior mean of lambda. Can be set as the size of the cross-product of dataset A and dataset B
 
 If the prior means are already known and do not need to be estimated from the IRS data, the user can run `precalcPriors()`, which will calculate the same paramters from that data. `precalcPriors()` takes the following arguments:
 
 - `L`: The number of matching categories for address. For instance, if partial matches are being calculated, L = 3 (no match, partial match, full match)
 
-- `gamma.mean`: The estimated prior mean for gamma
+- `lambda.mean`: The estimated prior mean for lambda
 
 - `pi.mean`: The estimated prior mean for pi
 
-- `var.prior.gamma`: The prior variance for gamma
+- `var.prior.lambda`: The prior variance for lambda
 
 - `var.prior.pi`: The prior variance for pi
 
@@ -298,7 +298,7 @@ where `priors_obj` is an input for the the optimal prior parameters calculated b
 If we are running the algorithm step-by-step, we can incorporate the prior information into the EM algorithm as follows:
 ```{r}
 em.out.aux <- emlinkMARmov(tc, 
-                           psi = priors.out$gamma_prior$psi, mu = priors.out$gamma_prior$mu,
+                           psi = priors.out$lambda_prior$psi, mu = priors.out$lambda_prior$mu,
                            alpha0 = priors.out$pi_prior$alpha_0, alpha1 = priors.out$pi_prior$alpha_1,
                            address_field = c(FALSE, FALSE, FALSE, TRUE, TRUE, FALSE, FALSE))
 ```

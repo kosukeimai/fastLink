@@ -4,17 +4,17 @@
 \alias{precalcPriors}
 \title{precalcPriors}
 \usage{
-precalcPriors(L, var.prior.gamma = NULL, var.prior.pi = NULL,
-  gamma.mean = NULL, pi.mean = NULL, max.iter = 100)
+precalcPriors(L, var.prior.lambda = NULL, var.prior.pi = NULL,
+  lambda.mean = NULL, pi.mean = NULL, max.iter = 100)
 }
 \arguments{
 \item{L}{Number of agreement categories for \eqn{\pi_{k,l}}. Default is NULL.}
 
-\item{var.prior.gamma}{User-specified variance for the prior probability on gamma.}
+\item{var.prior.lambda}{User-specified variance for the prior probability on lambda.}
 
 \item{var.prior.pi}{User-specified variance for the prior probability on pi.}
 
-\item{gamma.mean}{Prior mean for \eqn{\gamma}}
+\item{lambda.mean}{Prior mean for \eqn{\lambda}}
 
 \item{pi.mean}{Prior mean for \eqn{pi_{k,l}}}
 

@@ -115,9 +115,9 @@ fastLink <- function(df_a, df_b, varnames,
         alpha0 <- NULL; alpha1 <- NULL
         address_field <- rep(FALSE, length(varnames))
     }else{
-        if("gamma_prior" %in% names(priors_obj)){
-            mu <- priors_obj$gamma_priors$mu
-            psi <- priors_obj$gamma_priors$psi
+        if("lambda_prior" %in% names(priors_obj)){
+            mu <- priors_obj$lambda_priors$mu
+            psi <- priors_obj$lambda_priors$psi
         }else{
             mu <- NULL; psi <- NULL
         }
