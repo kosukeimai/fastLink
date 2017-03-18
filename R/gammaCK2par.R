@@ -46,6 +46,13 @@ gammaCK2par <- function(matAp, matBp, n.cores = NULL, cut.a = NULL, calc.prior =
     
     matAp[matAp == ""] <- NA
     matBp[matBp == ""] <- NA
+
+    if(sum(is.na(matAp)) == length(matAp) | length(unique(matAp)) == 1){
+        stop("You have no variation in this variable, or all observations are missing in dataset A.")
+    }
+    if(sum(is.na(matBp)) == length(matBp) | length(unique(matBp)) == 1){
+        stop("You have no variation in this variable, or all observations are missing in dataset B.")
+    }
     
 	if(is.null(n.cores)) {
 		n.cores <- detectCores() - 1

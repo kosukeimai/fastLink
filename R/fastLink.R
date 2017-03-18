@@ -73,6 +73,12 @@ fastLink <- function(df_a, df_b, varnames,
     start <- Sys.time()
     gammalist <- vector(mode = "list", length = length(varnames))
     for(i in 1:length(gammalist)){
+        if(sum(is.na(df_a[,varnames[i]])) == nrow(df_a) | length(unique(df_a[,varnames[i]])) == 1){
+            stop(paste("You have no variation in dataset A for", varnames[i], "or all observations are missing."))
+        }
+        if(sum(is.na(df_b[,varnames[i]])) == nrow(df_b) | length(unique(df_b[,varnames[i]])) == 1){
+            stop(paste("You have no variation in dataset B for", varnames[i], "or all observations are missing."))
+        }
         if(stringdist_match[i]){
             if(partial_match[i]){
                 gammalist[[i]] <- gammaCKpar(df_a[,varnames[i]], df_b[,varnames[i]], n.cores = n.cores)
