@@ -45,7 +45,7 @@ emlinkMARmov <- function(patterns, p.m = NULL, p.gamma.k.m = NULL, p.gamma.k.u =
   nfeatures <- ncol(patterns) - 1
 
   ## Patterns:
-  gamma.j.k <- patterns[, 1:nfeatures]
+  gamma.j.k <- as.matrix(patterns[, 1:nfeatures])
 
   ## Patterns counts:
   n.j <- as.matrix(patterns[, (nfeatures + 1)]) # Counts
