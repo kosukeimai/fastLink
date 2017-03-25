@@ -20,7 +20,8 @@ Imports:
     stringdist,
     stringr,
     Rcpp (>= 0.12.9),
-    RcppEigen (>= 0.3.2.9.0)
+    RcppEigen (>= 0.3.2.9.0),
+    Hmisc
 Depends:
     Matrix,
     parallel,
@@ -29,7 +30,8 @@ Depends:
     gtools,
     data.table,
     stringdist,
-    stringr
+    stringr,
+    Hmisc
 LinkingTo: RcppArmadillo, Rcpp, RcppEigen
 Encoding: UTF-8
 LazyData: true

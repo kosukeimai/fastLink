@@ -179,3 +179,58 @@ summary.fastLink <- function(object, thresholds = c(.95, .85, .75), weighted = T
     return(tab)
 }
 
+#' Aggregate EM objects for a single summary
+#'
+#' \code{aggregate.EM} aggregates EM objects to create a single statewide summary.
+#'
+#' @usage aggregate.EM(object)
+#' @param object A list of lists, where each sub-list contains three entries:
+#' EM (the EM object), nobs_a (the number of observations in dataset A) and
+#' nobs_b (the number of observations in dataset B)
+#' 
+#' @export
+aggregate.EM <- function(object){
+
+    ## Set up containers
+    gamma.ind <- grep("gamma.[[:digit:]]", names(object[[1]]$EM))
+    em.agg <- object[[1]]$EM[,gamma.ind]
+    em.agg$counts <- object[[1]]$EM$counts
+    em.agg$weights <- object[[1]]$EM$weights
+    em.agg$zeta.j <- object[[1]]$EM$zeta.j
+    n <- rep(NA, length(object))
+    n[1] <- min(object[[1]]$nobs_a, object[[1]]$nobs_b)
+
+    ## Loop over remainders
+    for(i in 2:length(object)){
+        em.sub <- object[[i]]$EM[,gamma.ind]
+        em.sub$counts <- object[[i]]$EM$counts
+        em.sub$weights <- object[[i]]$EM$weights
+        em.sub$zeta.j <- object[[i]]$EM$zeta.j
+        em.agg <- merge(
+            em.agg, em.sub, by = paste0("gamma.", gamma.ind), all = TRUE
+        )
+        n[i] <- min(object[[i]]$nobs_a, object[[i]]$nobs_b)
+    }
+
+    ## Aggregate
+    counts.agg <- rep(NA, nrow(em.agg))
+    counts.inds <- grep("counts.", names(em.agg))
+    weights.agg <- rep(NA, nrow(em.agg))
+    weights.inds <- grep("weights.", names(em.agg))
+    zeta.j.agg <- rep(NA, nrow(em.agg))
+    zeta.inds <- grep("zeta.j", names(em.agg))
+    for(i in 1:nrow(em.agg)){
+        counts.agg[i] <- sum(em.agg[i, counts.inds], na.rm = TRUE)
+        weights.agg[i] <- wtd.mean(em.agg[i, weights.inds], n, na.rm = TRUE)
+        zeta.j.agg[i] <- wtd.mean(em.agg[i, zeta.inds], n, na.rm = TRUE)
+    }
+    em.agg.out <- em.agg[,gamma.ind]
+    em.agg.out$counts <- counts.agg
+    em.agg.out$weights <- weights.agg
+    em.agg.out$zeta.j <- zeta.j.agg
+    em.agg.out <- em.agg.out[order(em.agg.out$zeta.j),]
+    return(em.agg.out)
+
+}
+
+
