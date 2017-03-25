@@ -24,3 +24,4 @@ variance for priors before failing. Default is 100.}
 \author{
 Ben Fifield <benfifield@gmail.com>
 }
+

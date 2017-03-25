@@ -36,3 +36,4 @@ Missing at Random (MAR) assumption.
 \author{
 Ted Enamorado <ted.enamorado@gmail.com> and Kosuke Imai
 }
+

@@ -36,3 +36,4 @@ g1 <- gammaCKpar(dfA$firstname, dfB$lastname)
 \author{
 Ted Enamorado <ted.enamorado@gmail.com>, Ben Fifield <benfifield@gmail.com>, and Kosuke Imai
 }
+

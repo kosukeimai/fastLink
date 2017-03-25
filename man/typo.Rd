@@ -17,3 +17,4 @@ exercises that can be found in Enamorado and Imai (Nd)
 \author{
 Ted Enamorado <ted.enamorado@gmail.com> and Kosuke Imai
 }
+
