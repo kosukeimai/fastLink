@@ -181,15 +181,15 @@ summary.fastLink <- function(object, thresholds = c(.95, .85, .75), weighted = T
 
 #' Aggregate EM objects for a single summary
 #'
-#' \code{aggregate.EM} aggregates EM objects to create a single statewide summary.
+#' \code{aggregateEM} aggregates EM objects to create a single statewide summary.
 #'
-#' @usage aggregate.EM(object)
+#' @usage aggregateEM(object)
 #' @param object A list of lists, where each sub-list contains three entries:
 #' EM (the EM object), nobs_a (the number of observations in dataset A) and
 #' nobs_b (the number of observations in dataset B)
 #' 
 #' @export
-aggregate.EM <- function(object){
+aggregateEM <- function(object){
 
     ## Set up containers
     gamma.ind <- grep("gamma.[[:digit:]]", names(object[[1]]$EM))
