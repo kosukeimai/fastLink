@@ -147,16 +147,16 @@ summary.fastLink <- function(object, thresholds = c(.95, .85, .75), weighted = T
         w.out <- as.data.frame(do.call(rbind, lapply(within, function(x){summarize.em(x, thresholds = thresholds)})))
         if("across" %in% names(object)){
             across <- object[["across"]]
-            a.out <- as.data.frame(do.call(rbind, lapply(across, function(x){summarize.em(x$EM, thresholds = thresholds)})))
+            a.out <- as.data.frame(do.call(rbind, lapply(across, function(x){summarize.em(x, thresholds = thresholds)})))
             ## Combine
-            out <- list(within = data.frame(t(colSums(w.out))), across = data.frame(t(colSums(t(a.out)))))
+            out <- list(within = data.frame(t(colSums(w.out))), across = data.frame(t(colSums(a.out))))
         }else{
             out <- data.frame(t(colSums(w.out)))
         }
         out.agg <- summarize.agg(out, weighted = weighted)
     }
 
-    if(length(out.agg) == 2){
+    if(class(object) == "list" & "across" %in% names(object)){
         tab <- as.data.frame(
           rbind(round.pct(out.agg$pooled$matches), round.pct(out.agg$within$matches),
                 round.pct(out.agg$across$matches),
@@ -201,15 +201,17 @@ aggregateEM <- function(object){
     n[1] <- min(object[[1]]$nobs_a, object[[1]]$nobs_b)
 
     ## Loop over remainders
-    for(i in 2:length(object)){
-        em.sub <- object[[i]]$EM[,gamma.ind]
-        em.sub$counts <- object[[i]]$EM$counts
-        em.sub$weights <- object[[i]]$EM$weights
-        em.sub$zeta.j <- object[[i]]$EM$zeta.j
-        em.agg <- merge(
-            em.agg, em.sub, by = paste0("gamma.", gamma.ind), all = TRUE
-        )
-        n[i] <- min(object[[i]]$nobs_a, object[[i]]$nobs_b)
+    if(length(object) > 1){
+      for(i in 2:length(object)){
+          em.sub <- object[[i]]$EM[,gamma.ind]
+          em.sub$counts <- object[[i]]$EM$counts
+          em.sub$weights <- object[[i]]$EM$weights
+          em.sub$zeta.j <- object[[i]]$EM$zeta.j
+          em.agg <- merge(
+              em.agg, em.sub, by = paste0("gamma.", gamma.ind), all = TRUE
+          )
+          n[i] <- min(object[[i]]$nobs_a, object[[i]]$nobs_b)
+      }
     }
 
     ## Aggregate
