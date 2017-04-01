@@ -2,6 +2,7 @@
 
 export(aggregateEM)
 export(calcMoversPriors)
+export(clusterWordEmbed)
 export(deletion)
 export(emlinkMARmov)
 export(fastLink)
