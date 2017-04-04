@@ -19,12 +19,10 @@
 #' @author Ted Enamorado <ted.enamorado@gmail.com> and Kosuke Imai
 #'
 #' @export
-
-## -----------------------------------
-## Function: EM Algorithm under MAR
-## -----------------------------------
-emlinkMARmov <- function(patterns, nobs.a, nobs.b, p.m = 0.1, iter.max = 5000, tol = 1e-5, p.gamma.k.m = NULL, p.gamma.k.u = NULL,
-                         adaptive.lambda = FALSE, est.lambda = NULL, c.lambda = NULL) {
+emlinkMARmov <- function(patterns, nobs.a, nobs.b,
+                         p.m = 0.1, iter.max = 5000, tol = 1e-5, p.gamma.k.m = NULL, p.gamma.k.u = NULL,
+                         prior.lambda = NULL, w.lambda = NULL, 
+                         prior.pi = NULL, w.pi = NULL, address.field = NULL, l.address = NULL) {
 
     options(digits=16)
 
@@ -55,27 +53,35 @@ emlinkMARmov <- function(patterns, nobs.a, nobs.b, p.m = 0.1, iter.max = 5000, t
 
     ## Starting values if not provided by the user
     ## mu, psi
-    if(adaptive.lambda){
-        mu <- est.lambda * c.lambda * nobs.a * nobs.b + 1
-        psi <- (mu - c.lambda * mu)/c.lambda
+    if(!is.null(prior.lambda)){
+        if(is.null(w.lambda)){
+            stop("If providing a prior for lambda, please specify the weight using `w.lambda`.")
+        }
+        if(w.lambda < 0 | w.lambda > 1){
+            stop("w.lambda must be between 0 and 1.")
+        }
+        if(w.lambda == 1){
+            w.lambda <- 1 - 1e-05
+        }
+        c.lambda <- w.lambda / (1 - w.lambda)
+        mu <- prior.lambda * c.lambda * nobs.a * nobs.b + 1
+        psi <- (1 - prior.lambda) * mu / prior.lambda
+        if(w.lambda == 0){
+            psi <- 1
+            mu <- 1
+        }
     }else{
         psi <- 1
         mu <- 1
     }
 
-    ## alpha0
-    ## if (is.null(alpha0)) {
-    alpha0 <- 1
-    ## }
-
-    ## alpha1
-    ## if (is.null(alpha1)) {
-    alpha1 <- 1
-    ## }
-
-    ## address indicator
-    ## if (is.null(address_field)) {
-    address_field <- rep(FALSE, (nfeatures))
+    ## ## alpha0, alpha1
+    ## if(adaptive.pi){
+    ##     c.pi <- w.pi / (1 - w.pi)
+    ## }else{
+    ##     alpha0 <- 1
+    ##     alpha1 <- 1
+    ##     address_field <- rep(FALSE, nfeatures)
     ## }
 
     ## Overall Prob of finding a Match
@@ -181,6 +187,14 @@ emlinkMARmov <- function(patterns, nobs.a, nobs.b, p.m = 0.1, iter.max = 5000, t
         p.m <- exp(l.p.m)
         p.u <- 1 - p.m
 
+        ## ## Update alphas
+        ## if(adaptive.pi){
+        ##     k <- min(which(address_field == TRUE))
+        ##     s <- sum(num.prod * ifelse(is.na(gamma.j.k[, k]), 0, 1) * ifelse(is.na(gamma.j.k[, k]), 0, ifelse(gamma.j.k[, k] == 0, 1, 0)))
+        ##     alpha1 <- (c.pi * s * prior.pi - prior.pi + 1) / ((l.address - 1) * prior.pi)
+        ##     alpha0 <- ((l.address - 1) * alpha1 * prior.pi) / (1 - prior.pi)
+        ## }
+
         for (i in 1:nfeatures) {
             temp.01 <- temp.02 <- gamma.j.k[, i]
             temp.1 <- unique(na.omit(temp.01))
@@ -224,8 +238,4 @@ emlinkMARmov <- function(patterns, nobs.a, nobs.b, p.m = 0.1, iter.max = 5000, t
                  "p.gamma.j.m" = p.gamma.j.m, "p.gamma.j.u" = p.gamma.j.u, "patterns.w" = data.w, "count" = count)
     return(output)
 }
-
-## ------------------------
-## End of emlinkMAR
-## ------------------------
 
