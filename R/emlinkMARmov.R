@@ -5,16 +5,22 @@
 #'
 #' @param patterns table that holds the counts for each unique agreement
 #' pattern. This object is produced by the function: tableCounts.
-#'
-#' @param p.m probability of finding a match
 #' @param nobs.a Number of observations in dataset A
 #' @param nobs.b Number of observations in dataset B
+#' @param p.m probability of finding a match. Default is 0.1
+#' @param iter.max Max number of iterations. Default is 5000
+#' @param tol Convergence tolerance. Default is 1e-05
 #' @param p.gamma.k.m probability that conditional of being in the matched set we observed a specific agreement value for field k.
 #' @param p.gamma.k.u probability that conditional of being in the non-matched set we observed a specific agreement value for field k.
-#' @param tol convergence tolerance
-#' @param iter.max Max Number of Iterations (5000 by default)
-#' @param address_field Binary indicators for whether a given field is an address field. To be used when 'alpha0' and 'alpha1' are specified.
-#' Default is 0 for all fields. Address fields should be set to 1 while non-address fields are set to 0.
+#' @param prior.lambda The prior probability of finding a match, derived from auxiliary data.
+#' @param w.lambda How much weight to give the prior on lambda versus the data. Must range between 0 (no weight on prior) and 1 (weight fully on prior)
+#' @param prior.pi The prior probability of the address field not matching, conditional on being in the matched set. To be used when the
+#' share of movers in the population is known with some certainty.
+#' @param w.pi How much weight to give the prior on pi versus the data. Must range between 0 (no weight on prior) and 1 (weight fully on prior)
+#' @param address.field Boolean indicators for whether a given field is an address field. Default is FALSE for all fields.
+#' Address fields should be set to TRUE while non-address fields are set to FALSE.
+#' @param l.address The number of possible matching categories used for address fields. If a binary yes/no match, \code{l.address} = 2,
+#' while if a partial match category is included, \code{l.address} = 3
 #'
 #' @author Ted Enamorado <ted.enamorado@gmail.com> and Kosuke Imai
 #'
@@ -75,14 +81,29 @@ emlinkMARmov <- function(patterns, nobs.a, nobs.b,
         mu <- 1
     }
 
-    ## ## alpha0, alpha1
-    ## if(adaptive.pi){
-    ##     c.pi <- w.pi / (1 - w.pi)
-    ## }else{
-    ##     alpha0 <- 1
-    ##     alpha1 <- 1
-    ##     address_field <- rep(FALSE, nfeatures)
-    ## }
+    ## alpha0, alpha1
+    if(!is.null(prior.pi)){
+        if(is.null(w.pi)){
+            stop("If providing a prior for pi, please specify the weight using `w.pi`.")
+        }
+        if(w.pi < 0 | w.pi > 1){
+            stop("w.pi must be between 0 and 1.")
+        }
+        if(w.pi == 1){
+            w.pi <- 1 - 1e-05
+        }
+        c.pi <- w.pi / (1 - w.pi)
+        alpha0 <- est.pi * (c.pi + 1) - est.pi + 1
+        alpha1 <- alpha1 * (1 - est.pi) / est.pi * (l.address)
+        if(w.pi == 0){
+            alpha0 <- 1
+            alpha1 <- 1
+        }
+    }else{
+        alpha0 <- 1
+        alpha1 <- 1
+        address.field <- rep(FALSE, nfeatures)
+    }
 
     ## Overall Prob of finding a Match
     p.u <- 1 - p.m
@@ -187,21 +208,13 @@ emlinkMARmov <- function(patterns, nobs.a, nobs.b,
         p.m <- exp(l.p.m)
         p.u <- 1 - p.m
 
-        ## ## Update alphas
-        ## if(adaptive.pi){
-        ##     k <- min(which(address_field == TRUE))
-        ##     s <- sum(num.prod * ifelse(is.na(gamma.j.k[, k]), 0, 1) * ifelse(is.na(gamma.j.k[, k]), 0, ifelse(gamma.j.k[, k] == 0, 1, 0)))
-        ##     alpha1 <- (c.pi * s * prior.pi - prior.pi + 1) / ((l.address - 1) * prior.pi)
-        ##     alpha0 <- ((l.address - 1) * alpha1 * prior.pi) / (1 - prior.pi)
-        ## }
-
         for (i in 1:nfeatures) {
             temp.01 <- temp.02 <- gamma.j.k[, i]
             temp.1 <- unique(na.omit(temp.01))
             temp.2 <- rep(alpha1, (length(temp.1) - 1))
             temp.3 <- c(alpha0, temp.2)
             for (l in 1:length(temp.1)) {
-                p.gamma.k.m[[i]][l] <- (sum(num.prod * ifelse(is.na(gamma.j.k[, i]), 0, 1) * ifelse(is.na(gamma.j.k[, i]), 0, ifelse(gamma.j.k[, i] == temp.1[l], 1, 0))) + address_field[i] * (temp.3[l] - 1))/ (sum(num.prod * ifelse(is.na(gamma.j.k[, i]), 0, 1)) + (address_field[i]  * sum(temp.3 - 1)))
+                p.gamma.k.m[[i]][l] <- (sum(num.prod * ifelse(is.na(gamma.j.k[, i]), 0, 1) * ifelse(is.na(gamma.j.k[, i]), 0, ifelse(gamma.j.k[, i] == temp.1[l], 1, 0))) + address.field[i] * (temp.3[l] - 1))/ (sum(num.prod * ifelse(is.na(gamma.j.k[, i]), 0, 1)) + (address.field[i]  * sum(temp.3 - 1)))
                 p.gamma.k.u[[i]][l] <- sum((n.j - num.prod) * ifelse(is.na(gamma.j.k[, i]), 0, 1) * ifelse(is.na(gamma.j.k[, i]), 0, ifelse(gamma.j.k[, i] == temp.1[l], 1, 0)))/sum((n.j - num.prod) * ifelse(is.na(gamma.j.k[, i]), 0, 1))
             }
         }
