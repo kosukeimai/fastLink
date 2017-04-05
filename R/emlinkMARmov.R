@@ -70,8 +70,11 @@ emlinkMARmov <- function(patterns, nobs.a, nobs.b,
             w.lambda <- 1 - 1e-05
         }
         c.lambda <- w.lambda / (1 - w.lambda)
-        mu <- prior.lambda * c.lambda * nobs.a * nobs.b + 1
-        psi <- (1 - prior.lambda) * mu / prior.lambda
+        mu <- prior.lambda * c.lambda^2 * nobs.a * nobs.b / (1 - 2 * prior.lambda)
+        psi <- mu * (1 - prior.lambda) / prior.lambda
+        cat("c =", c.lambda, "\n")
+        cat("specified prior =", prior.lambda, "\n")
+        cat("estimated prior =", mu / (mu + psi), "\n")
         if(w.lambda == 0){
             psi <- 1
             mu <- 1
@@ -93,8 +96,14 @@ emlinkMARmov <- function(patterns, nobs.a, nobs.b,
             w.pi <- 1 - 1e-05
         }
         c.pi <- w.pi / (1 - w.pi)
-        alpha0 <- est.pi * (c.pi + 1) - est.pi + 1
-        alpha1 <- alpha1 * (1 - est.pi) / est.pi * (l.address)
+        alpha0 <- prior.pi * (c.pi + 1) - prior.pi + 1
+        alpha1 <- (alpha0 * (1 - prior.pi)) / (prior.pi * (l.address - 1))
+        cat("alpha0 =", alpha0, "\n")
+        cat("alpha1 =", alpha1, "\n")
+        cat("specified prior =", prior.pi, "\n")
+        cat("estimated prior =", alpha0 / (alpha0 + (l.address - 1) * alpha1), "\n")
+        cat("specified c =", c.pi, "\n")
+        cat("esitmated c =", (alpha0 - 1) * (alpha0 + (l.address - 1) * alpha1) / alpha0, "\n")
         if(w.pi == 0){
             alpha0 <- 1
             alpha1 <- 1
@@ -247,8 +256,8 @@ emlinkMARmov <- function(patterns, nobs.a, nobs.b,
     colnames(data.w)[nc-1] <- "p.gamma.j.m"
     colnames(data.w)[nc] <- "p.gamma.j.u"
 
-    output<-list("zeta.j"= zeta.j,"p.m"= p.m, "p.u" = p.u, "p.gamma.k.m" = p.gamma.k.m, "p.gamma.k.u" = p.gamma.k.u,
-                 "p.gamma.j.m" = p.gamma.j.m, "p.gamma.j.u" = p.gamma.j.u, "patterns.w" = data.w, "count" = count)
+    output <- list("zeta.j"= zeta.j,"p.m"= p.m, "p.u" = p.u, "p.gamma.k.m" = p.gamma.k.m, "p.gamma.k.u" = p.gamma.k.u,
+                   "p.gamma.j.m" = p.gamma.j.m, "p.gamma.j.u" = p.gamma.j.u, "patterns.w" = data.w, "count" = count)
     return(output)
 }
 
