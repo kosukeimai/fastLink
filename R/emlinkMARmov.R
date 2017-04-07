@@ -70,11 +70,24 @@ emlinkMARmov <- function(patterns, nobs.a, nobs.b,
             w.lambda <- 1 - 1e-05
         }
         c.lambda <- w.lambda / (1 - w.lambda)
-        mu <- prior.lambda * c.lambda^2 * nobs.a * nobs.b / (1 - 2 * prior.lambda)
-        psi <- mu * (1 - prior.lambda) / prior.lambda
-        cat("c =", c.lambda, "\n")
-        cat("specified prior =", prior.lambda, "\n")
-        cat("estimated prior =", mu / (mu + psi), "\n")
+
+        ## THESE ARE ORIGINAL EXPRESSIONS
+        mu <- prior.lambda * c.lambda * nobs.a * nobs.b + 1
+        psi <- (1 - prior.lambda) * mu / prior.lambda
+        ## THESE ARE ORIGINAL EXPRESSIONS
+
+        ## THESE ARE DENOM-MATCHING EXPRESSIONS
+        ## mu <- prior.lambda * c.lambda^2 * nobs.a * nobs.b / (1 - 2 * prior.lambda)
+        ## psi <- mu * (1 - prior.lambda) / prior.lambda
+        ## THESE ARE DENOM-MATCHING EXPRESSIONS
+
+        d <- ((psi - mu) / (nobs.a * nobs.b) + 1)
+        w1 <- 1 / d
+        w2 <- (((mu - 1) * (mu + psi)) / (mu * nobs.a * nobs.b)) / d
+        ## cat("Sum of the weights =", w1 + w2, "\n")
+        ## cat("mu =", mu, "\n")
+        ## cat("psi =", psi, "\n")
+        
         if(w.lambda == 0){
             psi <- 1
             mu <- 1
@@ -86,6 +99,9 @@ emlinkMARmov <- function(patterns, nobs.a, nobs.b,
 
     ## alpha0, alpha1
     if(!is.null(prior.pi)){
+        if(is.null(prior.lambda)){
+            stop("If providing a prior on pi, you must specify a prior for lambda as well.") 
+        }
         if(is.null(w.pi)){
             stop("If providing a prior for pi, please specify the weight using `w.pi`.")
         }
@@ -96,14 +112,30 @@ emlinkMARmov <- function(patterns, nobs.a, nobs.b,
             w.pi <- 1 - 1e-05
         }
         c.pi <- w.pi / (1 - w.pi)
-        alpha0 <- prior.pi * (c.pi + 1) - prior.pi + 1
-        alpha1 <- (alpha0 * (1 - prior.pi)) / (prior.pi * (l.address - 1))
-        cat("alpha0 =", alpha0, "\n")
-        cat("alpha1 =", alpha1, "\n")
+        exp.match <- prior.lambda * nobs.a * nobs.b
+
+        ## THESE ARE THE ORIGINAL EXPRESSIONS
+        alpha0 <- c.pi * prior.pi * exp.match
+        alpha1 <- alpha0 * (1 - prior.pi) / (prior.pi * (l.address - 1))
+        ## THESE ARE THE ORIGINAL EXPRESSIONS
+
+        ## THESE ARE THE DENOMINATOR-MATCHING EXPRESSIONS
+        ## alpha1 <- (c.pi^2 * S + l.address) / (l.address - 1)
+        ## alpha0 <- prior.pi * (l.address - 1) * alpha1 / (1 - prior.pi)
+        ## THESE ARE THE DENOMINATOR-MATCHING EXPRESSIONS
+
+        d <- 1 + ((alpha0 - 1) + (l.address - 1) * (alpha1 - 1)) / exp.match
+        
+        w1 <- 1 / d
+        w2 <- (((alpha0 - 1) * ((alpha0 - 1) + (l.address - 1) * (alpha1 - 1))) / (alpha0 * exp.match)) / d
+        cat("Sum of the weights =", w1 + w2, "\n")
+        cat("Expected number of matches =", prior.lambda * nobs.a * nobs.b, "\n")
+        
+        cat("c =", c.pi, "\n")
         cat("specified prior =", prior.pi, "\n")
         cat("estimated prior =", alpha0 / (alpha0 + (l.address - 1) * alpha1), "\n")
-        cat("specified c =", c.pi, "\n")
-        cat("esitmated c =", (alpha0 - 1) * (alpha0 + (l.address - 1) * alpha1) / alpha0, "\n")
+        cat("alpha0 =", alpha0, "\n")
+        cat("alpha1 =", alpha1, "\n")
         if(w.pi == 0){
             alpha0 <- 1
             alpha1 <- 1
