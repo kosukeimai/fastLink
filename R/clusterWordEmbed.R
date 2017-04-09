@@ -44,7 +44,7 @@ clusterWordEmbed <- function(vecA, vecB, nclusters = NULL, max_n = NULL, k = 3){
     vec <- c(vecA, vecB)
     
     ## Create word embedding
-    out <- sapply(letters, function(x){str_count(vec$firstname, x)})
+    out <- sapply(letters, function(x){str_count(vec, x)})
 
     ## Do pca
     pca.out <- prcomp(out, scale = TRUE)
