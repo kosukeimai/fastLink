@@ -4,9 +4,9 @@
 \alias{calcMoversPriors}
 \title{calcMoversPriors}
 \usage{
-calcMoversPriors(geo.a, geo.b, year.start, year.end, L, var.prior.lambda,
-  var.prior.pi = NULL, county = FALSE, state.a = NULL, state.b = NULL,
-  denom.lambda.mean = NULL, lambda.count = FALSE, max.iter = 100)
+calcMoversPriors(geo.a, geo.b, year.start, year.end, county = FALSE,
+  state.a = NULL, state.b = NULL, matchrate.lambda = TRUE,
+  remove.instate = TRUE)
 }
 \arguments{
 \item{geo.a}{The state code (if state = TRUE) or county name
@@ -19,12 +19,6 @@ calcMoversPriors(geo.a, geo.b, year.start, year.end, L, var.prior.lambda,
 
 \item{year.end}{The year of the voter file for geography B.}
 
-\item{L}{Number of agreement categories for \eqn{\pi_{k,l}}. Default is NULL.}
-
-\item{var.prior.lambda}{User-specified variance for the prior probability on lambda.}
-
-\item{var.prior.pi}{User-specified variance for the prior probability on lambda.}
-
 \item{county}{Whether prior is being calculated on the county or state level.
 Default is FALSE (for a state-level calculation).}
 
@@ -34,21 +28,20 @@ the state code of \code{geo.a}. Default is NULL.}
 \item{state.b}{If \code{county = TRUE} (indicating a county-level match),
 the state code of \code{geo.b}. Default is NULL.}
 
-\item{denom.lambda.mean}{If provided, serves as the default for calculating the
-prior mean of the beta distribution.}
+\item{matchrate.lambda}{If TRUE, then returns the match rate for lambda
+(the expected share of observations in dataset A that can be found in
+dataset B). If FALSE, then returns the expected share of matches across
+all pairwise comparisons of datasets A and B. Default is TRUE}
 
-\item{lambda.count}{Whether to base the hyperparameter calculations off of
-counts of "successes" (movers) and "failures" (non-movers) instead of
-proprotions. Default is FALSE.}
-
-\item{max.iter}{Maximum powers of 10 that should be tried to find a proper
-variance for priors before failing. Default is 100.}
+\item{remove.instate}{If TRUE, then for calculating cross-state movers rates
+assumes that successful matches have been subsetted out. The interpretation
+of the prior is then the match rate conditional on being an out-of-state or
+county mover. Default is TRUE.}
 }
 \description{
-calcMoversPriors estimates optimal \eqn{\alpha} and \eqn{\beta} values
-for the Beta prior on \eqn{\lambda}, and optimal \eqn{\alpha_1} and
-\eqn{\alpha_2} values for the Dirichlet prior on \eqn{\pi_{k,l}} when matching
-state voter files over time, using IRS movers data.
+calcMoversPriors calculates prior estimates of in-state and
+cross-state movers rates from the IRS SOI Migration data,
+which can be used to improve the accuracy of the EM algorithm.
 }
 \author{
 Ben Fifield <benfifield@gmail.com>

@@ -4,30 +4,43 @@
 \alias{emlinkMARmov}
 \title{emlinkMARmov}
 \usage{
-emlinkMARmov(patterns, p.m = NULL, p.gamma.k.m = NULL, p.gamma.k.u = NULL,
-  tol = NULL, iter.max = NULL, psi = NULL, mu = NULL, alpha0 = NULL,
-  alpha1 = NULL, address_field = NULL)
+emlinkMARmov(patterns, nobs.a, nobs.b, p.m = 0.1, iter.max = 5000,
+  tol = 1e-05, p.gamma.k.m = NULL, p.gamma.k.u = NULL,
+  prior.lambda = NULL, w.lambda = NULL, prior.pi = NULL, w.pi = NULL,
+  address.field = NULL, l.address = NULL)
 }
 \arguments{
 \item{patterns}{table that holds the counts for each unique agreement
 pattern. This object is produced by the function: tableCounts.}
 
-\item{p.m}{probability of finding a match}
+\item{nobs.a}{Number of observations in dataset A}
+
+\item{nobs.b}{Number of observations in dataset B}
+
+\item{p.m}{probability of finding a match. Default is 0.1}
+
+\item{iter.max}{Max number of iterations. Default is 5000}
+
+\item{tol}{Convergence tolerance. Default is 1e-05}
 
 \item{p.gamma.k.m}{probability that conditional of being in the matched set we observed a specific agreement value for field k.}
 
 \item{p.gamma.k.u}{probability that conditional of being in the non-matched set we observed a specific agreement value for field k.}
 
-\item{tol}{convergence tolerance}
+\item{prior.lambda}{The prior probability of finding a match, derived from auxiliary data.}
 
-\item{iter.max}{Max Number of Iterations (5000 by default)}
+\item{w.lambda}{How much weight to give the prior on lambda versus the data. Must range between 0 (no weight on prior) and 1 (weight fully on prior)}
 
-\item{psi}{Value of psi parameter for beta prior on gamma}
+\item{prior.pi}{The prior probability of the address field not matching, conditional on being in the matched set. To be used when the
+share of movers in the population is known with some certainty.}
 
-\item{mu}{Value of mu parameter for beta prior on gamma}
+\item{w.pi}{How much weight to give the prior on pi versus the data. Must range between 0 (no weight on prior) and 1 (weight fully on prior)}
 
-\item{address_field}{Binary indicators for whether a given field is an address field. To be used when 'alpha0' and 'alpha1' are specified.
-Default is 0 for all fields. Address fields should be set to 1 while non-address fields are set to 0.}
+\item{address.field}{Boolean indicators for whether a given field is an address field. Default is FALSE for all fields.
+Address fields should be set to TRUE while non-address fields are set to FALSE.}
+
+\item{l.address}{The number of possible matching categories used for address fields. If a binary yes/no match, \code{l.address} = 2,
+while if a partial match category is included, \code{l.address} = 3}
 }
 \description{
 Expectation-Maximization algorithm for Record Linkage under the
