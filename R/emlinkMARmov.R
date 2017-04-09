@@ -81,9 +81,9 @@ emlinkMARmov <- function(patterns, nobs.a, nobs.b,
         ## psi <- mu * (1 - prior.lambda) / prior.lambda
         ## THESE ARE DENOM-MATCHING EXPRESSIONS
 
-        d <- ((psi - mu) / (nobs.a * nobs.b) + 1)
-        w1 <- 1 / d
-        w2 <- (((mu - 1) * (mu + psi)) / (mu * nobs.a * nobs.b)) / d
+        ## d <- ((psi - mu) / (nobs.a * nobs.b) + 1)
+        ## w1 <- 1 / d
+        ## w2 <- (((mu - 1) * (mu + psi)) / (mu * nobs.a * nobs.b)) / d
         ## cat("Sum of the weights =", w1 + w2, "\n")
         ## cat("mu =", mu, "\n")
         ## cat("psi =", psi, "\n")
@@ -124,18 +124,18 @@ emlinkMARmov <- function(patterns, nobs.a, nobs.b,
         ## alpha0 <- prior.pi * (l.address - 1) * alpha1 / (1 - prior.pi)
         ## THESE ARE THE DENOMINATOR-MATCHING EXPRESSIONS
 
-        d <- 1 + ((alpha0 - 1) + (l.address - 1) * (alpha1 - 1)) / exp.match
+        ## d <- 1 + ((alpha0 - 1) + (l.address - 1) * (alpha1 - 1)) / exp.match
         
-        w1 <- 1 / d
-        w2 <- (((alpha0 - 1) * ((alpha0 - 1) + (l.address - 1) * (alpha1 - 1))) / (alpha0 * exp.match)) / d
-        cat("Sum of the weights =", w1 + w2, "\n")
-        cat("Expected number of matches =", prior.lambda * nobs.a * nobs.b, "\n")
+        ## w1 <- 1 / d
+        ## w2 <- (((alpha0 - 1) * ((alpha0 - 1) + (l.address - 1) * (alpha1 - 1))) / (alpha0 * exp.match)) / d
+        ## cat("Sum of the weights =", w1 + w2, "\n")
+        ## cat("Expected number of matches =", prior.lambda * nobs.a * nobs.b, "\n")
         
-        cat("c =", c.pi, "\n")
-        cat("specified prior =", prior.pi, "\n")
-        cat("estimated prior =", alpha0 / (alpha0 + (l.address - 1) * alpha1), "\n")
-        cat("alpha0 =", alpha0, "\n")
-        cat("alpha1 =", alpha1, "\n")
+        ## cat("c =", c.pi, "\n")
+        ## cat("specified prior =", prior.pi, "\n")
+        ## cat("estimated prior =", alpha0 / (alpha0 + (l.address - 1) * alpha1), "\n")
+        ## cat("alpha0 =", alpha0, "\n")
+        ## cat("alpha1 =", alpha1, "\n")
         if(w.pi == 0){
             alpha0 <- 1
             alpha1 <- 1
