@@ -4,7 +4,7 @@
 \alias{clusterWordEmbed}
 \title{clusterWordEmbed}
 \usage{
-clusterWordEmbed(vecA, vecB, nclusters, max_n, k)
+clusterWordEmbed(vecA, vecB, nclusters, max.n, min.var, iter.max)
 }
 \arguments{
 \item{vecA}{The character vector from dataset A}
@@ -12,18 +12,25 @@ clusterWordEmbed(vecA, vecB, nclusters, max_n, k)
 \item{vecB}{The character vector from dataset B}
 
 \item{nclusters}{The number of clusters to create from the provided data. Either
-nclusters = NULL or max_n = NULL.}
+nclusters = NULL or max.n = NULL.}
 
-\item{max_n}{The maximum size of either dataset A or dataset B in
-the largest cluster. Either nclusters = NULL or max_n = NULL}
+\item{max.n}{The maximum size of either dataset A or dataset B in
+the largest cluster. Either nclusters = NULL or max.n = NULL}
 
-\item{k}{The number of dimensions to use from PCA for k-means.}
+\item{min.var}{The minimum amount of explained variance (maximum = 1) a
+PCA dimension can provide in order to be included in k-means clustering. Default is
+.20.}
+
+\item{iter.max}{Maximum number of iterations for the k-means algorithm.}
 }
 \value{
 \code{clusterWordEmbed} returns a list of length 3:
 \item{clusterA}{The cluster assignments for dataset A}
 \item{clusterB}{The cluster assignments for dataset B}
 \item{n.clusters}{The number of clusters created}
+\item{kmeans}{The k-means object output.}
+\item{pca}{The PCA object output.}
+\item{dims.pca}{The number of dimensions from PCA used for the k-means clustering.}
 }
 \description{
 Use word embedding to create properly sized clusters for matching.

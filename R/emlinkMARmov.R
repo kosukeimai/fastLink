@@ -273,7 +273,8 @@ emlinkMARmov <- function(patterns, nobs.a, nobs.b,
         count <- count + 1
 
         if(count > iter.max) {
-            delta <- 1e-9
+            warning("The EM algorithm has run for the specified number of iterations but has not converged yet.")
+            break
         }
     }
 
