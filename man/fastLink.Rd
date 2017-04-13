@@ -4,30 +4,39 @@
 \alias{fastLink}
 \title{fastLink}
 \usage{
-fastLink(df_a, df_b, varnames, stringdist_match,
-partial_match = NULL, n.cores = NULL, tol.em = 1e-04,
+fastLink(dfA, dfB, varnames, stringdist.match,
+partial.match = NULL, n.cores = NULL, tol.em = 1e-04,
 match = 0.85, verbose = FALSE)
 }
 \arguments{
-\item{df_a}{Dataset A - to be matched to Dataset B}
+\item{dfA}{Dataset A - to be matched to Dataset B}
 
-\item{df_b}{Dataset B - to be matched to Dataset A}
+\item{dfB}{Dataset B - to be matched to Dataset A}
 
 \item{varnames}{A vector of variable names to use for matching.
-Must be present in both df_a and df_b}
+Must be present in both dfA and dfB}
 
-\item{stringdist_match}{A vector of booleans, indicating whether to use
+\item{stringdist.match}{A vector of booleans, indicating whether to use
 string distance matching when determining matching patterns on
 each variable. Must be same length as varnames.}
 
-\item{partial_match}{A vector of booleans, indicating whether to include
+\item{partial.match}{A vector of booleans, indicating whether to include
 a partial matching category for the string distances. Must be same length
 as varnames. Default is FALSE for all variables.}
 
-\item{priors_obj}{A list containing priors for auxiliary movers information,
-as output from calcMoversPriors() or precalcPriors(). Default is NULL}
+\item{priors.obj}{A list containing priors for auxiliary movers information,
+as output from calcMoversPriors(). Default is NULL}
 
-\item{address_field}{A vector of booleans for whether a given field is an address field. To be used when 'alpha0' and 'alpha1' are included in 'priors_obj'.
+\item{w.lambda}{How much weight to give the prior on lambda versus the data. Must range between 0 (no weight on prior) and 1 (weight fully on prior).
+Default is NULL (no prior information provided).}
+
+\item{w.pi}{How much weight to give the prior on pi versus the data. Must range between 0 (no weight on prior) and 1 (weight fully on prior).
+Default is NULL (no prior information provided).}
+
+\item{l.address}{The number of possible matching categories used for address fields. If a binary yes/no match, \code{l.address} = 2,
+while if a partial match category is included, \code{l.address} = 3. Default is NULL (no prior information provided).}
+
+\item{address.field}{A vector of booleans for whether a given field is an address field. To be used when 'pi.prior' is included in 'priors.obj'.
 Default is FALSE for all fields. Address fields should be set to TRUE while non-address fields are set to FALSE.}
 
 \item{n.cores}{Number of cores to parallelize over. Default is NULL.}
@@ -40,8 +49,8 @@ Default is FALSE for all fields. Address fields should be set to TRUE while non-
 }
 \value{
 \code{fastLink} returns a list of class 'fastLink' containing the following components:
-\item{matches}{An nmatches X 2 matrix containing the indices of the successful matches in \code{df_a}
-in the first column, and the indices of the corresponding successful matches in \code{df_b} in the
+\item{matches}{An nmatches X 2 matrix containing the indices of the successful matches in \code{dfA}
+in the first column, and the indices of the corresponding successful matches in \code{dfB} in the
 second column.}
 \item{EM}{A matrix with the output of the EM algorithm, which contains the exact matching
 patterns and the associated posterior probabilities of a match for each matching pattern.}
@@ -53,7 +62,7 @@ two datasets.
 \examples{
 \dontrun{
 fastLink(dfA, dfB, varnames = c("firstname", "lastname", "streetname", "birthyear"),
-stringdist_match = c(TRUE, TRUE, TRUE, FALSE), partial_match = c(TRUE, TRUE, FALSE, FALSE),
+stringdist.match = c(TRUE, TRUE, TRUE, FALSE), partial.match = c(TRUE, TRUE, FALSE, FALSE),
 verbose = TRUE)
 }
 }

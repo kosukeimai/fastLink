@@ -16,6 +16,8 @@ fastLink objects from cross-geography matches.}
 \item{weighted}{Whether to weight the cross-geography matches on FDR and FNR.}
 
 \item{digits}{How many digits to include in summary object. Default is 3.}
+
+\item{...}{Further arguments to be passed to \code{summary.fastLink()} command.}
 }
 \description{
 \code{summary.fastLink()} calculates and outputs FDR, FNR, and match rates for

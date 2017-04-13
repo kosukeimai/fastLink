@@ -4,7 +4,8 @@
 \alias{clusterWordEmbed}
 \title{clusterWordEmbed}
 \usage{
-clusterWordEmbed(vecA, vecB, nclusters, max.n, min.var, iter.max)
+clusterWordEmbed(vecA, vecB, nclusters, max.n, min.var,
+weighted.kmeans, iter.max)
 }
 \arguments{
 \item{vecA}{The character vector from dataset A}
@@ -18,8 +19,11 @@ nclusters = NULL or max.n = NULL.}
 the largest cluster. Either nclusters = NULL or max.n = NULL}
 
 \item{min.var}{The minimum amount of explained variance (maximum = 1) a
-PCA dimension can provide in order to be included in k-means clustering. Default is
-.20.}
+PCA dimension can provide in order to be included in k-means clustering.
+Default is .20.}
+
+\item{weighted.kmeans}{Whether to weight the k-means algorithm features by the
+explained variance of the included principal component. Default is TRUE.}
 
 \item{iter.max}{Maximum number of iterations for the k-means algorithm.}
 }

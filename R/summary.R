@@ -127,6 +127,7 @@ summarize.agg <- function(x, weighted){
 #' @param thresholds A vector of posterior probabilities to calculate the summary statistics.
 #' @param weighted Whether to weight the cross-geography matches on FDR and FNR.
 #' @param digits How many digits to include in summary object. Default is 3.
+#' @param ... Further arguments to be passed to \code{summary.fastLink()} command.
 #'
 #' @export
 summary.fastLink <- function(object, thresholds = c(.95, .85, .75), weighted = TRUE, digits = 3, ...){
