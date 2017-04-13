@@ -19,7 +19,7 @@
 #' @param matchrate.lambda If TRUE, then returns the match rate for lambda
 #' (the expected share of observations in dataset A that can be found in
 #' dataset B). If FALSE, then returns the expected share of matches across
-#' all pairwise comparisons of datasets A and B. Default is TRUE
+#' all pairwise comparisons of datasets A and B. Default is FALSE
 #' @param remove.instate If TRUE, then for calculating cross-state movers rates
 #' assumes that successful matches have been subsetted out. The interpretation
 #' of the prior is then the match rate conditional on being an out-of-state or
@@ -30,7 +30,7 @@
 #' @export
 calcMoversPriors <- function(geo.a, geo.b, year.start, year.end,
                              county = FALSE, state.a = NULL, state.b = NULL,
-                             matchrate.lambda = TRUE, remove.instate = TRUE){
+                             matchrate.lambda = FALSE, remove.instate = TRUE){
 
     ## Load the correct level of IRS data
     if(!county){

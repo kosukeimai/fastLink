@@ -5,7 +5,7 @@
 \title{calcMoversPriors}
 \usage{
 calcMoversPriors(geo.a, geo.b, year.start, year.end, county = FALSE,
-  state.a = NULL, state.b = NULL, matchrate.lambda = TRUE,
+  state.a = NULL, state.b = NULL, matchrate.lambda = FALSE,
   remove.instate = TRUE)
 }
 \arguments{
@@ -31,7 +31,7 @@ the state code of \code{geo.b}. Default is NULL.}
 \item{matchrate.lambda}{If TRUE, then returns the match rate for lambda
 (the expected share of observations in dataset A that can be found in
 dataset B). If FALSE, then returns the expected share of matches across
-all pairwise comparisons of datasets A and B. Default is TRUE}
+all pairwise comparisons of datasets A and B. Default is FALSE}
 
 \item{remove.instate}{If TRUE, then for calculating cross-state movers rates
 assumes that successful matches have been subsetted out. The interpretation

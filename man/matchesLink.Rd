@@ -4,15 +4,15 @@
 \alias{matchesLink}
 \title{matchesLink}
 \usage{
-matchesLink(gammalist, nr1, nr2, em, cut, n.cores = NULL)
+matchesLink(gammalist, nobs.a, nobs.b, em, cut, n.cores = NULL)
 }
 \arguments{
 \item{gammalist}{A list of objects produced by either gammaKpar or
 gammaCKpar.}
 
-\item{nr1}{number of observations in dataset 1}
+\item{nobs.a}{number of observations in dataset 1}
 
-\item{nr2}{number of observations in dataset 2}
+\item{nobs.b}{number of observations in dataset 2}
 
 \item{em}{parameters obtained from the Expectation-Maximization algorithm under the MAR assumption. These estimates are
 produced by emlinkMAR}
@@ -40,7 +40,7 @@ g3 <- gammaCKpar(dfA$lastname, dfB$lastname)
 g4 <- gammaKpar(dfA$birthyear, dfB$birthyear)
 
 ## Run tableCounts
-tc <- tableCounts(list(g1, g2, g3, g4), nr1 = nrow(dfA), nr2 = nrow(dfB))
+tc <- tableCounts(list(g1, g2, g3, g4), nobs.a = nrow(dfA), nobs.b = nrow(dfB))
 
 ## Run EM
 em <- emlinkMAR(tc)
@@ -53,7 +53,7 @@ EM$cumsum.u <- 1 - cumsum(EM[, "p.gamma.j.u"])
 match.ut <- EM$weights[ EM$zeta.j >= 0.85][1]
 
 ## Get matches
-ml <- matchesLink(list(g1, g2, g3, g4), nr1 = nrow(dfA), nr2 = nrow(dfB),
+ml <- matchesLink(list(g1, g2, g3, g4), nobs.a = nrow(dfA), nobs.b = nrow(dfB),
 em = em, cut = match.ut)
 }
 

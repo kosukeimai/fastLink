@@ -5,12 +5,12 @@
 #' to the an interval of the Fellegi-Sunter
 #' weights
 #'
-#' @usage matchesLink(gammalist, nr1, nr2, em, cut, n.cores = NULL)
+#' @usage matchesLink(gammalist, nobs.a, nobs.b, em, cut, n.cores = NULL)
 #'
 #' @param gammalist A list of objects produced by either gammaKpar or
 #' gammaCKpar. 
-#' @param nr1 number of observations in dataset 1
-#' @param nr2 number of observations in dataset 2
+#' @param nobs.a number of observations in dataset 1
+#' @param nobs.b number of observations in dataset 2
 #' @param em parameters obtained from the Expectation-Maximization algorithm under the MAR assumption. These estimates are
 #' produced by emlinkMAR
 #' @param cut is the interval of weight values for the agreements that we want to examine closer.
@@ -30,7 +30,7 @@
 #' g4 <- gammaKpar(dfA$birthyear, dfB$birthyear)
 #'
 #' ## Run tableCounts
-#' tc <- tableCounts(list(g1, g2, g3, g4), nr1 = nrow(dfA), nr2 = nrow(dfB))
+#' tc <- tableCounts(list(g1, g2, g3, g4), nobs.a = nrow(dfA), nobs.b = nrow(dfB))
 #'
 #' ## Run EM
 #' em <- emlinkMAR(tc)
@@ -43,7 +43,7 @@
 #' match.ut <- EM$weights[ EM$zeta.j >= 0.85][1]
 #'
 #' ## Get matches
-#' ml <- matchesLink(list(g1, g2, g3, g4), nr1 = nrow(dfA), nr2 = nrow(dfB),
+#' ml <- matchesLink(list(g1, g2, g3, g4), nobs.a = nrow(dfA), nobs.b = nrow(dfB),
 #' em = em, cut = match.ut)
 #' }
 #'
@@ -54,19 +54,19 @@
 ## we use matchesLink
 ## ------------------------
 
-matchesLink <- function(gammalist, nr1, nr2, em, cut, n.cores = NULL) {
+matchesLink <- function(gammalist, nobs.a, nobs.b, em, cut, n.cores = NULL) {
 
     if(is.null(n.cores)) {
         n.cores <- detectCores() - 1
     }
 
     ## Slicing the data:
-    n.slices1 <- max(round(as.numeric(nr1)/(4500), 0), 1) 
-    n.slices2 <- max(round(as.numeric(nr2)/(4500), 0), 1) 
+    n.slices1 <- max(round(as.numeric(nobs.a)/(4500), 0), 1) 
+    n.slices2 <- max(round(as.numeric(nobs.b)/(4500), 0), 1) 
     nc <- min(n.cores, n.slices1 * n.slices2)
 
-    limit.1 <- round(quantile((0:nr1), p = seq(0, 1, 1/n.slices1)), 0)
-    limit.2 <- round(quantile((0:nr2), p = seq(0, 1, 1/n.slices2)), 0)
+    limit.1 <- round(quantile((0:nobs.a), p = seq(0, 1, 1/n.slices1)), 0)
+    limit.2 <- round(quantile((0:nobs.b), p = seq(0, 1, 1/n.slices2)), 0)
 
     last1 <- length(limit.1)
     last2 <- length(limit.2)

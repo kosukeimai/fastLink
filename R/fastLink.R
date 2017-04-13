@@ -108,7 +108,7 @@ fastLink <- function(dfA, dfB, varnames,
     ## Get counts for zeta parameters
     cat("Getting counts for zeta parameters.\n")
     start <- Sys.time()
-    counts <- tableCounts(gammalist, nr1 = nr_a, nr2 = nr_b, n.cores = n.cores)
+    counts <- tableCounts(gammalist, nobs.a = nr_a, nobs.b = nr_b, n.cores = n.cores)
     end <- Sys.time()
     if(verbose){
         cat("Getting counts for zeta parameters took", round(difftime(end, start, units = "mins"), 2), "minutes.\n\n")
@@ -160,14 +160,15 @@ fastLink <- function(dfA, dfB, varnames,
     ## Get matches
     cat("Getting the indices of estimated matches.\n")
     start <- Sys.time()
-    matches <- matchesLink(gammalist, nr1 = nr_a, nr2 = nr_b,
+    matches <- matchesLink(gammalist, nobs.a = nr_a, nobs.b = nr_b,
                            em = resultsEM, cut = match.ut,
                            n.cores = n.cores)
     end <- Sys.time()
     if(verbose){
         cat("Getting the indices of estimated matches took", round(difftime(end, start, units = "mins"), 2), "minutes.\n\n")
     }
-    colnames(matches) <- c("inds_a", "inds_b")
+    colnames(matches) <- c("inds.a", "inds.b")
+    matches <- as.data.frame(matches)
 
     ## Return object
     out <- list()
