@@ -315,14 +315,15 @@ The `calcMoversPriors()` function accepts the following functions:
 
 ### Incorporating Auxiliary Information with `fastLink()` Wrapper
 We can re-run the full match above while incorporating auxiliary information as follows:
-```{r eval = FALSE}
+```{r}
+priors.out <- list(lambda.prior = 50/(nrow(dfA) * nrow(dfB)), pi.prior = 0.02)
 matches.out.aux <- fastLink(
   dfA = dfA, dfB = dfB, 
   varnames = c("firstname", "middlename", "lastname", "housenum", "streetname", "city", "birthyear"),
   stringdist.match = c(TRUE, TRUE, TRUE, FALSE, TRUE, TRUE, FALSE),
   partial.match = c(TRUE, FALSE, TRUE, FALSE, TRUE, FALSE, FALSE),
   priors.obj = priors.out, 
-  w.lambda = .01, w.pi = .01, l.address = 3, 
+  w.lambda = .5, w.pi = .5, l.address = 3, 
   address.field = c(FALSE, FALSE, FALSE, FALSE, TRUE, FALSE, FALSE)
 )
 ```
@@ -330,10 +331,10 @@ where `priors.obj` is an input for the the optimal prior parameters. This can be
 
 ### Incorporating Auxiliary Information when Running the Algorithm Step-by-Step
 If we are running the algorithm step-by-step, we can incorporate the prior information into the EM algorithm as follows:
-```{r eval = FALSE}
+```{r}
 em.out.aux <- emlinkMARmov(tc, nobs.a = nrow(dfA), nobs.b = nrow(dfB),
-                           prior.lambda = priors.out$lambda.prior, w.lambda = .01,
-                           prior.pi = priors.out$pi.prior, w.pi = .01,
+                           prior.lambda = priors.out$lambda.prior, w.lambda = .5,
+                           prior.pi = priors.out$pi.prior, w.pi = .5,
                            address.field = c(FALSE, FALSE, FALSE, FALSE, TRUE, FALSE, FALSE),
                            l.address = 3)
 ```
