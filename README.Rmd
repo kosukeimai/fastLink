@@ -316,7 +316,9 @@ The `calcMoversPriors()` function accepts the following functions:
 ### Incorporating Auxiliary Information with `fastLink()` Wrapper
 We can re-run the full match above while incorporating auxiliary information as follows:
 ```{r}
+## Reasonable prior estimates for this dataset
 priors.out <- list(lambda.prior = 50/(nrow(dfA) * nrow(dfB)), pi.prior = 0.02)
+
 matches.out.aux <- fastLink(
   dfA = dfA, dfB = dfB, 
   varnames = c("firstname", "middlename", "lastname", "housenum", "streetname", "city", "birthyear"),
