@@ -26,7 +26,7 @@
 ## in parallel
 ## ------------------------
 
-gammaKpar <- function(matAp, matBp, n.cores = NULL, calc.prior = FALSE, var = NULL) {
+gammaKpar <- function(matAp, matBp, n.cores = NULL) {
 
     if(any(class(matAp) %in% c("tbl_df", "data.table"))){
         matAp <- as.data.frame(matAp)[,1]
@@ -81,22 +81,6 @@ gammaKpar <- function(matAp, matBp, n.cores = NULL, calc.prior = FALSE, var = NU
             ht1[[s]] <- which(matrix.1 == s); ht2[[s]] <- which(matrix.2 == s);
             list(ht1[[s]], ht2[[s]]) }, mc.cores = getOption("mc.cores", no_cores))
     }
-
-    ## Calculate optimal dirichlet
-    if(calc.prior & !is.null(var)){
-        ## Get counts of agreement for prior on delta_{k, agree}
-        numerator <- 0
-        for(i in 1:length(final.list)){
-            numerator <- numerator +
-                (length(final.list[[i]][[1]]) * length(final.list[[i]][[2]]))
-        }
-        denominator <- as.double(nrow(matrix.1)) * as.double(nrow(matrix.2)) -
-            nrow(matrix.1)
-        dir_mean <- numerator / denominator
-        alpha_1 <- (dir_mean * (1 - dir_mean)^2 + var * dir_mean - var) /
-            (var * 2 - var)
-        alpha_0 <- ((2 - 1) * alpha_1 * dir_mean) / (1 - dir_mean)
-    }
     
     na.list <- list()
     na.list[[1]] <- which(matrix.1 == "9999")
@@ -105,9 +89,6 @@ gammaKpar <- function(matAp, matBp, n.cores = NULL, calc.prior = FALSE, var = NU
     out <- list()
     out[["matches2"]] <- final.list
     out[["nas"]] <- na.list
-    if(calc.prior & !is.null(var)){
-        out[["priors"]] <- list(alpha_0 = alpha_0, alpha_1 = alpha_1)
-    }
 
     return(out)
 }
