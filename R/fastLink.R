@@ -173,8 +173,8 @@ fastLink <- function(dfA, dfB, varnames,
     out <- list()
     out[["matches"]] <- matches
     out[["EM"]] <- EM
-    out[["nobs_a"]] <- nr_a
-    out[["nobs_b"]] <- nr_b
+    out[["nobs.a"]] <- nr_a
+    out[["nobs.b"]] <- nr_b
     class(out) <- "fastLink"
 
     return(out)

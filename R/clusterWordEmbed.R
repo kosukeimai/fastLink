@@ -6,7 +6,8 @@
 #' \code{k} dimensions (where \code{k} is provided by the user) and
 #' k-means is run on that matrix to get the clusters.
 #'
-#' @usage clusterWordEmbed(vecA, vecB, nclusters, max.n, min.var, iter.max)
+#' @usage clusterWordEmbed(vecA, vecB, nclusters, max.n, min.var,
+#' weighted.kmeans, iter.max)
 #'
 #' @param vecA The character vector from dataset A
 #' @param vecB The character vector from dataset B
@@ -15,8 +16,10 @@
 #' @param max.n The maximum size of either dataset A or dataset B in
 #' the largest cluster. Either nclusters = NULL or max.n = NULL
 #' @param min.var The minimum amount of explained variance (maximum = 1) a
-#' PCA dimension can provide in order to be included in k-means clustering. Default is
-#' .20.
+#' PCA dimension can provide in order to be included in k-means clustering.
+#' Default is .20.
+#' @param weighted.kmeans Whether to weight the k-means algorithm features by the
+#' explained variance of the included principal component. Default is TRUE.
 #' @param iter.max Maximum number of iterations for the k-means algorithm.
 #'
 #' @return \code{clusterWordEmbed} returns a list of length 3:
@@ -35,6 +38,7 @@
 clusterWordEmbed <- function(vecA, vecB,
                              nclusters = NULL, max.n = NULL,
                              min.var = .20,
+                             weighted.kmeans = TRUE,
                              iter.max = 5000){
 
     ## Warning
@@ -75,7 +79,12 @@ clusterWordEmbed <- function(vecA, vecB,
     }else{
         ncl <- max(round(max(length(vecA), length(vecB))/max.n, 0), 1)
     }
-    km.out <- kmeans(dims, centers = ncl, iter.max = iter.max)
+    if(weighted.kmeans){
+        kmw <- props[1:dims.include]/sum(props[1:dims.include])
+        km.out <- kmeansW(dims, centers = ncl, weight = kmw, iter.max = iter.max)
+    }else{
+        km.out <- kmeans(dims, centers = ncl, iter.max = iter.max)
+    }
     cluster <- km.out$cluster
 
     return(list(clusterA = cluster[setid == 1], clusterB = cluster[setid == 2],

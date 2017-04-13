@@ -1,6 +1,6 @@
 summarize.em <- function(x, thresholds){
 
-    n1 <- x$nobs_a; n2 <- x$nobs_b
+    n1 <- x$nobs.a; n2 <- x$nobs.b
     
     count <- min(n1, n2)
     
