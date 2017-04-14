@@ -82,6 +82,9 @@ clusterWordEmbed <- function(vecA, vecB,
     if(weighted.kmeans){
         kmw <- props[1:dims.include]/sum(props[1:dims.include])
         km.out <- kmeansW(dims, centers = ncl, weight = kmw, iter.max = iter.max)
+        if(ncl == 1){
+            km.out$cluster <- km.out$cluster + 1
+        }
     }else{
         km.out <- kmeans(dims, centers = ncl, iter.max = iter.max)
     }
