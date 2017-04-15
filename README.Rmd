@@ -54,6 +54,7 @@ matches.out <- fastLink(
   stringdist.match = c(TRUE, TRUE, TRUE, FALSE, TRUE, TRUE, FALSE),
   partial.match = c(TRUE, FALSE, TRUE, FALSE, TRUE, FALSE, FALSE)
 )
+
 ```
 
 - `varnames` should be a vector of variable names to be used for
@@ -124,6 +125,20 @@ where the first seven columns are indicators for the matching pattern for that f
 - `p.gamma.j.u`: Probability of being in the unmatched set given that matching pattern
 
 - `zeta.j`: Posterior probability of a particular pattern representing a true match
+
+Lastly, we can summarize the accuracy of the match using the `summary()` function:
+```{r}
+summary(matches.out)
+```
+where each column gives the match rate, false discovery rate (FDR) and false negative rate (FNR) under different cutoffs for matches based on the posterior probability of a match. Other arguments include:
+
+- `thresholds`: A vector of thresholds between 0 and 1 to summarize the match.
+
+- `across.geo`: TRUE/FALSE, indicating whether the function should look for list slots in `object` labelled `within.geo` (indicating a list of within-geography matches, such as California/2015 -> California/2016) and `across.geo` (indicating a list of across-geography matches, such as California/2015 -> New York/2016). Default is FALSE.
+
+- `weighted`: Whether to weight the FDR and FNR calculations when doing across-state matches, so that the pooled FDR and FNR calculations are the sum of the within and across-geography FDR and FNR. Default is TRUE.
+
+- `digits`: Number of digits to include in the summary object. Default is 3.
 
 ### Preprocessing Matches via Clustering
 In order to reduce the number of pairwise comparisons that need to be conducted, researchers will often cluster similar observations from dataset A and dataset B together so that comparisons are only made between these maximally similar groups. Here, we implement a form of this clustering that uses word embedding, a common preprocessing method for textual data, to form maximally similar groups.

@@ -7,11 +7,15 @@
 \method{summary}{fastLink}(object, thresholds = c(.95, .85, .75), weighted = TRUE, digits = 3, ...)
 }
 \arguments{
-\item{object}{Either a single fastLink object, or a list of lists - where the first list is a
-list of all fastLink objects from within-geography matches, and the second list is a list of all
-fastLink objects from cross-geography matches.}
+\item{object}{Either a single `fastLink` or `fastLink.EM` object, or a list of `fastLink` or `fastLink.EM` objects
+to be aggregated together. If `across.geo = TRUE`, then `object` should be a list of length two where the first entry
+contains a list of within-geography objects (labeled `within.geo`) and the second entry contains the list of the
+across-geography objects (labeled `across.geo`).}
 
 \item{thresholds}{A vector of posterior probabilities to calculate the summary statistics.}
+
+\item{across.geo}{If aggregating within-geography matches and across-geography matches, then set to TRUE. Default
+is FALSE.}
 
 \item{weighted}{Whether to weight the cross-geography matches on FDR and FNR.}
 

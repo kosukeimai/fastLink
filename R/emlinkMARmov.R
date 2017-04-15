@@ -291,7 +291,9 @@ emlinkMARmov <- function(patterns, nobs.a, nobs.b,
 
     output <- list("zeta.j"= zeta.j,"p.m"= p.m, "p.u" = p.u, "p.gamma.k.m" = p.gamma.k.m, "p.gamma.k.u" = p.gamma.k.u,
                    "p.gamma.j.m" = p.gamma.j.m, "p.gamma.j.u" = p.gamma.j.u, "patterns.w" = data.w, "iter.converge" = count,
-                   "nobs.a" = nrow(nobs.a), "nobs.b" = nrow(nobs.b))
+                   "nobs.a" = nobs.a, "nobs.b" = nobs.b)
+    class(output) <- c("fastLink", "fastLink.EM")
+    
     return(output)
 }
 
