@@ -131,18 +131,14 @@ summarize.agg <- function(x, weighted){
 #'
 #' @usage \method{summary}{fastLink}(object, thresholds = c(.95, .85, .75), weighted = TRUE, digits = 3, ...)
 #' @param object Either a single `fastLink` or `fastLink.EM` object, or a list of `fastLink` or `fastLink.EM` objects
-#' to be aggregated together. If `across.geo = TRUE`, then `object` should be a list of length two where the first entry
-#' contains a list of within-geography objects (labeled `within.geo`) and the second entry contains the list of the
-#' across-geography objects (labeled `across.geo`).
+#' to be aggregated together produced  by `aggregateEM`. 
 #' @param thresholds A vector of posterior probabilities to calculate the summary statistics.
-#' @param across.geo If aggregating within-geography matches and across-geography matches, then set to TRUE. Default
-#' is FALSE.
 #' @param weighted Whether to weight the cross-geography matches on FDR and FNR.
 #' @param digits How many digits to include in summary object. Default is 3.
 #' @param ... Further arguments to be passed to \code{summary.fastLink()} command.
 #'
 #' @export
-summary.fastLink <- function(object, thresholds = c(.95, .85, .75), across.geo = FALSE, weighted = TRUE, digits = 3, ...){
+summary.fastLink <- function(object, thresholds = c(.95, .85, .75), weighted = TRUE, digits = 3, ...){
     
     round.pct <- function(x){
       a <- unlist(x)
@@ -150,24 +146,24 @@ summary.fastLink <- function(object, thresholds = c(.95, .85, .75), across.geo =
       c <- paste0(b, "%")
       return(c)
     }
-    
-    if("fastLink" %in% class(object) | "fastLink.EM" %in% class(object)){
-        out <- summarize.em(object, thresholds = thresholds)
-        out.agg <- summarize.agg(out, weighted = weighted)
-    }else if(class(object) == "list" & !across.geo){
+
+    if("fastLink.agg" %in% class(object) & !("across.geo" %in% names(object))){
         ## Extract and calculate counts
         out <- as.data.frame(do.call(rbind, lapply(object, function(x){summarize.em(x, thresholds = thresholds)})))
-        out <- data.frame(t(colSums(w.out)))
+        out <- data.frame(t(colSums(out)))
         out.agg <- summarize.agg(out, weighted = weighted)
-    }else if(class(object) == "list" & across.geo){
+    }else if("fastLink.agg" %in% class(object) & "across.geo" %in% names(object)){
         ## Extract and calculate counts
         out.w <- as.data.frame(do.call(rbind, lapply(object[["within.geo"]], function(x){summarize.em(x, thresholds = thresholds)})))
         out.a <- as.data.frame(do.call(rbind, lapply(object[["across.geo"]], function(x){summarize.em(x, thresholds = thresholds)})))
         out <- list(within = data.frame(t(colSums(out.w))), across = data.frame(t(colSums(out.a))))
         out.agg <- summarize.agg(out, weighted = weighted)
-    }
+    }else if("fastLink" %in% class(object) | "fastLink.EM" %in% class(object)){
+        out <- summarize.em(object, thresholds = thresholds)
+        out.agg <- summarize.agg(out, weighted = weighted)
+    } 
 
-    if("list" %in% class(object) & across.geo){
+    if("fastLink.agg" %in% class(object) & "across.geo" %in% names(object)){
         tab <- as.data.frame(
           rbind(round.pct(out.agg$pooled$matches), round.pct(out.agg$within$matches),
                 round.pct(out.agg$across$matches),
@@ -190,60 +186,45 @@ summary.fastLink <- function(object, thresholds = c(.95, .85, .75), across.geo =
     return(tab)
 }
 
-## #' Aggregate EM objects for a single summary
-## #'
-## #' \code{aggregateEM} aggregates EM objects to create a single statewide summary.
-## #'
-## #' @usage aggregateEM(object)
-## #' @param object A list of lists, where each sub-list contains three entries:
-## #' EM (the EM object), nobs_a (the number of observations in dataset A) and
-## #' nobs_b (the number of observations in dataset B)
-## #' 
-## #' @export
-## aggregateEM <- function(object){
+#' Aggregate EM objects for use in `summary.fastLink()`
+#'
+#' \code{aggregateEM} aggregates EM objects for easy processing by `summary.fastLink()`
+#'
+#' @usage aggregateEM(within.geo, across.geo)
+#' @param em.list A list of `fastLink` or `fastLink.EM` objects that should be aggregate
+#' in `summary.fastLink()`
+#' @param within.geo A vector of booleans corresponding to whether each object in `em.list`
+#' is a within-geography match or an across-geography match. Should be of equal length to
+#' `em.list`. Default is NULL (assumes all are within-geography matches).
+#' 
+#' @export
+aggregateEM <- function(em.list, within.geo = NULL){
 
-##     ## Set up containers
-##     gamma.ind <- grep("gamma.[[:digit:]]", names(object[[1]]$EM))
-##     em.agg <- object[[1]]$EM[,gamma.ind]
-##     em.agg$counts <- object[[1]]$EM$counts
-##     em.agg$weights <- object[[1]]$EM$weights
-##     em.agg$zeta.j <- object[[1]]$EM$zeta.j
-##     n <- rep(NA, length(object))
-##     n[1] <- min(object[[1]]$nobs_a, object[[1]]$nobs_b)
+    if(is.null(within.geo)){
+        out <- em.list
+    }else{
+        if(length(within.geo) != length(em.list)){
+            stop("If provded, within.geo should be the same length as em.list.")
+        }
 
-##     ## Loop over remainders
-##     if(length(object) > 1){
-##       for(i in 2:length(object)){
-##           em.sub <- object[[i]]$EM[,gamma.ind]
-##           em.sub$counts <- object[[i]]$EM$counts
-##           em.sub$weights <- object[[i]]$EM$weights
-##           em.sub$zeta.j <- object[[i]]$EM$zeta.j
-##           em.agg <- merge(
-##               em.agg, em.sub, by = paste0("gamma.", gamma.ind), all = TRUE
-##           )
-##           n[i] <- min(object[[i]]$nobs_a, object[[i]]$nobs_b)
-##       }
-##     }
+        wg <- vector(mode = "list", length = sum(within.geo))
+        ag <- vector(mode = "list", length = length(within.geo) - sum(within.geo))
+        ind.within <- which(within.geo == TRUE)
+        ind.across <- which(within.geo == FALSE)
+        for(i in 1:length(ind.within)){
+            wg[[i]] <- em.list[[i]]
+        }
+        for(i in 1:length(ind.across)){
+            ag[[i]] <- em.list[[i]]
+        }
+        
+        out <- list(within.geo = wg, across.geo = ag)
+        
+    }
+    class(out) <- c("fastLink", "fastLink.agg")
+    
+    return(out)
 
-##     ## Aggregate
-##     counts.agg <- rep(NA, nrow(em.agg))
-##     counts.inds <- grep("counts.", names(em.agg))
-##     weights.agg <- rep(NA, nrow(em.agg))
-##     weights.inds <- grep("weights.", names(em.agg))
-##     zeta.j.agg <- rep(NA, nrow(em.agg))
-##     zeta.inds <- grep("zeta.j", names(em.agg))
-##     for(i in 1:nrow(em.agg)){
-##         counts.agg[i] <- sum(em.agg[i, counts.inds], na.rm = TRUE)
-##         weights.agg[i] <- wtd.mean(em.agg[i, weights.inds], n, na.rm = TRUE)
-##         zeta.j.agg[i] <- wtd.mean(em.agg[i, zeta.inds], n, na.rm = TRUE)
-##     }
-##     em.agg.out <- em.agg[,gamma.ind]
-##     em.agg.out$counts <- counts.agg
-##     em.agg.out$weights <- weights.agg
-##     em.agg.out$zeta.j <- zeta.j.agg
-##     em.agg.out <- em.agg.out[order(em.agg.out$zeta.j),]
-##     return(em.agg.out)
-
-## }
+}
 
 

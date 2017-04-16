@@ -134,8 +134,6 @@ where each column gives the match rate, false discovery rate (FDR) and false neg
 
 - `thresholds`: A vector of thresholds between 0 and 1 to summarize the match.
 
-- `across.geo`: TRUE/FALSE, indicating whether the function should look for list slots in `object` labelled `within.geo` (indicating a list of within-geography matches, such as California/2015 -> California/2016) and `across.geo` (indicating a list of across-geography matches, such as California/2015 -> New York/2016). Default is FALSE.
-
 - `weighted`: Whether to weight the FDR and FNR calculations when doing across-state matches, so that the pooled FDR and FNR calculations are the sum of the within and across-geography FDR and FNR. Default is TRUE.
 
 - `digits`: Number of digits to include in the summary object. Default is 3.
@@ -291,6 +289,11 @@ dfA.match <- dfA[matches.out[,1],]
 dfB.match <- dfB[matches.out[,2],]
 ```
 
+Lastly, we can summarize the match as done earlier by feeding the output from `emlinkMARmov()` into the `summary()` function:
+```{r}
+summary(em.out)
+```
+
 ## Using Auxiliary Information to Inform `fastLink`
 The `fastLink` algorithm also includes several ways to incorporate auxiliary
 information on migration behavior to inform the matching of data sets over time. Auxiliary information is incorporated into the estimation as priors on two parameters of the model:
@@ -356,3 +359,46 @@ em.out.aux <- emlinkMARmov(tc, nobs.a = nrow(dfA), nobs.b = nrow(dfB),
                            l.address = 3)
 ```
 All other steps are the same. The newly specified arguments include the prior estimates of the parameters (`prior.lambda`, `prior.pi`), the weightings of the prior and MLE estimate (`w.lambda`, `w.pi`), the vector of boolean indicators where `TRUE` indicates an address field (`address.field`), and an integer indicating the number of matching categories for the address field (`l.address`).
+
+## Aggregating Multiple Matches Together
+Often, we run several different matches for a single data set - for instance, when blocking by gender or by some other criterion to reduce the number of pairwise comparisons. Here, we walk through how to aggregate those multiple matches into a single summary. First, we use the `clusterWordEmbed()` function to partition the two datasets into two maximally similar groups:
+```{r}
+cl.out <- clusterWordEmbed(dfA$firstname, dfB$firstname, nclusters = 2)
+dfA$cluster <- cl.out$clusterA
+dfB$cluster <- cl.out$clusterB
+```
+and then run `fastLink()` on both subsets:
+```{r}
+link.1 <- fastLink(
+  dfA = subset(dfA, cluster == 1), dfB = subset(dfB, cluster == 1), 
+  varnames = c("firstname", "middlename", "lastname", "housenum", "streetname", "city", "birthyear"),
+  stringdist.match = c(TRUE, TRUE, TRUE, FALSE, TRUE, TRUE, FALSE),
+  partial.match = c(TRUE, FALSE, TRUE, FALSE, TRUE, FALSE, FALSE)
+)
+link.2 <- fastLink(
+  dfA = subset(dfA, cluster == 2), dfB = subset(dfB, cluster == 2), 
+  varnames = c("firstname", "middlename", "lastname", "housenum", "streetname", "city", "birthyear"),
+  stringdist.match = c(TRUE, TRUE, TRUE, FALSE, TRUE, TRUE, FALSE),
+  partial.match = c(TRUE, FALSE, TRUE, FALSE, TRUE, FALSE, FALSE)
+)
+```
+To aggregate the two matches into a single summary, we use the `aggregateEM()` function as follows:
+```{r}
+agg.out <- aggregateEM(em.list = list(link.1, link.2))
+```
+`aggregateEM()` accepts two arguments:
+
+- `em.list`: A list of either `fastLink` or `fastLink.EM` objects to be aggregated together.
+
+- `within.geo`: A vector of booleans the same length of `em.list`, to be used if the user wants to aggregate together within-geography matches (for instance, CA 2015 voter file to CA 2016 voter file) and across-geography matches (for instance, CA 2015 voter file to NY 2016 voter file). For entry `i` in `em.list`, `within.geo = TRUE` if it is a within-geography match, and `FALSE` if an across-geogpraphy match. Default is `NULL` (assumes all matches are within-geography).
+
+We can then summarize the aggregated output as done previously:
+```{r}
+summary(agg.out)
+```
+
+If we assume that the first `fastLink` run was for a within-geography match and the second was an across-geography match, the call to `aggregateEM()` would be:
+```{r}
+agg.out <- aggregateEM(em.list = list(link.1, link.2), within.geo = c(TRUE, FALSE))
+summary(agg.out)
+```
