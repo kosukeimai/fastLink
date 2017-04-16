@@ -160,9 +160,18 @@ calcMoversPriors <- function(geo.a, geo.b, year.start, year.end,
     ## Return object
     out <- list()
     if(geo.a == geo.b){
+        if(meancalc < 0){
+            meancalc <- 1e-10
+        }
+        if(dir_mean < 0){
+            dir_mean <- 1e-10
+        }
         out[["lambda.prior"]] <- meancalc
         out[["pi.prior"]] <- dir_mean
     }else{
+        if(meancalc < 0){
+            meancalc <- 1e-10
+        }
         out[["lambda.prior"]] <- meancalc
     }
     
