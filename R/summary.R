@@ -204,7 +204,7 @@ aggregateEM <- function(em.list, within.geo = NULL){
         out <- em.list
     }else{
         if(length(within.geo) != length(em.list)){
-            stop("If provded, within.geo should be the same length as em.list.")
+            stop("If provided, within.geo should be the same length as em.list.")
         }
 
         wg <- vector(mode = "list", length = sum(within.geo))
@@ -212,10 +212,10 @@ aggregateEM <- function(em.list, within.geo = NULL){
         ind.within <- which(within.geo == TRUE)
         ind.across <- which(within.geo == FALSE)
         for(i in 1:length(ind.within)){
-            wg[[i]] <- em.list[[i]]
+            wg[[i]] <- em.list[[ind.within[i]]]
         }
         for(i in 1:length(ind.across)){
-            ag[[i]] <- em.list[[i]]
+            ag[[i]] <- em.list[[ind.across[i]]]
         }
         
         out <- list(within.geo = wg, across.geo = ag)
