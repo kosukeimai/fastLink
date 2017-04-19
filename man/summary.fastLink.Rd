@@ -7,15 +7,16 @@
 \method{summary}{fastLink}(object, thresholds = c(.95, .85, .75), weighted = TRUE, digits = 3, ...)
 }
 \arguments{
-\item{object}{Either a single fastLink object, or a list of lists - where the first list is a
-list of all fastLink objects from within-geography matches, and the second list is a list of all
-fastLink objects from cross-geography matches.}
+\item{object}{Either a single `fastLink` or `fastLink.EM` object, or a list of `fastLink` or `fastLink.EM` objects
+to be aggregated together produced  by `aggregateEM`.}
 
 \item{thresholds}{A vector of posterior probabilities to calculate the summary statistics.}
 
 \item{weighted}{Whether to weight the cross-geography matches on FDR and FNR.}
 
 \item{digits}{How many digits to include in summary object. Default is 3.}
+
+\item{...}{Further arguments to be passed to \code{summary.fastLink()} command.}
 }
 \description{
 \code{summary.fastLink()} calculates and outputs FDR, FNR, and match rates for

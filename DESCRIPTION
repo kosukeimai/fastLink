@@ -21,7 +21,8 @@ Imports:
     stringr,
     Rcpp (>= 0.12.9),
     RcppEigen (>= 0.3.2.9.0),
-    Hmisc
+    Hmisc,
+    FactoClass
 Depends:
     Matrix,
     parallel,
@@ -31,7 +32,8 @@ Depends:
     data.table,
     stringdist,
     stringr,
-    Hmisc
+    Hmisc,
+    FactoClass
 LinkingTo: RcppArmadillo, Rcpp, RcppEigen
 Encoding: UTF-8
 LazyData: true

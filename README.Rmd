@@ -49,30 +49,37 @@ library(fastLink)
 data(samplematch)
 
 matches.out <- fastLink(
-  df_a = dfA, df_b = dfB, 
+  dfA = dfA, dfB = dfB, 
   varnames = c("firstname", "middlename", "lastname", "housenum", "streetname", "city", "birthyear"),
-  stringdist_match = c(TRUE, TRUE, TRUE, FALSE, TRUE, TRUE, FALSE),
-  partial_match = c(TRUE, FALSE, TRUE, FALSE, TRUE, FALSE, FALSE)
+  stringdist.match = c(TRUE, TRUE, TRUE, FALSE, TRUE, TRUE, FALSE),
+  partial.match = c(TRUE, FALSE, TRUE, FALSE, TRUE, FALSE, FALSE)
 )
+
 ```
 
 - `varnames` should be a vector of variable names to be used for
 matching. These variable names should exist in both `dfA` and `dfB`
 
-- `stringdist_match` should be a vector of booleans of the same length
+- `stringdist.match` should be a vector of booleans of the same length
   as `varnames`. `TRUE` means that string-distance matching using the
   Jaro-Winkler similarity will be used.
 
-- `partial_match` is another vector of booleans of the same length as
-  `varnames`. A `TRUE` for an entry in `partial_match` and a `TRUE`
-  for that same entry for `stringdist_match` means that a partial
+- `partial.match` is another vector of booleans of the same length as
+  `varnames`. A `TRUE` for an entry in `partial.match` and a `TRUE`
+  for that same entry for `stringdist.match` means that a partial
   match category will be included in the gamma calculation.
 
 Other arguments that can be provided include:
 
-- `priors_obj`: The output from `precalcPriors()` or `calcMoversPriors()`, allowing the inclusion of auxiliary information on moving behavior to aid matching. We will discuss this option further at the end of this vignette.
+- `priors.obj`: The output from `calcMoversPriors()`, allowing the inclusion of auxiliary information on moving behavior to aid matching. We will discuss this option further at the end of this vignette.
 
-- `address_field`: A boolean vector the same length as `varnames`, where TRUE indicates an address matching field. Default is NULL. Should be specified in conjunction with `priors_obj`. We will discuss this option further at the end of this vignette.
+- `w.lambda`: The user-specified weighting of the MLE and prior estimate for the $\lambda$ parameter, a number between 0 and 1. We will discuss this option further at the end of this vignette.
+
+- `w.pi`: The user-specified weighting of the MLE and prior estimate for the $\pi$ parameter, a number between 0 and 1. We will discuss this option further at the end of this vignette.
+
+- `l.address`: The number of possible matching categories used for address fields, used to calculate optimal hyperparameters for the $\pi$ prior. We will discuss this option further at the end of this vignette.
+
+- `address.field`: A boolean vector the same length as `varnames`, where TRUE indicates an address matching field. Default is NULL. Should be specified in conjunction with `priors_obj`. We will discuss this option further at the end of this vignette.
 
 - `n.cores`: The number of registered cores to parallelize over. If left unspecified. the function will
 estimate this on its own.
@@ -91,12 +98,16 @@ entries:
 - `matches`: A matrix where each row is a match with the relevant
 indices of `dfA` (column 1) and `dfB` (column 2).
 
-- `EM`: The output from the EM algorithm
+- `EM`: The output from the EM algorithm.
+
+- `nobs.a`: The number of observations in dataset A.
+
+- `nobs.b`: The number of observations in dataset B.
 
 The datasets can then be subsetted down to the matches as follows:
 ```{r}
-dfA.match <- dfA[matches.out$matches[,1],]
-dfB.match <- dfB[matches.out$matches[,2],]
+dfA.match <- dfA[matches.out$matches$inds.a,]
+dfB.match <- dfB[matches.out$matches$inds.b,]
 ```
 
 We can also examine the EM object:
@@ -114,6 +125,60 @@ where the first seven columns are indicators for the matching pattern for that f
 - `p.gamma.j.u`: Probability of being in the unmatched set given that matching pattern
 
 - `zeta.j`: Posterior probability of a particular pattern representing a true match
+
+Lastly, we can summarize the accuracy of the match using the `summary()` function:
+```{r}
+summary(matches.out)
+```
+where each column gives the match rate, false discovery rate (FDR) and false negative rate (FNR) under different cutoffs for matches based on the posterior probability of a match. Other arguments include:
+
+- `thresholds`: A vector of thresholds between 0 and 1 to summarize the match.
+
+- `weighted`: Whether to weight the FDR and FNR calculations when doing across-state matches, so that the pooled FDR and FNR calculations are the sum of the within and across-geography FDR and FNR. Default is TRUE.
+
+- `digits`: Number of digits to include in the summary object. Default is 3.
+
+### Preprocessing Matches via Clustering
+In order to reduce the number of pairwise comparisons that need to be conducted, researchers will often cluster similar observations from dataset A and dataset B together so that comparisons are only made between these maximally similar groups. Here, we implement a form of this clustering that uses word embedding, a common preprocessing method for textual data, to form maximally similar groups.
+
+First, we provide some guidance on how to choose the variables to cluster on. We recommend specifically that researchers cluster on first name only - matching on address fields will fail to group people who move into the same group, while matching on last name will fail to cluster women who changed their last name after marriage. Date fields will often change due to administrative errors, and while there may be administrative errors in first name, the word embedding can accomodate those errors while clustering similar spellings in the same group.
+
+The clustering proceeds in three steps. First, a word embedding matrix is created out of the provided data. For instance, a word embedding of the name `ben` would be a vector of length 26, where each entry in the vector represents a different letter. That matrix takes the value 0 for most entries, except for entry 2 (B), 5 (E), and 14 (N), which take the count of 1 (representing the number of times that letter appears in the string). Second, principal components analysis is run on the word embedding matrix. Last, a subset of dimensions from the PCA step are selected according to the amount of variance explained by the dimensions, and then the K-means algorithm is run on that subset of dimensions in order to form the clusters.
+
+The `clusterWordEmbed()` function runs the clustering procedure from start to finish:
+```{r}
+cluster.out <- clusterWordEmbed(vecA = dfA$firstname, vecB = dfB$firstname, nclusters = 3)
+```
+
+- `vecA`: The variable to cluster on in dataset A.
+
+- `vecB`: The variable to cluster on in dataset B.
+
+- `nclusters`: The number of clusters to create. 
+
+Other arguments that can be provided include:
+
+- `max.n`: The maximum size of a dataset in a cluster. `nclusters` is then chosen to reflect this maximum n size. If `nclusters` is filled, then `max.n` should be left as NULL, and vice versa.
+
+- `min.var`: The amount of variance the least informative dimension of the PCA should contribute in order to be included in the K-means step. The default value is .2 (out of 1).
+
+- `weighted.kmeans`: Whether to weight the dimensions of the PCA used in the K-means algorithm by the amount of variance explained by each feature. Default is `TRUE`.
+
+- `iter.max`: The maximum number of iterations the K-means algorithm should attempt to run. The default value is 5000.
+
+The output of `clusterWordEmbed()` includes the following entries:
+
+- `clusterA`: Cluster assignments for dataset A.
+
+- `clusterB`: Cluster assignments for dataset B.
+
+- `n.clusters`: The number of clusters created.
+
+- `kmeans`: The output from the K-means algorithm.
+
+- `pca`: The output from the PCA step.
+
+- `dims.pca`: The number of dimensions from the PCA step included in the K-means algorithm.
 
 ### Running the algorithm step-by-step
 The algorithm can also be run step-by-step for more flexibility. We outline how to do this in the following section, which replicates the example in the wrapper above.
@@ -157,7 +222,7 @@ patterns in our data. This is the only input necessary for the EM
 algorithm. We run `tableCounts()` as follows:
 ```{r}
 gammalist <- list(g_firstname, g_middlename, g_lastname, g_housenum, g_streetname, g_city, g_birthyear)
-tc <- tableCounts(gammalist, nr1 = nrow(dfA), nr2 = nrow(dfB))
+tc <- tableCounts(gammalist, nobs.a = nrow(dfA), nobs.b = nrow(dfB))
 ```
 As with the functions above, `tableCounts()` also includes an `n.cores`
 argument. If left unspecified, the function will automatically
@@ -169,7 +234,7 @@ weights. The only required input to this function is the output from
 `tableCounts()`, as follows:
 ```{r}
 ## Run EM algorithm
-em.out <- emlinkMARmov(tc)
+em.out <- emlinkMARmov(tc, nobs.a = nrow(dfA), nobs.b = nrow(dfB))
 
 ## Postprocessing of EM algorithm
 EM <- data.frame(em.out$patterns.w)
@@ -211,7 +276,7 @@ Once we've run the EM algorithm and selected our lower bound for
 accepting a match, we then run `matchesLink()` to get the paired
 indices of `dfA` and `dfB` that match. We run the function as follows:
 ```{r}
-matches.out <- matchesLink(gammalist, nr1 = nrow(dfA), nr2 = nrow(dfB),
+matches.out <- matchesLink(gammalist, nobs.a = nrow(dfA), nobs.b = nrow(dfB),
                            em = em.out, cut = match.ut)
 ```
 As with the other functions above, `matchesLink()` accepts an `n.cores`
@@ -224,6 +289,11 @@ dfA.match <- dfA[matches.out[,1],]
 dfB.match <- dfB[matches.out[,2],]
 ```
 
+Lastly, we can summarize the match as done earlier by feeding the output from `emlinkMARmov()` into the `summary()` function:
+```{r}
+summary(em.out)
+```
+
 ## Using Auxiliary Information to Inform `fastLink`
 The `fastLink` algorithm also includes several ways to incorporate auxiliary
 information on migration behavior to inform the matching of data sets over time. Auxiliary information is incorporated into the estimation as priors on two parameters of the model:
@@ -232,17 +302,14 @@ information on migration behavior to inform the matching of data sets over time.
 
 - $$\pi_{k,l}$$: The probability that an address field does not match conditional on being in the matched set. Specified when trying to find movers within the same geography over time. For example, when trying to find movers within the same state over time, this quantity is equal to the estimated number of in-state movers divided by the number of in-state movers and non-movers.
 
-The functions `calcMoversPriors()` and `precalcPriors()` can be used to find optimal parameter values for the corresponding prior distributions. `calcMoversPriors()` uses the IRS Statistics of Income Migration Data to estimate these parameters, while `precalcPriors()` accomodates any additional auxiliary information if the prior means are already known. 
+The functions `calcMoversPriors()` can be used to calculate estimates for the corresponding prior distributions using the IRS Statistics of Income Migration Data. 
 
 Below, we show an example where we incorporate the auxiliary moving information for California into our estimates. First, we use `calcMoversPriors()` to estimate optimal parameter values for the priors:
 ```{r}
-priors.out <- calcMoversPriors(geo.a = "CA", geo.b = "CA", year.start = 2014, year.end = 2015, 
-                               var.prior.lambda = 0.0001, var.prior.pi = 0.1, L = 3)
+priors.out <- calcMoversPriors(geo.a = "CA", geo.b = "CA", year.start = 2014, year.end = 2015)
 names(priors.out)
 ```
-where each entry in the list outputs the optimal parameter values for the prior distributions, estimated from the IRS data. 
-
-If the provided variances are too large (forcing the parameter values for the $$\lambda$$ prior or the $$\pi_{k,l}$$ prior below 1), the function will choose new parameter values by testing the sequence $$1/(10^i)$$ to find new variance values that satisfy those restrictions. The means and variances used to calculate optimal paramter values can be viewed in the `parameter_values` field of the `calcMoversPriors()` and `precalcPriors()` output.
+where the `lambda.prior` entry is the estimate of the match rate, while `pi.prior` is the estimate of the in-state movers rate. 
 
 The `calcMoversPriors()` function accepts the following functions:
 
@@ -254,52 +321,84 @@ The `calcMoversPriors()` function accepts the following functions:
 
 - `year.end`: The year of dataset B
 
-- `L`: The number of matching categories for address. For instance, if partial matches are being calculated, L = 3 (no match, partial match, full match)
-
-- `var.prior.lambda`: The prior variance for lambda
-
-- `var.prior.pi`: The prior variance for pi
-
 - `county`: Boolean, whether the geographies in `geo.a` or `geo.b` refer to counties or states. Default is FALSE
 
 - `state.a`: If `county = TRUE`, the name of the state for `geo.a`
 
 - `state.b`: If `county = TRUE`, the name of the state for `geo.b`
 
-- `denom.lambda.mean`: If known, the denominator for the prior mean of lambda. Can be set as the size of the cross-product of dataset A and dataset B
+- `matchrate.lambda`: If TRUE, then returns the match rate for lambda (the expected share of observations in dataset A that can be found in dataset B). If FALSE, then returns the expected share of matches across all pairwise comparisons of datasets A and B. Default is FALSE.
 
-If the prior means are already known and do not need to be estimated from the IRS data, the user can run `precalcPriors()`, which will calculate the same paramters from that data. `precalcPriors()` takes the following arguments:
-
-- `L`: The number of matching categories for address. For instance, if partial matches are being calculated, L = 3 (no match, partial match, full match)
-
-- `lambda.mean`: The estimated prior mean for lambda
-
-- `pi.mean`: The estimated prior mean for pi
-
-- `var.prior.lambda`: The prior variance for lambda
-
-- `var.prior.pi`: The prior variance for pi
+- `remove.instate`: If TRUE, then for calculating cross-state movers rates assumes that successful matches have been subsetted out. The interpretation of the prior is then the match rate conditional on being an out-of-state or county mover. Default is TRUE.
 
 ### Incorporating Auxiliary Information with `fastLink()` Wrapper
 We can re-run the full match above while incorporating auxiliary information as follows:
 ```{r}
+## Reasonable prior estimates for this dataset
+priors.out <- list(lambda.prior = 50/(nrow(dfA) * nrow(dfB)), pi.prior = 0.02)
+
 matches.out.aux <- fastLink(
-  df_a = dfA, df_b = dfB, 
+  dfA = dfA, dfB = dfB, 
   varnames = c("firstname", "middlename", "lastname", "housenum", "streetname", "city", "birthyear"),
-  stringdist_match = c(TRUE, TRUE, TRUE, FALSE, TRUE, TRUE, FALSE),
-  partial_match = c(TRUE, FALSE, TRUE, FALSE, TRUE, FALSE, FALSE),
-  priors_obj = priors.out, 
-  address_field = c(FALSE, FALSE, FALSE, TRUE, TRUE, FALSE, FALSE)
+  stringdist.match = c(TRUE, TRUE, TRUE, FALSE, TRUE, TRUE, FALSE),
+  partial.match = c(TRUE, FALSE, TRUE, FALSE, TRUE, FALSE, FALSE),
+  priors.obj = priors.out, 
+  w.lambda = .5, w.pi = .5, l.address = 3, 
+  address.field = c(FALSE, FALSE, FALSE, FALSE, TRUE, FALSE, FALSE)
 )
 ```
-where `priors_obj` is an input for the the optimal prior parameters calculated by `calcMoversPriors()` or `precalcPriors()`, and `address_field` is a vector of booleans of the same length as `varnames`, where `TRUE` indicates an address-related field used for matching.
+where `priors.obj` is an input for the the optimal prior parameters. This can be calculated by `calcMoversPriors()`, or can be provided by the user as a list with two entries named `lambda.prior` and `pi.prior`. `w.lambda` and `w.pi` are user-specified weights between 0 and 1 indicating the weighting between the MLE estimate and the prior, where a weight of 0 indicates no weight being placed on the prior. `address_field` is a vector of booleans of the same length as `varnames`, where `TRUE` indicates an address-related field used for matching. `l.address` is an integer indicating the number of matching fields used on the address variable - when a single partial match category is included, `l.address = 3`, while for a binary match/no match category `l.address = 2`.
 
 ### Incorporating Auxiliary Information when Running the Algorithm Step-by-Step
 If we are running the algorithm step-by-step, we can incorporate the prior information into the EM algorithm as follows:
 ```{r}
-em.out.aux <- emlinkMARmov(tc, 
-                           psi = priors.out$lambda_prior$psi, mu = priors.out$lambda_prior$mu,
-                           alpha0 = priors.out$pi_prior$alpha_0, alpha1 = priors.out$pi_prior$alpha_1,
-                           address_field = c(FALSE, FALSE, FALSE, TRUE, TRUE, FALSE, FALSE))
+em.out.aux <- emlinkMARmov(tc, nobs.a = nrow(dfA), nobs.b = nrow(dfB),
+                           prior.lambda = priors.out$lambda.prior, w.lambda = .5,
+                           prior.pi = priors.out$pi.prior, w.pi = .5,
+                           address.field = c(FALSE, FALSE, FALSE, FALSE, TRUE, FALSE, FALSE),
+                           l.address = 3)
 ```
-All other steps are the same. The newly specified arguments include the optimal parameter values (`psi`, `mu`, `alpha0`, `alpha1`) and a vector of boolean indicators where an address field is set to TRUE (`address_field`).
+All other steps are the same. The newly specified arguments include the prior estimates of the parameters (`prior.lambda`, `prior.pi`), the weightings of the prior and MLE estimate (`w.lambda`, `w.pi`), the vector of boolean indicators where `TRUE` indicates an address field (`address.field`), and an integer indicating the number of matching categories for the address field (`l.address`).
+
+## Aggregating Multiple Matches Together
+Often, we run several different matches for a single data set - for instance, when blocking by gender or by some other criterion to reduce the number of pairwise comparisons. Here, we walk through how to aggregate those multiple matches into a single summary. First, we use the `clusterWordEmbed()` function to partition the two datasets into two maximally similar groups:
+```{r}
+cl.out <- clusterWordEmbed(dfA$firstname, dfB$firstname, nclusters = 2)
+dfA$cluster <- cl.out$clusterA
+dfB$cluster <- cl.out$clusterB
+```
+and then run `fastLink()` on both subsets:
+```{r}
+link.1 <- fastLink(
+  dfA = subset(dfA, cluster == 1), dfB = subset(dfB, cluster == 1), 
+  varnames = c("firstname", "middlename", "lastname", "housenum", "streetname", "city", "birthyear"),
+  stringdist.match = c(TRUE, TRUE, TRUE, FALSE, TRUE, TRUE, FALSE),
+  partial.match = c(TRUE, FALSE, TRUE, FALSE, TRUE, FALSE, FALSE)
+)
+link.2 <- fastLink(
+  dfA = subset(dfA, cluster == 2), dfB = subset(dfB, cluster == 2), 
+  varnames = c("firstname", "middlename", "lastname", "housenum", "streetname", "city", "birthyear"),
+  stringdist.match = c(TRUE, TRUE, TRUE, FALSE, TRUE, TRUE, FALSE),
+  partial.match = c(TRUE, FALSE, TRUE, FALSE, TRUE, FALSE, FALSE)
+)
+```
+To aggregate the two matches into a single summary, we use the `aggregateEM()` function as follows:
+```{r}
+agg.out <- aggregateEM(em.list = list(link.1, link.2))
+```
+`aggregateEM()` accepts two arguments:
+
+- `em.list`: A list of either `fastLink` or `fastLink.EM` objects to be aggregated together.
+
+- `within.geo`: A vector of booleans the same length of `em.list`, to be used if the user wants to aggregate together within-geography matches (for instance, CA 2015 voter file to CA 2016 voter file) and across-geography matches (for instance, CA 2015 voter file to NY 2016 voter file). For entry `i` in `em.list`, `within.geo = TRUE` if it is a within-geography match, and `FALSE` if an across-geogpraphy match. Default is `NULL` (assumes all matches are within-geography).
+
+We can then summarize the aggregated output as done previously:
+```{r}
+summary(agg.out)
+```
+
+If we assume that the first `fastLink` run was for a within-geography match and the second was an across-geography match, the call to `aggregateEM()` would be:
+```{r}
+agg.out <- aggregateEM(em.list = list(link.1, link.2), within.geo = c(TRUE, FALSE))
+summary(agg.out)
+```

@@ -4,15 +4,15 @@
 \alias{tableCounts}
 \title{tableCounts}
 \usage{
-tableCounts(gammalist, nr1, nr2, n.cores = NULL)
+tableCounts(gammalist, nobs.a, nobs.b, n.cores = NULL)
 }
 \arguments{
 \item{gammalist}{A list of objects produced by either gammaKpar or
 gammaCKpar.}
 
-\item{nr1}{number of observations in dataset 1}
+\item{nobs.a}{number of observations in dataset 1}
 
-\item{nr2}{number of observations in dataset 2}
+\item{nobs.b}{number of observations in dataset 2}
 
 \item{n.cores}{Number of cores to parallelize over. Default is NULL.}
 }
@@ -32,7 +32,7 @@ g3 <- gammaCKpar(dfA$lastname, dfB$lastname)
 g4 <- gammaKpar(dfA$birthyear, dfB$birthyear)
 
 ## Run tableCounts
-tc <- tableCounts(list(g1, g2, g3, g4), nr1 = nrow(dfA), nr2 = nrow(dfB))
+tc <- tableCounts(list(g1, g2, g3, g4), nobs.a = nrow(dfA), nobs.b = nrow(dfB))
 }
 }
 \author{

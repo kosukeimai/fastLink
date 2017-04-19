@@ -2,16 +2,19 @@
 % Please edit documentation in R/summary.R
 \name{aggregateEM}
 \alias{aggregateEM}
-\title{Aggregate EM objects for a single summary}
+\title{Aggregate EM objects for use in `summary.fastLink()`}
 \usage{
-aggregateEM(object)
+aggregateEM(within.geo, across.geo)
 }
 \arguments{
-\item{object}{A list of lists, where each sub-list contains three entries:
-EM (the EM object), nobs_a (the number of observations in dataset A) and
-nobs_b (the number of observations in dataset B)}
+\item{em.list}{A list of `fastLink` or `fastLink.EM` objects that should be aggregate
+in `summary.fastLink()`}
+
+\item{within.geo}{A vector of booleans corresponding to whether each object in `em.list`
+is a within-geography match or an across-geography match. Should be of equal length to
+`em.list`. Default is NULL (assumes all are within-geography matches).}
 }
 \description{
-\code{aggregateEM} aggregates EM objects to create a single statewide summary.
+\code{aggregateEM} aggregates EM objects for easy processing by `summary.fastLink()`
 }
 

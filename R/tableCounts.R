@@ -2,12 +2,12 @@
 #'
 #' Count pairs with the same pattern in the cross product between two datasets.
 #'
-#' @usage tableCounts(gammalist, nr1, nr2, n.cores = NULL)
+#' @usage tableCounts(gammalist, nobs.a, nobs.b, n.cores = NULL)
 #'
 #' @param gammalist A list of objects produced by either gammaKpar or
 #' gammaCKpar. 
-#' @param nr1 number of observations in dataset 1
-#' @param nr2 number of observations in dataset 2
+#' @param nobs.a number of observations in dataset 1
+#' @param nobs.b number of observations in dataset 2
 #' @param n.cores Number of cores to parallelize over. Default is NULL.
 #'
 #' @author Ted Enamorado <ted.enamorado@gmail.com>, Ben Fifield <benfifield@gmail.com>, and Kosuke Imai
@@ -24,7 +24,7 @@
 #' g4 <- gammaKpar(dfA$birthyear, dfB$birthyear)
 #'
 #' ## Run tableCounts
-#' tc <- tableCounts(list(g1, g2, g3, g4), nr1 = nrow(dfA), nr2 = nrow(dfB))
+#' tc <- tableCounts(list(g1, g2, g3, g4), nobs.a = nrow(dfA), nobs.b = nrow(dfB))
 #' }
 #' @export
 
@@ -34,7 +34,7 @@
 ## functions that does the trick
 ## ------------------------
 
-tableCounts <- function(gammalist, nr1, nr2, n.cores = NULL) {
+tableCounts <- function(gammalist, nobs.a, nobs.b, n.cores = NULL) {
     
     ## Lists of indices:
     ##     temp - exact
@@ -53,8 +53,8 @@ tableCounts <- function(gammalist, nr1, nr2, n.cores = NULL) {
     }
 
     ## Slicing the data:
-    n.slices1 <- max(round(as.numeric(nr1)/(4500), 0), 1) 
-    n.slices2 <- max(round(as.numeric(nr2)/(4500), 0), 1) 
+    n.slices1 <- max(round(as.numeric(nobs.a)/(4500), 0), 1) 
+    n.slices2 <- max(round(as.numeric(nobs.b)/(4500), 0), 1) 
     
     if(is.null(n.cores)) {
         n.cores <- detectCores() - 1
@@ -63,8 +63,8 @@ tableCounts <- function(gammalist, nr1, nr2, n.cores = NULL) {
     nc <- min(n.cores, n.slices1 * n.slices2)
 
     ## Prep objects for m_func_par
-    limit.1 <- round(quantile((0:nr1), p = seq(0, 1, 1/n.slices1)), 0)
-    limit.2 <- round(quantile((0:nr2), p = seq(0, 1, 1/n.slices2)), 0)
+    limit.1 <- round(quantile((0:nobs.a), p = seq(0, 1, 1/n.slices1)), 0)
+    limit.2 <- round(quantile((0:nobs.b), p = seq(0, 1, 1/n.slices2)), 0)
 
     last1 <- length(limit.1)
     last2 <- length(limit.2)

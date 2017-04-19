@@ -16,4 +16,5 @@
 #' @keywords package
 #' @import Matrix parallel foreach doParallel gtools stringdist data.table RcppEigen stringr Hmisc
 #' @importFrom Rcpp evalCpp
+#' @importFrom FactoClass kmeansW
 NULL
