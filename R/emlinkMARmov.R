@@ -17,10 +17,12 @@
 #' @param prior.pi The prior probability of the address field not matching, conditional on being in the matched set. To be used when the
 #' share of movers in the population is known with some certainty.
 #' @param w.pi How much weight to give the prior on pi versus the data. Must range between 0 (no weight on prior) and 1 (weight fully on prior)
-#' @param address.field Boolean indicators for whether a given field is an address field. Default is FALSE for all fields.
-#' Address fields should be set to TRUE while non-address fields are set to FALSE.
+#' @param address.field Boolean indicators for whether a given field is an address field. Default is NULL (FALSE for all fields).
+#' Address fields should be set to TRUE while non-address fields are set to FALSE if provided.
 #' @param l.address The number of possible matching categories used for address fields. If a binary yes/no match, \code{l.address} = 2,
 #' while if a partial match category is included, \code{l.address} = 3
+#' @param gender.field Boolean indicators for whether a given field is an address field. Default is NULL (FALSE for all fields).
+#' The one gender field should be set to TRUE while all other fields are set to FALSE if provided.
 #'
 #' @author Ted Enamorado <ted.enamorado@gmail.com> and Kosuke Imai
 #'
@@ -28,7 +30,8 @@
 emlinkMARmov <- function(patterns, nobs.a, nobs.b,
                          p.m = 0.1, iter.max = 5000, tol = 1e-5, p.gamma.k.m = NULL, p.gamma.k.u = NULL,
                          prior.lambda = NULL, w.lambda = NULL, 
-                         prior.pi = NULL, w.pi = NULL, address.field = NULL, l.address = NULL) {
+                         prior.pi = NULL, w.pi = NULL, address.field = NULL, l.address = NULL,
+                         gender.field = NULL) {
 
     options(digits=16)
 
@@ -71,22 +74,9 @@ emlinkMARmov <- function(patterns, nobs.a, nobs.b,
         }
         c.lambda <- w.lambda / (1 - w.lambda)
 
-        ## THESE ARE ORIGINAL EXPRESSIONS
+        ## Optimal hyperparameters for lambda
         mu <- prior.lambda * c.lambda * nobs.a * nobs.b + 1
         psi <- (1 - prior.lambda) * mu / prior.lambda
-        ## THESE ARE ORIGINAL EXPRESSIONS
-
-        ## THESE ARE DENOM-MATCHING EXPRESSIONS
-        ## mu <- prior.lambda * c.lambda^2 * nobs.a * nobs.b / (1 - 2 * prior.lambda)
-        ## psi <- mu * (1 - prior.lambda) / prior.lambda
-        ## THESE ARE DENOM-MATCHING EXPRESSIONS
-
-        ## d <- ((psi - mu) / (nobs.a * nobs.b) + 1)
-        ## w1 <- 1 / d
-        ## w2 <- (((mu - 1) * (mu + psi)) / (mu * nobs.a * nobs.b)) / d
-        ## cat("Sum of the weights =", w1 + w2, "\n")
-        ## cat("mu =", mu, "\n")
-        ## cat("psi =", psi, "\n")
         
         if(w.lambda == 0){
             psi <- 1
@@ -114,28 +104,10 @@ emlinkMARmov <- function(patterns, nobs.a, nobs.b,
         c.pi <- w.pi / (1 - w.pi)
         exp.match <- prior.lambda * nobs.a * nobs.b
 
-        ## THESE ARE THE ORIGINAL EXPRESSIONS
-        alpha0 <- c.pi * prior.pi * exp.match
+        ## Optimal hyperparameters for pi
+        alpha0 <- c.pi * prior.pi * exp.match + 1
         alpha1 <- alpha0 * (1 - prior.pi) / (prior.pi * (l.address - 1))
-        ## THESE ARE THE ORIGINAL EXPRESSIONS
 
-        ## THESE ARE THE DENOMINATOR-MATCHING EXPRESSIONS
-        ## alpha1 <- (c.pi^2 * S + l.address) / (l.address - 1)
-        ## alpha0 <- prior.pi * (l.address - 1) * alpha1 / (1 - prior.pi)
-        ## THESE ARE THE DENOMINATOR-MATCHING EXPRESSIONS
-
-        ## d <- 1 + ((alpha0 - 1) + (l.address - 1) * (alpha1 - 1)) / exp.match
-        
-        ## w1 <- 1 / d
-        ## w2 <- (((alpha0 - 1) * ((alpha0 - 1) + (l.address - 1) * (alpha1 - 1))) / (alpha0 * exp.match)) / d
-        ## cat("Sum of the weights =", w1 + w2, "\n")
-        ## cat("Expected number of matches =", prior.lambda * nobs.a * nobs.b, "\n")
-        
-        ## cat("c =", c.pi, "\n")
-        ## cat("specified prior =", prior.pi, "\n")
-        ## cat("estimated prior =", alpha0 / (alpha0 + (l.address - 1) * alpha1), "\n")
-        ## cat("alpha0 =", alpha0, "\n")
-        ## cat("alpha1 =", alpha1, "\n")
         if(w.pi == 0){
             alpha0 <- 1
             alpha1 <- 1
@@ -145,6 +117,22 @@ emlinkMARmov <- function(patterns, nobs.a, nobs.b,
         alpha1 <- 1
         address.field <- rep(FALSE, nfeatures)
     }
+
+    ## ## Gender match
+    ## if(!is.null(gender.field)){
+    ##     if(is.null(prior.lambda)){
+    ##         stop("If matching on gender, you must specify a prior for lambda.") 
+    ##     }
+    ##     prior.gen <- 1 - 1e-05
+    ##     w.gen <- 1 - 1e-05
+    ##     c.gen <- w.gen / (1 - w.gen)
+    ##     exp.match <- prior.lambda * nobs.a * nobs.b
+
+    ##     ## Optimal hyperparameters for pi.gender
+    ##     alpha1 <- c.gen * prior.gen * exp.match
+    ##     alpha0 <- alpha1 * (1 - prior.gen) / (prior.gen)
+        
+    ## }
 
     ## Overall Prob of finding a Match
     p.u <- 1 - p.m
