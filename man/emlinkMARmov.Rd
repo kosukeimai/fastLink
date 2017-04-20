@@ -7,7 +7,7 @@
 emlinkMARmov(patterns, nobs.a, nobs.b, p.m = 0.1, iter.max = 5000,
   tol = 1e-05, p.gamma.k.m = NULL, p.gamma.k.u = NULL,
   prior.lambda = NULL, w.lambda = NULL, prior.pi = NULL, w.pi = NULL,
-  address.field = NULL, l.address = NULL)
+  address.field = NULL, l.address = NULL, gender.field = NULL)
 }
 \arguments{
 \item{patterns}{table that holds the counts for each unique agreement
@@ -36,11 +36,14 @@ share of movers in the population is known with some certainty.}
 
 \item{w.pi}{How much weight to give the prior on pi versus the data. Must range between 0 (no weight on prior) and 1 (weight fully on prior)}
 
-\item{address.field}{Boolean indicators for whether a given field is an address field. Default is FALSE for all fields.
-Address fields should be set to TRUE while non-address fields are set to FALSE.}
+\item{address.field}{Boolean indicators for whether a given field is an address field. Default is NULL (FALSE for all fields).
+Address fields should be set to TRUE while non-address fields are set to FALSE if provided.}
 
 \item{l.address}{The number of possible matching categories used for address fields. If a binary yes/no match, \code{l.address} = 2,
 while if a partial match category is included, \code{l.address} = 3}
+
+\item{gender.field}{Boolean indicators for whether a given field is for gender. If so, exact match is conducted on gender.
+Default is NULL (FALSE for all fields). The one gender field should be set to TRUE while all other fields are set to FALSE if provided.}
 }
 \description{
 Expectation-Maximization algorithm for Record Linkage under the
