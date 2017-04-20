@@ -129,9 +129,13 @@ emlinkMARmov <- function(patterns, nobs.a, nobs.b,
         exp.match <- prior.lambda * nobs.a * nobs.b
 
         ## Optimal hyperparameters for pi.gender
-        alpha1.g <- c.gen * prior.gen * exp.match + 1
-        alpha0.g <- alpha1 * (1 - prior.gen) / (prior.gen)
+        alpha1g <- c.gen * prior.gen * exp.match + 1
+        alpha0g <- alpha1 * (1 - prior.gen) / (prior.gen)
         
+    }else{
+        alpha1g <- 1
+        alpha0g <- 1
+        gender.field <- rep(FALSE, nfeatures)
     }
 
     ## Overall Prob of finding a Match
@@ -240,15 +244,18 @@ emlinkMARmov <- function(patterns, nobs.a, nobs.b,
         for (i in 1:nfeatures) {
             temp.01 <- temp.02 <- gamma.j.k[, i]
             temp.1 <- unique(na.omit(temp.01))
+            
             temp.2 <- rep(alpha1, (length(temp.1) - 1))
             temp.3 <- c(alpha0, temp.2)
-            temp.g <- c(alpha0, alpha1)
+
+            temp.2g <- rep(alpha0g, (length(temp.1) - 1))
+            temp.3g <- c(temp.2g, alpha1g)
             for (l in 1:length(temp.1)) {
                 p.gamma.k.m[[i]][l] <- (
                     sum(num.prod * ifelse(is.na(gamma.j.k[, i]), 0, 1) * ifelse(is.na(gamma.j.k[, i]), 0, ifelse(gamma.j.k[, i] == temp.1[l], 1, 0))) +
-                    address.field[i] * (temp.3[l] - 1) + gender.field[i] * (temp.g[l] - 1)
+                    address.field[i] * (temp.3[l] - 1) + gender.field[i] * (temp.3g[l] - 1)
                 ) / (
-                    sum(num.prod * ifelse(is.na(gamma.j.k[, i]), 0, 1)) + (address.field[i] * sum(temp.3 - 1)) + gender.field[i] * sum(temp.g - 1)
+                    sum(num.prod * ifelse(is.na(gamma.j.k[, i]), 0, 1)) + (address.field[i] * sum(temp.3 - 1)) + gender.field[i] * sum(temp.3g - 1)
                 )
                 p.gamma.k.u[[i]][l] <- (
                     sum((n.j - num.prod) * ifelse(is.na(gamma.j.k[, i]), 0, 1) * ifelse(is.na(gamma.j.k[, i]), 0, ifelse(gamma.j.k[, i] == temp.1[l], 1, 0)))
