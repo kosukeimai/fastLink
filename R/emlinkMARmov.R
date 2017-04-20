@@ -130,7 +130,7 @@ emlinkMARmov <- function(patterns, nobs.a, nobs.b,
 
         ## Optimal hyperparameters for pi.gender
         alpha1g <- c.gen * prior.gen * exp.match + 1
-        alpha0g <- alpha1 * (1 - prior.gen) / (prior.gen)
+        alpha0g <- alpha1g * (1 - prior.gen) / (prior.gen)
         
     }else{
         alpha1g <- 1
