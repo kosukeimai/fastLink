@@ -22,7 +22,8 @@ Imports:
     Rcpp (>= 0.12.9),
     RcppEigen (>= 0.3.2.9.0),
     Hmisc,
-    FactoClass
+    FactoClass,
+    adagio
 Depends:
     Matrix,
     parallel,
@@ -33,7 +34,8 @@ Depends:
     stringdist,
     stringr,
     Hmisc,
-    FactoClass
+    FactoClass,
+    adagio
 LinkingTo: RcppArmadillo, Rcpp, RcppEigen
 Encoding: UTF-8
 LazyData: true

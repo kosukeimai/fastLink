@@ -4,7 +4,7 @@
 #' two datasets.
 #'
 #' @usage fastLink(dfA, dfB, varnames, stringdist.match,
-#' partial.match = NULL, n.cores = NULL, tol.em = 1e-04,
+#' partial.match = NULL, cut.a, cut.p, n.cores = NULL, tol.em = 1e-04,
 #' match = 0.85, verbose = FALSE)
 #'
 #' @param dfA Dataset A - to be matched to Dataset B
@@ -17,6 +17,8 @@
 #' @param partial.match A vector of booleans, indicating whether to include
 #' a partial matching category for the string distances. Must be same length
 #' as varnames. Default is FALSE for all variables.
+#' @param cut.a Lower bound for full string-distance match, ranging between 0 and 1. Default is 0.92
+#' @param cut.p Lower bound for partial string-distance match, ranging between 0 and 1. Default is 0.88
 #' @param priors.obj A list containing priors for auxiliary movers information,
 #' as output from calcMoversPriors(). Default is NULL
 #' @param w.lambda How much weight to give the prior on lambda versus the data. Must range between 0 (no weight on prior) and 1 (weight fully on prior).
@@ -49,6 +51,7 @@
 #' }
 #' @export
 fastLink <- function(dfA, dfB, varnames,
+                     cut.a = 0.92, cut.p = 0.88,
                      stringdist.match, partial.match = NULL,
                      priors.obj = NULL,
                      w.lambda = NULL, w.pi = NULL, l.address = NULL, address.field = NULL,
@@ -74,6 +77,12 @@ fastLink <- function(dfA, dfB, varnames,
     if(any(class(dfB) %in% c("tbl_df", "data.table"))){
         dfB <- as.data.frame(dfB)
     }
+    if(any(!(varnames %in% names(dfA)))){
+        stop("Some variables in varnames are not present in dfA.")
+    }
+    if(any(!(varnames %in% names(dfB)))){
+        stop("Some variables in varnames are not present in dfB.")
+    }
 
     ## Create gammas
     cat("Calculating matches for each variable.\n")
@@ -88,9 +97,9 @@ fastLink <- function(dfA, dfB, varnames,
         }
         if(stringdist.match[i]){
             if(partial.match[i]){
-                gammalist[[i]] <- gammaCKpar(dfA[,varnames[i]], dfB[,varnames[i]], n.cores = n.cores)
+                gammalist[[i]] <- gammaCKpar(dfA[,varnames[i]], dfB[,varnames[i]], cut.a = cut.a, cut.p = cut.p, n.cores = n.cores)
             }else{
-                gammalist[[i]] <- gammaCK2par(dfA[,varnames[i]], dfB[,varnames[i]], n.cores = n.cores)
+                gammalist[[i]] <- gammaCK2par(dfA[,varnames[i]], dfB[,varnames[i]], cut.a = cut.a, n.cores = n.cores)
             }
         }else{
             gammalist[[i]] <- gammaKpar(dfA[,varnames[i]], dfB[,varnames[i]], n.cores = n.cores)
