@@ -17,10 +17,6 @@ match = 0.85, verbose = FALSE)
 \item{varnames}{A vector of variable names to use for matching.
 Must be present in both dfA and dfB}
 
-\item{cut.a}{Lower bound for full string-distance match, ranging between 0 and 1. Default is 0.92}
-
-\item{cut.p}{Lower bound for partial string-distance match, ranging between 0 and 1. Default is 0.88}
-
 \item{stringdist.match}{A vector of booleans, indicating whether to use
 string distance matching when determining matching patterns on
 each variable. Must be same length as varnames.}
@@ -28,6 +24,10 @@ each variable. Must be same length as varnames.}
 \item{partial.match}{A vector of booleans, indicating whether to include
 a partial matching category for the string distances. Must be same length
 as varnames. Default is NULL (FALSE for all variables).}
+
+\item{cut.a}{Lower bound for full string-distance match, ranging between 0 and 1. Default is 0.92}
+
+\item{cut.p}{Lower bound for partial string-distance match, ranging between 0 and 1. Default is 0.88}
 
 \item{priors.obj}{A list containing priors for auxiliary movers information,
 as output from calcMoversPriors(). Default is NULL}

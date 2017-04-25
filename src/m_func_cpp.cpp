@@ -336,6 +336,9 @@ std::vector< std::vector<arma::vec> > m_func_par(const std::vector< std::vector<
     n = ind(i,0)-1; m = ind(i, 1)-1;
     lims(0) = nlim1(n); lims(1) = nlim2(m);
     lims_2(0) = limit1(n), lims_2(1) = limit2(m);
+
+    clock_t t;
+    t = clock();
     
     // Loop over the number of features
     for(int j = 0; j < temp.size(); j++){
@@ -363,9 +366,15 @@ std::vector< std::vector<arma::vec> > m_func_par(const std::vector< std::vector<
       natemplist[j] = indexing_na(natemp[j], limit1[n], limit1[n+1],
        				  limit2[m], limit2[m+1]);
     }
+    t = clock() - t;
+    Rcout << "cat test" << std::endl;
+    // Rcout << "Indexing features took " << ((float)t)/CLOCKS_PER_SEC << "seconds" << std::endl;
 
     // Run m_func
+    t = clock();
     mf_out = m_func(templist, ptemplist, natemplist, lims, lims_2, listid, matchesLink);
+    t = clock() - t;
+    // Rcout << "Running m_func took " << ((float)t)/CLOCKS_PER_SEC << "seconds" << std::endl;
     ind_out[i] = mf_out;
 
   }
