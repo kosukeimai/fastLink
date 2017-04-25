@@ -4,7 +4,8 @@
 #' two datasets.
 #'
 #' @usage fastLink(dfA, dfB, varnames, stringdist.match,
-#' partial.match = NULL, n.cores = NULL, tol.em = 1e-04,
+#' partial.match = NULL,
+#' cut.a, cut.p, n.cores = NULL, tol.em = 1e-04,
 #' match = 0.85, verbose = FALSE)
 #'
 #' @param dfA Dataset A - to be matched to Dataset B
@@ -16,7 +17,9 @@
 #' each variable. Must be same length as varnames.
 #' @param partial.match A vector of booleans, indicating whether to include
 #' a partial matching category for the string distances. Must be same length
-#' as varnames. Default is FALSE for all variables.
+#' as varnames. Default is NULL (FALSE for all variables).
+#' @param cut.a Lower bound for full string-distance match, ranging between 0 and 1. Default is 0.92
+#' @param cut.p Lower bound for partial string-distance match, ranging between 0 and 1. Default is 0.88
 #' @param priors.obj A list containing priors for auxiliary movers information,
 #' as output from calcMoversPriors(). Default is NULL
 #' @param w.lambda How much weight to give the prior on lambda versus the data. Must range between 0 (no weight on prior) and 1 (weight fully on prior).
@@ -27,6 +30,9 @@
 #' while if a partial match category is included, \code{l.address} = 3. Default is NULL (no prior information provided).
 #' @param address.field A vector of booleans for whether a given field is an address field. To be used when 'pi.prior' is included in 'priors.obj'.
 #' Default is FALSE for all fields. Address fields should be set to TRUE while non-address fields are set to FALSE.
+#' @param gender.field A vector of booleans, indicating whether a matching variable
+#' indicates gender. If so, the exact-matching gender prior is used in the EM algorithm.
+#' Must be the same length as varnames if provided. Default is NULL (FALSE for all variables).
 #' @param n.cores Number of cores to parallelize over. Default is NULL.
 #' @param tol.em Convergence tolerance for the EM Algorithm. Default is 1e-04.
 #' @param match A number between 0 and 1. The closer to 1 the more centainty you have about a given pair being a match 
@@ -49,9 +55,11 @@
 #' }
 #' @export
 fastLink <- function(dfA, dfB, varnames,
+                     cut.a = 0.92, cut.p = 0.88,
                      stringdist.match, partial.match = NULL,
                      priors.obj = NULL,
                      w.lambda = NULL, w.pi = NULL, l.address = NULL, address.field = NULL,
+                     gender.field = NULL,
                      n.cores = NULL, tol.em = 1e-04, match = 0.85, verbose = FALSE){
 
     cat("\n")
@@ -68,11 +76,22 @@ fastLink <- function(dfA, dfB, varnames,
     if(length(varnames) != length(partial.match)){
         stop("There must be one entry in partial.match for each entry in varnames.")
     }
+    if(!is.null(gender.field)){
+        if(length(varnames) != length(gender.field)){
+            stop("There must be one entry in gender.field for each entry in varnames.")
+        }
+    }
     if(any(class(dfA) %in% c("tbl_df", "data.table"))){
         dfA <- as.data.frame(dfA)
     }
     if(any(class(dfB) %in% c("tbl_df", "data.table"))){
         dfB <- as.data.frame(dfB)
+    }
+    if(any(!(varnames %in% names(dfA)))){
+        stop("Some variables in varnames are not present in dfA.")
+    }
+    if(any(!(varnames %in% names(dfB)))){
+        stop("Some variables in varnames are not present in dfB.")
     }
 
     ## Create gammas
@@ -88,9 +107,9 @@ fastLink <- function(dfA, dfB, varnames,
         }
         if(stringdist.match[i]){
             if(partial.match[i]){
-                gammalist[[i]] <- gammaCKpar(dfA[,varnames[i]], dfB[,varnames[i]], n.cores = n.cores)
+                gammalist[[i]] <- gammaCKpar(dfA[,varnames[i]], dfB[,varnames[i]], cut.a = cut.a, cut.p = cut.p, n.cores = n.cores)
             }else{
-                gammalist[[i]] <- gammaCK2par(dfA[,varnames[i]], dfB[,varnames[i]], n.cores = n.cores)
+                gammalist[[i]] <- gammaCK2par(dfA[,varnames[i]], dfB[,varnames[i]], cut.a = cut.a, n.cores = n.cores)
             }
         }else{
             gammalist[[i]] <- gammaKpar(dfA[,varnames[i]], dfB[,varnames[i]], n.cores = n.cores)
@@ -137,7 +156,8 @@ fastLink <- function(dfA, dfB, varnames,
                               tol = tol.em,
                               prior.lambda = lambda.prior, w.lambda = w.lambda,
                               prior.pi = pi.prior, w.pi = w.pi,
-                              address.field = address.field, l.address = l.address)
+                              address.field = address.field, l.address = l.address,
+                              gender.field = gender.field)
     end <- Sys.time()
     if(verbose){
         cat("Running the EM algorithm took", round(difftime(end, start, units = "secs"), 2), "seconds.\n\n")

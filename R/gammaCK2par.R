@@ -29,7 +29,7 @@
 ## in parallel
 ## ------------------------
 
-gammaCK2par <- function(matAp, matBp, n.cores = NULL, cut.a = NULL) {
+gammaCK2par <- function(matAp, matBp, n.cores = NULL, cut.a = 0.92) {
 
     requireNamespace('parallel')
     requireNamespace('stringdist')
@@ -56,10 +56,6 @@ gammaCK2par <- function(matAp, matBp, n.cores = NULL, cut.a = NULL) {
     
     if(is.null(n.cores)) {
         n.cores <- detectCores() - 1
-    }
-
-    if(is.null(cut.a)) {
-        cut.a <- 0.92
     }
 
     matrix.1 <- as.matrix(as.character(matAp))

@@ -31,7 +31,7 @@
 ## in parallel
 ## ------------------------
 
-gammaCK3par <- function(matAp, matBp, n.cores = NULL, cut.a = NULL, cut.p = NULL,
+gammaCK3par <- function(matAp, matBp, n.cores = NULL, cut.a = 0.92, cut.p = 0.832,
                         calc.prior = FALSE, var = NULL) {
 
   	requireNamespace('parallel')

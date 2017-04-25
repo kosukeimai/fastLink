@@ -21,8 +21,8 @@
 #' Address fields should be set to TRUE while non-address fields are set to FALSE if provided.
 #' @param l.address The number of possible matching categories used for address fields. If a binary yes/no match, \code{l.address} = 2,
 #' while if a partial match category is included, \code{l.address} = 3
-#' @param gender.field Boolean indicators for whether a given field is an address field. Default is NULL (FALSE for all fields).
-#' The one gender field should be set to TRUE while all other fields are set to FALSE if provided.
+#' @param gender.field Boolean indicators for whether a given field is for gender. If so, exact match is conducted on gender.
+#' Default is NULL (FALSE for all fields). The one gender field should be set to TRUE while all other fields are set to FALSE if provided.
 #'
 #' @author Ted Enamorado <ted.enamorado@gmail.com> and Kosuke Imai
 #'
@@ -118,21 +118,25 @@ emlinkMARmov <- function(patterns, nobs.a, nobs.b,
         address.field <- rep(FALSE, nfeatures)
     }
 
-    ## ## Gender match
-    ## if(!is.null(gender.field)){
-    ##     if(is.null(prior.lambda)){
-    ##         stop("If matching on gender, you must specify a prior for lambda.") 
-    ##     }
-    ##     prior.gen <- 1 - 1e-05
-    ##     w.gen <- 1 - 1e-05
-    ##     c.gen <- w.gen / (1 - w.gen)
-    ##     exp.match <- prior.lambda * nobs.a * nobs.b
+    ## Gender match
+    if(!is.null(gender.field)){
+        if(is.null(prior.lambda)){
+            stop("If matching on gender, you must specify a prior for lambda.") 
+        }
+        prior.gen <- 1 - 1e-05
+        w.gen <- 1 - 1e-05
+        c.gen <- w.gen / (1 - w.gen)
+        exp.match <- prior.lambda * nobs.a * nobs.b
 
-    ##     ## Optimal hyperparameters for pi.gender
-    ##     alpha1 <- c.gen * prior.gen * exp.match
-    ##     alpha0 <- alpha1 * (1 - prior.gen) / (prior.gen)
+        ## Optimal hyperparameters for pi.gender
+        alpha1g <- c.gen * prior.gen * exp.match + 1
+        alpha0g <- alpha1g * (1 - prior.gen) / (prior.gen)
         
-    ## }
+    }else{
+        alpha1g <- 1
+        alpha0g <- 1
+        gender.field <- rep(FALSE, nfeatures)
+    }
 
     ## Overall Prob of finding a Match
     p.u <- 1 - p.m
@@ -240,11 +244,24 @@ emlinkMARmov <- function(patterns, nobs.a, nobs.b,
         for (i in 1:nfeatures) {
             temp.01 <- temp.02 <- gamma.j.k[, i]
             temp.1 <- unique(na.omit(temp.01))
+            
             temp.2 <- rep(alpha1, (length(temp.1) - 1))
             temp.3 <- c(alpha0, temp.2)
+
+            temp.2g <- rep(alpha0g, (length(temp.1) - 1))
+            temp.3g <- c(temp.2g, alpha1g)
             for (l in 1:length(temp.1)) {
-                p.gamma.k.m[[i]][l] <- (sum(num.prod * ifelse(is.na(gamma.j.k[, i]), 0, 1) * ifelse(is.na(gamma.j.k[, i]), 0, ifelse(gamma.j.k[, i] == temp.1[l], 1, 0))) + address.field[i] * (temp.3[l] - 1))/ (sum(num.prod * ifelse(is.na(gamma.j.k[, i]), 0, 1)) + (address.field[i]  * sum(temp.3 - 1)))
-                p.gamma.k.u[[i]][l] <- sum((n.j - num.prod) * ifelse(is.na(gamma.j.k[, i]), 0, 1) * ifelse(is.na(gamma.j.k[, i]), 0, ifelse(gamma.j.k[, i] == temp.1[l], 1, 0)))/sum((n.j - num.prod) * ifelse(is.na(gamma.j.k[, i]), 0, 1))
+                p.gamma.k.m[[i]][l] <- (
+                    sum(num.prod * ifelse(is.na(gamma.j.k[, i]), 0, 1) * ifelse(is.na(gamma.j.k[, i]), 0, ifelse(gamma.j.k[, i] == temp.1[l], 1, 0))) +
+                    address.field[i] * (temp.3[l] - 1) + gender.field[i] * (temp.3g[l] - 1)
+                ) / (
+                    sum(num.prod * ifelse(is.na(gamma.j.k[, i]), 0, 1)) + (address.field[i] * sum(temp.3 - 1)) + gender.field[i] * sum(temp.3g - 1)
+                )
+                p.gamma.k.u[[i]][l] <- (
+                    sum((n.j - num.prod) * ifelse(is.na(gamma.j.k[, i]), 0, 1) * ifelse(is.na(gamma.j.k[, i]), 0, ifelse(gamma.j.k[, i] == temp.1[l], 1, 0)))
+                ) / (
+                    sum((n.j - num.prod) * ifelse(is.na(gamma.j.k[, i]), 0, 1))
+                )
             }
         }
 
