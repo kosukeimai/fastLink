@@ -367,13 +367,13 @@ std::vector< std::vector<arma::vec> > m_func_par(const std::vector< std::vector<
        				  limit2[m], limit2[m+1]);
     }
     t = clock() - t;
-    Rcout << "Indexing features took " << ((float)t)/CLOCKS_PER_SEC << "seconds" << std::endl;
+    Rcout << "Indexing features took " << ((float)t)/CLOCKS_PER_SEC << " seconds and " << t << " clicks." << std::endl;
 
     // Run m_func
     t = clock();
     mf_out = m_func(templist, ptemplist, natemplist, lims, lims_2, listid, matchesLink);
     t = clock() - t;
-    Rcout << "Running m_func took " << ((float)t)/CLOCKS_PER_SEC << "seconds" << std::endl;
+    Rcout << "Running m_func took " << ((float)t)/CLOCKS_PER_SEC << " seconds and "<< t << "clicks." << std::endl;
     ind_out[i] = mf_out;
 
   }
