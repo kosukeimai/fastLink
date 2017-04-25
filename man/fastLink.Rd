@@ -5,7 +5,8 @@
 \title{fastLink}
 \usage{
 fastLink(dfA, dfB, varnames, stringdist.match,
-partial.match = NULL, n.cores = NULL, tol.em = 1e-04,
+partial.match = NULL,
+cut.a, cut.p, n.cores = NULL, tol.em = 1e-04,
 match = 0.85, verbose = FALSE)
 }
 \arguments{
@@ -16,13 +17,17 @@ match = 0.85, verbose = FALSE)
 \item{varnames}{A vector of variable names to use for matching.
 Must be present in both dfA and dfB}
 
+\item{cut.a}{Lower bound for full string-distance match, ranging between 0 and 1. Default is 0.92}
+
+\item{cut.p}{Lower bound for partial string-distance match, ranging between 0 and 1. Default is 0.88}
+
 \item{stringdist.match}{A vector of booleans, indicating whether to use
 string distance matching when determining matching patterns on
 each variable. Must be same length as varnames.}
 
 \item{partial.match}{A vector of booleans, indicating whether to include
 a partial matching category for the string distances. Must be same length
-as varnames. Default is FALSE for all variables.}
+as varnames. Default is NULL (FALSE for all variables).}
 
 \item{priors.obj}{A list containing priors for auxiliary movers information,
 as output from calcMoversPriors(). Default is NULL}
@@ -38,6 +43,10 @@ while if a partial match category is included, \code{l.address} = 3. Default is 
 
 \item{address.field}{A vector of booleans for whether a given field is an address field. To be used when 'pi.prior' is included in 'priors.obj'.
 Default is FALSE for all fields. Address fields should be set to TRUE while non-address fields are set to FALSE.}
+
+\item{gender.field}{A vector of booleans, indicating whether a matching variable
+indicates gender. If so, the exact-matching gender prior is used in the EM algorithm.
+Must be the same length as varnames if provided. Default is NULL (FALSE for all variables).}
 
 \item{n.cores}{Number of cores to parallelize over. Default is NULL.}
 
