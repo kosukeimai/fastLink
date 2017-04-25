@@ -230,7 +230,7 @@ std::vector<arma::vec> m_func(const std::vector< std::vector<arma::mat> > matche
   Rcout << "Unpacking matches took " << ((float)t)/CLOCKS_PER_SEC << " seconds and " << t << " clicks." << std::endl;
   
   // Add up everything
-  t = clock()
+  t = clock();
   SpMat sp(lims(0), lims(1));
   SpMat match_pmatch(lims(0), lims(1));
   SpMat match_pmatch_na(lims(0), lims(1));
