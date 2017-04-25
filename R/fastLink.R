@@ -55,8 +55,8 @@
 #' }
 #' @export
 fastLink <- function(dfA, dfB, varnames,
-                     cut.a = 0.92, cut.p = 0.88,
                      stringdist.match, partial.match = NULL,
+                     cut.a = 0.92, cut.p = 0.88,
                      priors.obj = NULL,
                      w.lambda = NULL, w.pi = NULL, l.address = NULL, address.field = NULL,
                      gender.field = NULL,
