@@ -216,21 +216,15 @@ std::vector<arma::vec> m_func(const std::vector< std::vector<arma::mat> > matche
 			      const arma::vec listid,
 			      const bool matchesLink
 			      ){
-
-  clock_t t;
   
   // Create sparse matches, pmatches object
-  t = clock();
   const std::vector<SpMat> matches_up  = unpack_matches(matches,  lims, true);
   const std::vector<SpMat> pmatches_up = unpack_matches(pmatches, lims, false);
 
   // Create sparse NA matrix
   const std::vector<SpMat> nas_sp = create_sparse_na(nas, lims);
-  t = clock() - t;
-  Rcout << "Unpacking matches took " << ((float)t)/CLOCKS_PER_SEC << " seconds and " << t << " clicks." << std::endl;
   
   // Add up everything
-  t = clock();
   SpMat sp(lims(0), lims(1));
   SpMat match_pmatch(lims(0), lims(1));
   SpMat match_pmatch_na(lims(0), lims(1));
@@ -240,10 +234,7 @@ std::vector<arma::vec> m_func(const std::vector< std::vector<arma::mat> > matche
     match_pmatch_na = match_pmatch + nas_sp[i];
     sp = sp + match_pmatch_na;
   }
-  t = clock() - t;
-  Rcout << "Adding sparse matrices took " << ((float)t)/CLOCKS_PER_SEC << " seconds and " << t << " clicks." << std::endl;
 
-  t = clock();
   std::vector<arma::vec> nz_out(2);
   if(matchesLink == false){
 
@@ -297,8 +288,6 @@ std::vector<arma::vec> m_func(const std::vector< std::vector<arma::mat> > matche
     }
     
   }
-  t = clock() - t;
-  Rcout << "Creating output object took " << ((float)t)/CLOCKS_PER_SEC << " seconds and " << t << " clicks." << std::endl;
 
   return nz_out;
   
@@ -347,9 +336,6 @@ std::vector< std::vector<arma::vec> > m_func_par(const std::vector< std::vector<
     n = ind(i,0)-1; m = ind(i, 1)-1;
     lims(0) = nlim1(n); lims(1) = nlim2(m);
     lims_2(0) = limit1(n), lims_2(1) = limit2(m);
-
-    clock_t t;
-    t = clock();
     
     // Loop over the number of features
     for(int j = 0; j < temp.size(); j++){
@@ -377,14 +363,9 @@ std::vector< std::vector<arma::vec> > m_func_par(const std::vector< std::vector<
       natemplist[j] = indexing_na(natemp[j], limit1[n], limit1[n+1],
        				  limit2[m], limit2[m+1]);
     }
-    t = clock() - t;
-    Rcout << "Indexing features took " << ((float)t)/CLOCKS_PER_SEC << " seconds and " << t << " clicks." << std::endl;
 
     // Run m_func
-    t = clock();
     mf_out = m_func(templist, ptemplist, natemplist, lims, lims_2, listid, matchesLink);
-    t = clock() - t;
-    Rcout << "Running m_func took " << ((float)t)/CLOCKS_PER_SEC << " seconds and "<< t << "clicks." << std::endl;
     ind_out[i] = mf_out;
 
   }
