@@ -216,7 +216,7 @@ std::vector<arma::vec> m_func(const std::vector< std::vector<arma::mat> > matche
 			      const arma::vec listid,
 			      const bool matchesLink
 			      ){
-
+  
   // Create sparse matches, pmatches object
   const std::vector<SpMat> matches_up  = unpack_matches(matches,  lims, true);
   const std::vector<SpMat> pmatches_up = unpack_matches(pmatches, lims, false);
