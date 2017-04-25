@@ -217,14 +217,20 @@ std::vector<arma::vec> m_func(const std::vector< std::vector<arma::mat> > matche
 			      const bool matchesLink
 			      ){
 
+  clock_t t;
+  
   // Create sparse matches, pmatches object
+  t = clock();
   const std::vector<SpMat> matches_up  = unpack_matches(matches,  lims, true);
   const std::vector<SpMat> pmatches_up = unpack_matches(pmatches, lims, false);
 
   // Create sparse NA matrix
   const std::vector<SpMat> nas_sp = create_sparse_na(nas, lims);
+  t = clock() - t;
+  Rcout << "Unpacking matches took " << ((float)t)/CLOCKS_PER_SEC << " seconds and " << t << " clicks." << std::endl;
   
   // Add up everything
+  t = clock()
   SpMat sp(lims(0), lims(1));
   SpMat match_pmatch(lims(0), lims(1));
   SpMat match_pmatch_na(lims(0), lims(1));
@@ -234,7 +240,10 @@ std::vector<arma::vec> m_func(const std::vector< std::vector<arma::mat> > matche
     match_pmatch_na = match_pmatch + nas_sp[i];
     sp = sp + match_pmatch_na;
   }
+  t = clock() - t;
+  Rcout << "Adding sparse matrices took " << ((float)t)/CLOCKS_PER_SEC << " seconds and " << t << " clicks." << std::endl;
 
+  t = clock();
   std::vector<arma::vec> nz_out(2);
   if(matchesLink == false){
 
@@ -288,6 +297,8 @@ std::vector<arma::vec> m_func(const std::vector< std::vector<arma::mat> > matche
     }
     
   }
+  t = clock() - t;
+  Rcout << "Creating output object took " << ((float)t)/CLOCKS_PER_SEC << " seconds and " << t << " clicks." << std::endl;
 
   return nz_out;
   
