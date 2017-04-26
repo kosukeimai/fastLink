@@ -54,7 +54,7 @@
 ## we use matchesLink
 ## ------------------------
 
-matchesLink <- function(gammalist, nobs.a, nobs.b, em, cut, n.cores = NULL, sample.pct = 1) {
+matchesLink <- function(gammalist, nobs.a, nobs.b, em, cut, n.cores = NULL) {
 
     if(is.null(n.cores)) {
         n.cores <- detectCores() - 1
@@ -139,11 +139,6 @@ matchesLink <- function(gammalist, nobs.a, nobs.b, em, cut, n.cores = NULL, samp
       	}
 
       	stopCluster(cl)
-
-        ## Sample
-        nslice <- round(length(gammas) * sample.pct)
-        inds <- sample(1:length(gammas), nslice, replace = FALSE)
-        gammas <- gammas[inds]
         
 	gammas_mat <- list()
 	for(i in 1:length(gammas)){
@@ -164,11 +159,6 @@ matchesLink <- function(gammalist, nobs.a, nobs.b, em, cut, n.cores = NULL, samp
                              nlim1 = n.lim.1, nlim2 = n.lim.2,
                              ind = ind, listid = list.id,
                              matchesLink = TRUE, threads = nc)
-
-        ## Sample
-        nslice <- round(length(gammas) * sample.pct)
-        inds <- sample(1:length(gammas), nslice, replace = FALSE)
-        gammas <- gammas[inds]
 
         gammas_mat <- lapply(gammas, function(x){
             as.matrix(data.frame(x[[1]], x[[2]]))
