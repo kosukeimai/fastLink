@@ -302,3 +302,94 @@ emlinkMARmov <- function(patterns, nobs.a, nobs.b,
     return(output)
 }
 
+#' emlinkRS
+#'
+#' Calculates Felligi-Sunter weights and posterior zeta probabilities
+#' for matching patterns observed in a larger population that are
+#' not present in a sub-sample used to estimate the EM.
+#'
+#' @param patterns.out The output from `tableCounts()` or `emlinkMARmov()` (run on full dataset),
+#' containing all observed matching patterns in the full sample and the number of times that pattern
+#' is observed.
+#' @param em.out The output from `emlinkMARmov()`, an EM object estimated
+#' on a smaller random sample to apply to counts from a larger sample
+#'
+#' @author Ted Enamorado <ted.enamorado@gmail.com> and Ben Fifield <benfifield@gmail.com>
+#'
+#' @export
+emlinkRS <- function(patterns.out, em.out){
+    if("tableCounts" %in% class(patterns.out)){
+        patterns.out <- patterns.out
+    }else if("fastLink.EM" %in% class(patterns.out)){
+        patterns.out <- patterns.out$patterns.w
+        inds <- grep("gamma.[[:digit:]]", colnames(patterns.out))
+        inds <- c(inds, max(inds)+1)
+        patterns.out <- patterns.out[,inds]
+    }else{
+        stop("Your `patterns.out` object is not a valid tableCounts object.")
+    }
+    if(!("fastLink.EM" %in% class(em.out))){
+        stop("Your `em.out` object is not a valid emlinkMARmov object.")
+    }
+    options(digits = 16)
+    nfeatures <- ncol(patterns.out) - 1
+    gamma.j.k <- as.matrix(patterns.out[, 1:nfeatures])
+    N <- nrow(gamma.j.k)
+    
+    p.m <- em.out$p.m
+    p.u <- 1 - p.m
+
+    p.gamma.k.m <- em.out$p.gamma.k.m
+    p.gamma.k.u <- em.out$p.gamma.k.u
+
+    p.gamma.k.j.m <- matrix(rep(NA, N * nfeatures), nrow = nfeatures, 
+                            ncol = N)
+    p.gamma.k.j.u <- matrix(rep(NA, N * nfeatures), nrow = nfeatures, 
+                            ncol = N)
+    p.gamma.j.m <- matrix(rep(NA, N), nrow = N, ncol = 1)
+    p.gamma.j.u <- matrix(rep(NA, N), nrow = N, ncol = 1)
+
+    for (i in 1:nfeatures) {
+        temp.01 <- temp.02 <- gamma.j.k[, i]
+        temp.1 <- unique(na.omit(temp.01))
+        temp.2 <- p.gamma.k.m[[i]]
+        temp.3 <- p.gamma.k.u[[i]]
+        for (j in 1:length(temp.1)) {
+            temp.01[temp.01 == temp.1[j]] <- temp.2[j]
+            temp.02[temp.02 == temp.1[j]] <- temp.3[j]
+        }
+        p.gamma.k.j.m[i, ] <- temp.01
+        p.gamma.k.j.u[i, ] <- temp.02
+    }
+    
+    sumlog <- function(x) {
+        sum(log(x), na.rm = T)
+    }
+    
+    p.gamma.j.m <- as.matrix((apply(p.gamma.k.j.m, 2, sumlog)))
+    p.gamma.j.m <- exp(p.gamma.j.m)
+    p.gamma.j.u <- as.matrix((apply(p.gamma.k.j.u, 2, sumlog)))
+    p.gamma.j.u <- exp(p.gamma.j.u)
+    log.prod <- log(p.gamma.j.m) + log(p.m)
+    logxpy <- function(lx, ly) {
+        temp <- cbind(lx, ly)
+        apply(temp, 1, max) + log1p(exp(-abs(lx - ly)))
+    }
+    log.sum <- logxpy(log(p.gamma.j.m) + log(p.m), log(p.gamma.j.u) + 
+                                                   log(p.u))
+    zeta.j <- exp(log.prod - log.sum)
+    weights <- log(p.gamma.j.m) - log(p.gamma.j.u)
+    data.w <- cbind(patterns.out, weights, p.gamma.j.m, p.gamma.j.u)
+    nc <- ncol(data.w)
+    colnames(data.w)[nc - 3] <- "counts"
+    colnames(data.w)[nc - 2] <- "weights"
+    colnames(data.w)[nc - 1] <- "p.gamma.j.m"  
+    colnames(data.w)[nc] <- "p.gamma.j.u"
+    
+    output <- list("zeta.j" = zeta.j, "p.m" = em.out$p.m, "p.u" = em.out$p.u, "p.gamma.k.m" = em.out$p.gamma.k.m, "p.gamma.k.u" = em.out$p.gamma.k.u,
+                   "p.gamma.j.m" = p.gamma.j.m, "p.gamma.j.u" = p.gamma.j.u, "patterns.w" = data.w, "iter.converge" = em.out$iter.converge,
+                   "nobs.a" = em.out$nobs.a, "nobs.b" = em.out$nobs.b)
+    class(output) <- c("fastLink", "fastLink.EM")
+    
+    return(output)
+}
