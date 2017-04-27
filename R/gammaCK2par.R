@@ -142,6 +142,7 @@ gammaCK2par <- function(matAp, matBp, n.cores = NULL, cut.a = 0.92) {
     out <- list()
     out[["matches2"]] <- final.list2
     out[["nas"]] <- na.list
+    class(out) <- c("fastLink", "gammaCK2par")
     
     return(out)
 }

@@ -26,8 +26,6 @@
 #' Default is NULL (no prior information provided).
 #' @param w.pi How much weight to give the prior on pi versus the data. Must range between 0 (no weight on prior) and 1 (weight fully on prior).
 #' Default is NULL (no prior information provided).
-#' @param l.address The number of possible matching categories used for address fields. If a binary yes/no match, \code{l.address} = 2,
-#' while if a partial match category is included, \code{l.address} = 3. Default is NULL (no prior information provided).
 #' @param address.field A vector of booleans for whether a given field is an address field. To be used when 'pi.prior' is included in 'priors.obj'.
 #' Default is FALSE for all fields. Address fields should be set to TRUE while non-address fields are set to FALSE.
 #' @param gender.field A vector of booleans, indicating whether a matching variable
@@ -58,7 +56,7 @@ fastLink <- function(dfA, dfB, varnames,
                      stringdist.match, partial.match = NULL,
                      cut.a = 0.92, cut.p = 0.88,
                      priors.obj = NULL,
-                     w.lambda = NULL, w.pi = NULL, l.address = NULL, address.field = NULL,
+                     w.lambda = NULL, w.pi = NULL, address.field = NULL,
                      gender.field = NULL,
                      n.cores = NULL, tol.em = 1e-04, match = 0.85, verbose = FALSE){
 
@@ -156,7 +154,7 @@ fastLink <- function(dfA, dfB, varnames,
                               tol = tol.em,
                               prior.lambda = lambda.prior, w.lambda = w.lambda,
                               prior.pi = pi.prior, w.pi = w.pi,
-                              address.field = address.field, l.address = l.address,
+                              address.field = address.field, partial.match = partial.match,
                               gender.field = gender.field)
     end <- Sys.time()
     if(verbose){
@@ -193,7 +191,7 @@ fastLink <- function(dfA, dfB, varnames,
     ## Return object
     out <- list()
     out[["matches"]] <- matches
-    out[["EM"]] <- EM
+    out[["EM"]] <- resultsEM
     out[["nobs.a"]] <- nr_a
     out[["nobs.b"]] <- nr_b
     class(out) <- "fastLink"

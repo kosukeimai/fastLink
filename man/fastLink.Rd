@@ -38,9 +38,6 @@ Default is NULL (no prior information provided).}
 \item{w.pi}{How much weight to give the prior on pi versus the data. Must range between 0 (no weight on prior) and 1 (weight fully on prior).
 Default is NULL (no prior information provided).}
 
-\item{l.address}{The number of possible matching categories used for address fields. If a binary yes/no match, \code{l.address} = 2,
-while if a partial match category is included, \code{l.address} = 3. Default is NULL (no prior information provided).}
-
 \item{address.field}{A vector of booleans for whether a given field is an address field. To be used when 'pi.prior' is included in 'priors.obj'.
 Default is FALSE for all fields. Address fields should be set to TRUE while non-address fields are set to FALSE.}
 

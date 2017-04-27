@@ -89,6 +89,7 @@ gammaKpar <- function(matAp, matBp, n.cores = NULL) {
     out <- list()
     out[["matches2"]] <- final.list
     out[["nas"]] <- na.list
+    class(out) <- c("fastLink", "gammaKpar")
 
     return(out)
 }

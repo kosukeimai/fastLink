@@ -19,8 +19,8 @@
 #' @param w.pi How much weight to give the prior on pi versus the data. Must range between 0 (no weight on prior) and 1 (weight fully on prior)
 #' @param address.field Boolean indicators for whether a given field is an address field. Default is NULL (FALSE for all fields).
 #' Address fields should be set to TRUE while non-address fields are set to FALSE if provided.
-#' @param l.address The number of possible matching categories used for address fields. If a binary yes/no match, \code{l.address} = 2,
-#' while if a partial match category is included, \code{l.address} = 3
+#' @param partial.match A vector of booleans, indicating whether a partial matching category is used for each variable. Must be same length
+#' as varnames. Default is NULL (FALSE for all variables).
 #' @param gender.field Boolean indicators for whether a given field is for gender. If so, exact match is conducted on gender.
 #' Default is NULL (FALSE for all fields). The one gender field should be set to TRUE while all other fields are set to FALSE if provided.
 #'
@@ -30,7 +30,7 @@
 emlinkMARmov <- function(patterns, nobs.a, nobs.b,
                          p.m = 0.1, iter.max = 5000, tol = 1e-5, p.gamma.k.m = NULL, p.gamma.k.u = NULL,
                          prior.lambda = NULL, w.lambda = NULL, 
-                         prior.pi = NULL, w.pi = NULL, address.field = NULL, l.address = NULL,
+                         prior.pi = NULL, w.pi = NULL, address.field = NULL, partial.match = NULL,
                          gender.field = NULL) {
 
     options(digits=16)
@@ -103,6 +103,13 @@ emlinkMARmov <- function(patterns, nobs.a, nobs.b,
         }
         c.pi <- w.pi / (1 - w.pi)
         exp.match <- prior.lambda * nobs.a * nobs.b
+
+        ## Get l.address
+        if(partial.match[address.field] == TRUE){
+            l.address <- 3
+        }else{
+            l.address <- 2
+        }
 
         ## Optimal hyperparameters for pi
         alpha0 <- c.pi * prior.pi * exp.match + 1
@@ -326,7 +333,7 @@ emlinkRS <- function(patterns.out, em.out){
         inds <- c(inds, max(inds)+1)
         patterns.out <- patterns.out[,inds]
     }else{
-        stop("Your `patterns.out` object is not a valid tableCounts object.")
+        stop("Your `patterns.out` object is not a valid tableCounts or emlinkMARmov object.")
     }
     if(!("fastLink.EM" %in% class(em.out))){
         stop("Your `em.out` object is not a valid emlinkMARmov object.")
