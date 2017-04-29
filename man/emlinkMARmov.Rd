@@ -7,7 +7,7 @@
 emlinkMARmov(patterns, nobs.a, nobs.b, p.m = 0.1, iter.max = 5000,
   tol = 1e-05, p.gamma.k.m = NULL, p.gamma.k.u = NULL,
   prior.lambda = NULL, w.lambda = NULL, prior.pi = NULL, w.pi = NULL,
-  address.field = NULL, partial.match = NULL, gender.field = NULL)
+  address.field = NULL, gender.field = NULL)
 }
 \arguments{
 \item{patterns}{table that holds the counts for each unique agreement
@@ -38,9 +38,6 @@ share of movers in the population is known with some certainty.}
 
 \item{address.field}{Boolean indicators for whether a given field is an address field. Default is NULL (FALSE for all fields).
 Address fields should be set to TRUE while non-address fields are set to FALSE if provided.}
-
-\item{partial.match}{A vector of booleans, indicating whether a partial matching category is used for each variable. Must be same length
-as varnames. Default is NULL (FALSE for all variables).}
 
 \item{gender.field}{Boolean indicators for whether a given field is for gender. If so, exact match is conducted on gender.
 Default is NULL (FALSE for all fields). The one gender field should be set to TRUE while all other fields are set to FALSE if provided.}
