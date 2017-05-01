@@ -324,20 +324,21 @@ std::vector< std::vector<arma::vec> > m_func_par(const std::vector< std::vector<
 #ifdef _OPENMP
   int n_inds = ind.n_rows;
   Rcout << n_inds << " slices to parallelize over." << std::endl;
-  int nt = omp_get_num_threads();
-  Rcout << nt << "threads available." << std::endl;
-  Rcout << "Declaring " << threads << " threads." << std::endl;
-  omp_set_num_threads(threads);
-  nt = omp_get_num_threads();
-  Rcout << "After declaring, " << nt << " threads available." << std::endl; 
-  int threadsused = omp_get_max_threads();
-  Rcout << "Gamma calculation is parallelized. "
-	<< threadsused << " threads out of "
-	<< omp_get_num_procs() << " are used."
-	<< std::endl; 
+  omp_set_num_threads(1);
+  if(threads > 0){
+    omp_set_num_threads(threads);
+    int threadsused = omp_get_max_threads();
+    Rcout << "Gamma calculation is parallelized. "
+	  << threadsused << " threads out of "
+	  << omp_get_num_procs() << " are used."
+	  << std::endl;
+  }
 #pragma omp parallel for private(n, m, temp_feature, ptemp_feature) firstprivate(lims, lims_2, templist, ptemplist, natemplist, mf_out)
 #endif
   for(int i = 0; i < ind.n_rows; i++){
+
+    int nt = omp_get_num_threads();
+    Rcout << "In thread " << nt << std::endl;
 
     // Get indices of the rows
     n = ind(i,0)-1; m = ind(i, 1)-1;
