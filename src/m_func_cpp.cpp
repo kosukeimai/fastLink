@@ -322,7 +322,7 @@ std::vector< std::vector<arma::vec> > m_func_par(const std::vector< std::vector<
   
   // Declare pragma environment
 #ifdef _OPENMP
-  int n_inds = int.n_rows;
+  int n_inds = ind.n_rows;
   Rcout << n_inds << " slices to parallelize over." << std::endl;
   int nt = omp_get_num_threads();
   Rcout << nt << "threads available." << std::endl;
