@@ -337,8 +337,7 @@ std::vector< std::vector<arma::vec> > m_func_par(const std::vector< std::vector<
 #endif
   for(int i = 0; i < ind.n_rows; i++){
 
-    int nt = omp_get_num_threads();
-    Rcout << "In thread " << nt << std::endl;
+    Rcout << "In thread " << i << std::endl;
 
     // Get indices of the rows
     n = ind(i,0)-1; m = ind(i, 1)-1;
@@ -376,6 +375,7 @@ std::vector< std::vector<arma::vec> > m_func_par(const std::vector< std::vector<
     mf_out = m_func(templist, ptemplist, natemplist, lims, lims_2, listid, matchesLink);
     ind_out[i] = mf_out;
 
+      Rcout << "Finished thread " << i << std::endl;
   }
 
   return ind_out;
