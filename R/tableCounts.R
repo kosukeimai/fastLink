@@ -27,7 +27,9 @@
 #' tc <- tableCounts(list(g1, g2, g3, g4), nobs.a = nrow(dfA), nobs.b = nrow(dfB))
 #' }
 #' @export
-
+#' @importFrom parallel detectCores makeCluster stopCluster
+#' @importFrom doParallel registerDoParallel
+#' @importFrom foreach "%dopar%" foreach
 ## ------------------------
 ## To count unique patterns:
 ## tableCounts is the

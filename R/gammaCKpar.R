@@ -24,7 +24,7 @@
 #' }
 #'
 #' @export
-
+#' @importFrom stringdist stringdistmatrix
 ## ------------------------
 ## gammaCKpar: Now it takes values 0, 1, 2
 ## This function applies gamma.k
@@ -32,12 +32,6 @@
 ## ------------------------
 
 gammaCKpar <- function(matAp, matBp, n.cores = NULL, cut.a = 0.92, cut.p = 0.88) {
-
-    requireNamespace('parallel')
-    requireNamespace('stringdist')
-    requireNamespace('Matrix')
-    requireNamespace('doParallel')
-    requireNamespace('stats')
 
     if(any(class(matAp) %in% c("tbl_df", "data.table"))){
         matAp <- as.data.frame(matAp)[,1]
@@ -90,8 +84,6 @@ gammaCKpar <- function(matAp, matBp, n.cores = NULL, cut.a = 0.92, cut.p = 0.88)
     stringvec <- function(m, y, cut) {
         x <- as.matrix(m[[1]])
         e <- as.matrix(y[[1]])
-        require('stringdist')
-        require('Matrix')
         t <- 1 - stringdistmatrix(e, x, method = "jw", nthread = 1)
         t[ t < cut[2] ] <- 0
         t <- Matrix(t, sparse = T)

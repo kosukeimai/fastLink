@@ -11,6 +11,9 @@ gammaKpar(matAp, matBp, n.cores = NULL)
 
 \item{matBp}{vector storing the comparison field in data set 2}
 
+\item{gender}{Whether the matching variable is gender. Will override
+standard warnings of missingness/nonvariability. Default is FALSE.}
+
 \item{n.cores}{Number of cores to parallelize over. Default is NULL.}
 }
 \value{

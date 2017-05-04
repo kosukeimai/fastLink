@@ -6,6 +6,8 @@
 #' 
 #' @param matAp vector storing the comparison field in data set 1
 #' @param matBp vector storing the comparison field in data set 2
+#' @param gender Whether the matching variable is gender. Will override
+#' standard warnings of missingness/nonvariability. Default is FALSE.
 #' @param n.cores Number of cores to parallelize over. Default is NULL.
 #'
 #'
@@ -26,7 +28,7 @@
 ## in parallel
 ## ------------------------
 
-gammaKpar <- function(matAp, matBp, n.cores = NULL) {
+gammaKpar <- function(matAp, matBp, gender = FALSE, n.cores = NULL) {
 
     if(any(class(matAp) %in% c("tbl_df", "data.table"))){
         matAp <- as.data.frame(matAp)[,1]
@@ -35,8 +37,6 @@ gammaKpar <- function(matAp, matBp, n.cores = NULL) {
         matBp <- as.data.frame(matBp)[,1]
     }
 
-    requireNamespace('parallel')
-
     if(is.null(n.cores)) {
         n.cores <- detectCores() - 1
     }
@@ -44,11 +44,20 @@ gammaKpar <- function(matAp, matBp, n.cores = NULL) {
     matAp[matAp == ""] <- NA
     matBp[matBp == ""] <- NA
 
-    if(sum(is.na(matAp)) == length(matAp) | length(unique(matAp)) == 1){
-        stop("You have no variation in this variable, or all observations are missing in dataset A.")
-    }
-    if(sum(is.na(matBp)) == length(matBp) | length(unique(matBp)) == 1){
-        stop("You have no variation in this variable, or all observations are missing in dataset B.")
+    if(!gender){
+        if(sum(is.na(matAp)) == length(matAp) | length(unique(matAp)) == 1){
+            stop("You have no variation in this variable, or all observations are missing in dataset A.")
+        }
+        if(sum(is.na(matBp)) == length(matBp) | length(unique(matBp)) == 1){
+            stop("You have no variation in this variable, or all observations are missing in dataset B.")
+        }
+    }else{
+        if(sum(is.na(matAp)) == length(matAp)){
+            stop("You have no variation in this variable, or all observations are missing in dataset A.")
+        }
+        if(sum(is.na(matBp)) == length(matBp)){
+            stop("You have no variation in this variable, or all observations are missing in dataset B.")
+        }
     }
 
     matrix.1 <- as.matrix(as.character(matAp))

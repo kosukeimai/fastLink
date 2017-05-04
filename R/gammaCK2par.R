@@ -31,12 +31,6 @@
 
 gammaCK2par <- function(matAp, matBp, n.cores = NULL, cut.a = 0.92) {
 
-    requireNamespace('parallel')
-    requireNamespace('stringdist')
-    requireNamespace('Matrix')
-    requireNamespace('doParallel')
-    requireNamespace('stats')
-
     if(any(class(matAp) %in% c("tbl_df", "data.table"))){
         matAp <- as.data.frame(matAp)[,1]
     }
@@ -88,8 +82,6 @@ gammaCK2par <- function(matAp, matBp, n.cores = NULL, cut.a = 0.92) {
     stringvec <- function(m, y, cut) {
         x <- as.matrix(m[[1]])
         e <- as.matrix(y[[1]])
-        requireNamespace('stringdist')
-        requireNamespace('Matrix')
         t <- 1 - stringdistmatrix(e, x, method = "jw")
         t[ t < cut ] <- 0
         t <- Matrix(t, sparse = T)
