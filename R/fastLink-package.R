@@ -14,8 +14,8 @@
 #' 
 #' Maintainer: Ted Enamorado \email{tede@@princeton.edu}
 #' @keywords package
-#' @import Matrix parallel foreach doParallel gtools stringdist data.table RcppEigen stringr Hmisc
+#' @import Matrix data.table
 #' @importFrom Rcpp evalCpp
-#' @importFrom FactoClass kmeansW
-#' @importFrom adagio assignment
+#' @importFrom stats kmeans na.omit prcomp predict quantile var
+#' @importFrom utils data
 NULL

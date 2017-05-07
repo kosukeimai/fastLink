@@ -34,7 +34,6 @@ calcMoversPriors <- function(geo.a, geo.b, year.start, year.end,
 
     ## Load the correct level of IRS data
     if(!county){
-        data(irs_statemigration); data(statecode_to_fips)
         outfips <- statefips$statefips[statefips$state == geo.a]
         infips <- statefips$statefips[statefips$state == geo.b]
         outf <- subset(
@@ -46,7 +45,6 @@ calcMoversPriors <- function(geo.a, geo.b, year.start, year.end,
             & y2_statefips == infips
         )
     }else{
-        data(irs_countymigration); data(countyname_to_fips)
         geo.a <- tolower(geo.a); geo.b <- tolower(geo.b)
         outfips <- countyfips$fips[countyfips$statecode == state.a &
                                    countyfips$countyname == geo.a]
@@ -152,7 +150,6 @@ calcMoversPriors <- function(geo.a, geo.b, year.start, year.end,
         if(!county){
             dir_mean <- m_a / (nm_a + m_a)
         }else{
-            data(cps_statemovers)
             dir_mean <- tab$est[tab$state == state.a]
         }
     }

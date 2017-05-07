@@ -25,6 +25,7 @@
 #' @author Ted Enamorado <ted.enamorado@gmail.com> and Kosuke Imai
 #'
 #' @export
+#' @importFrom gtools rdirichlet
 emlinkMARmov <- function(patterns, nobs.a, nobs.b,
                          p.m = 0.1, iter.max = 5000, tol = 1e-5, p.gamma.k.m = NULL, p.gamma.k.u = NULL,
                          prior.lambda = NULL, w.lambda = NULL, 
@@ -140,8 +141,6 @@ emlinkMARmov <- function(patterns, nobs.a, nobs.b,
     p.u <- 1 - p.m
 
     ## Field specific probability of observing gamma.k conditional on M
-    suppressMessages(require('gtools'))
-
     if (is.null(p.gamma.k.m)) {
         p.gamma.k.m <- list()
         for (i in 1:nfeatures) {

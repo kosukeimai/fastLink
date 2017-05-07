@@ -20,22 +20,11 @@ Imports:
     stringdist,
     stringr,
     Rcpp (>= 0.12.9),
-    RcppEigen (>= 0.3.2.9.0),
     Hmisc,
     FactoClass,
     adagio
 Depends:
-    Matrix,
-    parallel,
-    foreach,
-    doParallel,
-    gtools,
-    data.table,
-    stringdist,
-    stringr,
-    Hmisc,
-    FactoClass,
-    adagio
+    R (>= 3.1.0)
 LinkingTo: RcppArmadillo, Rcpp, RcppEigen
 Encoding: UTF-8
 LazyData: true

@@ -35,6 +35,8 @@
 #' @examples data(samplematch)
 #' cl <- clusterWordEmbed(dfA$firstname, dfB$firstname, nclusters = 3)
 #' @export
+#' @importFrom FactoClass kmeansW
+#' @importFrom stringr str_count
 clusterWordEmbed <- function(vecA, vecB,
                              nclusters = NULL, max.n = NULL,
                              min.var = .20,

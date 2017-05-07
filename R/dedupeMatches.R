@@ -29,6 +29,8 @@
 ## #' \item{EM}{A deduped version of the EM object}
 ## #' 
 ## #' @author Ted Enamorado <ted.enamorado@gmail.com> and Ben Fifield <benfifield@gmail.com>
+## #' @export
+## #' @importFrom adagio assignment
 ## dedupeMatches <- function(matchesA, matchesB, EM, matchesLink,
 ##                           varnames, stringdist.match, partial.match,
 ##                           cut.a = 0.92, cut.p = 0.88){
