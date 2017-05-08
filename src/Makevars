@@ -1,10 +1,4 @@
 ## Use the R_HOME indirection to support installations of multiple R version
 
-CXX=icc
-CXX1X=icc
-CXX11=icc
-CXX14=icc
-CXX17=icc
-
-PKG_CXXFLAGS = $(SHLIB_OPENMP_CXXFLAGS)
+PKG_CXXFLAGS = $(SHLIB_OPENMP_CXXFLAGS) 
 PKG_LIBS = `$(R_HOME)/bin/Rscript -e "Rcpp:::LdFlags()"` $(LAPACK_LIBS) $(BLAS_LIBS) $(FLIBS) $(SHLIB_OPENMP_CXXFLAGS)
