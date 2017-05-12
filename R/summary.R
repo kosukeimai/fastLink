@@ -7,7 +7,10 @@ summarize.em <- function(x, thresholds){
         EM <- EM[order(EM[, "weights"]), ]
         n1 <- em.out$nobs.a; n2 <- em.out$nobs.b
     }else{
-        EM <- x$EM
+        em.out <- x$EM
+        EM <- data.frame(em.out$patterns.w)
+        EM$zeta.j <- em.out$zeta.j
+        EM <- EM[order(EM[, "weights"]), ]
         n1 <- x$nobs.a; n2 <- x$nobs.b
     }
 

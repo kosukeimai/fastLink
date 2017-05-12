@@ -154,7 +154,7 @@ fastLink <- function(dfA, dfB, varnames,
                               tol = tol.em,
                               prior.lambda = lambda.prior, w.lambda = w.lambda,
                               prior.pi = pi.prior, w.pi = w.pi,
-                              address.field = address.field, partial.match = partial.match,
+                              address.field = address.field, 
                               gender.field = gender.field)
     end <- Sys.time()
     if(verbose){
