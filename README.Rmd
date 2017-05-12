@@ -54,7 +54,6 @@ matches.out <- fastLink(
   stringdist.match = c(TRUE, TRUE, TRUE, FALSE, TRUE, TRUE, FALSE),
   partial.match = c(TRUE, FALSE, TRUE, FALSE, TRUE, FALSE, FALSE)
 )
-
 ```
 
 - `varnames` should be a vector of variable names to be used for
@@ -143,11 +142,9 @@ In order to reduce the number of pairwise comparisons that need to be conducted,
 
 First, we provide some guidance on how to choose the variables to cluster on. We recommend specifically that researchers cluster on first name only - matching on address fields will fail to group people who move into the same group, while matching on last name will fail to cluster women who changed their last name after marriage. Date fields will often change due to administrative errors, and while there may be administrative errors in first name, the word embedding can accomodate those errors while clustering similar spellings in the same group.
 
-The clustering proceeds in three steps. First, a word embedding matrix is created out of the provided data. For instance, a word embedding of the name `ben` would be a vector of length 26, where each entry in the vector represents a different letter. That matrix takes the value 0 for most entries, except for entry 2 (B), 5 (E), and 14 (N), which take the count of 1 (representing the number of times that letter appears in the string). Second, principal components analysis is run on the word embedding matrix. Last, a subset of dimensions from the PCA step are selected according to the amount of variance explained by the dimensions, and then the K-means algorithm is run on that subset of dimensions in order to form the clusters.
-
-The `clusterWordEmbed()` function runs the clustering procedure from start to finish:
+The `clusterMatch()` function runs the clustering procedure from start to finish:
 ```{r}
-cluster.out <- clusterWordEmbed(vecA = dfA$firstname, vecB = dfB$firstname, nclusters = 3)
+cluster.out <- clusterMatch(vecA = dfA$firstname, vecB = dfB$firstname, nclusters = 3)
 ```
 
 - `vecA`: The variable to cluster on in dataset A.
@@ -158,15 +155,17 @@ cluster.out <- clusterWordEmbed(vecA = dfA$firstname, vecB = dfB$firstname, nclu
 
 Other arguments that can be provided include:
 
+- `word.embed`: Whether to use word embedding clustering, which is explained in more detail below. If `FALSE`, then alphabetical clustering is used. Default is FALSE.
+
 - `max.n`: The maximum size of a dataset in a cluster. `nclusters` is then chosen to reflect this maximum n size. If `nclusters` is filled, then `max.n` should be left as NULL, and vice versa.
 
-- `min.var`: The amount of variance the least informative dimension of the PCA should contribute in order to be included in the K-means step. The default value is .2 (out of 1).
+- `min.var`: The amount of variance the least informative dimension of the PCA should contribute in order to be included in the K-means step. Only relevant for word embedding clustering. The default value is .2 (out of 1).
 
-- `weighted.kmeans`: Whether to weight the dimensions of the PCA used in the K-means algorithm by the amount of variance explained by each feature. Default is `TRUE`.
+- `weighted.kmeans`: Whether to weight the dimensions of the PCA used in the K-means algorithm by the amount of variance explained by each feature. Only relevant for word embedding clustering. Default is `TRUE`.
 
 - `iter.max`: The maximum number of iterations the K-means algorithm should attempt to run. The default value is 5000.
 
-The output of `clusterWordEmbed()` includes the following entries:
+The output of `clusterMatch()` includes the following entries:
 
 - `clusterA`: Cluster assignments for dataset A.
 
@@ -176,9 +175,11 @@ The output of `clusterWordEmbed()` includes the following entries:
 
 - `kmeans`: The output from the K-means algorithm.
 
-- `pca`: The output from the PCA step.
+- `pca`: The output from the PCA step (if word embedding clustering is used).
 
-- `dims.pca`: The number of dimensions from the PCA step included in the K-means algorithm.
+- `dims.pca`: The number of dimensions from the PCA step included in the K-means algorithm (if word embedding clustering is used).
+
+If using word embedding clustering, the clustering proceeds in three steps. First, a word embedding matrix is created out of the provided data. For instance, a word embedding of the name `ben` would be a vector of length 26, where each entry in the vector represents a different letter. That matrix takes the value 0 for most entries, except for entry 2 (B), 5 (E), and 14 (N), which take the count of 1 (representing the number of times that letter appears in the string). Second, principal components analysis is run on the word embedding matrix. Last, a subset of dimensions from the PCA step are selected according to the amount of variance explained by the dimensions, and then the K-means algorithm is run on that subset of dimensions in order to form the clusters.
 
 ### Running the algorithm step-by-step
 The algorithm can also be run step-by-step for more flexibility. We outline how to do this in the following section, which replicates the example in the wrapper above.
@@ -343,7 +344,7 @@ matches.out.aux <- fastLink(
   stringdist.match = c(TRUE, TRUE, TRUE, FALSE, TRUE, TRUE, FALSE),
   partial.match = c(TRUE, FALSE, TRUE, FALSE, TRUE, FALSE, FALSE),
   priors.obj = priors.out, 
-  w.lambda = .5, w.pi = .5, l.address = 3, 
+  w.lambda = .5, w.pi = .5, 
   address.field = c(FALSE, FALSE, FALSE, FALSE, TRUE, FALSE, FALSE)
 )
 ```
@@ -355,15 +356,14 @@ If we are running the algorithm step-by-step, we can incorporate the prior infor
 em.out.aux <- emlinkMARmov(tc, nobs.a = nrow(dfA), nobs.b = nrow(dfB),
                            prior.lambda = priors.out$lambda.prior, w.lambda = .5,
                            prior.pi = priors.out$pi.prior, w.pi = .5,
-                           address.field = c(FALSE, FALSE, FALSE, FALSE, TRUE, FALSE, FALSE),
-                           l.address = 3)
+                           address.field = c(FALSE, FALSE, FALSE, FALSE, TRUE, FALSE, FALSE))
 ```
 All other steps are the same. The newly specified arguments include the prior estimates of the parameters (`prior.lambda`, `prior.pi`), the weightings of the prior and MLE estimate (`w.lambda`, `w.pi`), the vector of boolean indicators where `TRUE` indicates an address field (`address.field`), and an integer indicating the number of matching categories for the address field (`l.address`).
 
 ## Aggregating Multiple Matches Together
-Often, we run several different matches for a single data set - for instance, when blocking by gender or by some other criterion to reduce the number of pairwise comparisons. Here, we walk through how to aggregate those multiple matches into a single summary. First, we use the `clusterWordEmbed()` function to partition the two datasets into two maximally similar groups:
+Often, we run several different matches for a single data set - for instance, when blocking by gender or by some other criterion to reduce the number of pairwise comparisons. Here, we walk through how to aggregate those multiple matches into a single summary. First, we use the `clusterMatch()` function to partition the two datasets into two maximally similar groups:
 ```{r}
-cl.out <- clusterWordEmbed(dfA$firstname, dfB$firstname, nclusters = 2)
+cl.out <- clusterMatch(dfA$firstname, dfB$firstname, nclusters = 2)
 dfA$cluster <- cl.out$clusterA
 dfB$cluster <- cl.out$clusterB
 ```
