@@ -4,7 +4,7 @@
 \alias{matchesLink}
 \title{matchesLink}
 \usage{
-matchesLink(gammalist, nobs.a, nobs.b, em, cut, n.cores = NULL)
+matchesLink(gammalist, nobs.a, nobs.b, em, thresh, n.cores = NULL)
 }
 \arguments{
 \item{gammalist}{A list of objects produced by either gammaKpar or
@@ -15,9 +15,10 @@ gammaCKpar.}
 \item{nobs.b}{number of observations in dataset 2}
 
 \item{em}{parameters obtained from the Expectation-Maximization algorithm under the MAR assumption. These estimates are
-produced by emlinkMAR}
+produced by emlinkMARmov}
 
-\item{cut}{is the interval of weight values for the agreements that we want to examine closer.}
+\item{thresh}{is the interval of posterior zeta values for the agreements that we want to examine closer. Ranges between 0 and 1.
+Can be a vector of length 1 (from specified value to 1) or 2 (from first specified value to second specified value).}
 
 \item{n.cores}{Number of cores to parallelize over. Default is NULL.}
 }
@@ -44,17 +45,10 @@ tc <- tableCounts(list(g1, g2, g3, g4), nobs.a = nrow(dfA), nobs.b = nrow(dfB))
 
 ## Run EM
 em <- emlinkMAR(tc)
-EM <- data.frame(resultsEM$patterns.w)
-EM$zeta.j <- resultsEM$zeta.j
-EM <- EM[order(EM[, "weights"]), ]
-EM$cumsum.m <- cumsum(EM[, "p.gamma.j.m"])
-EM$cumsum.u <- 1 - cumsum(EM[, "p.gamma.j.u"])
-
-match.ut <- EM$weights[ EM$zeta.j >= 0.85][1]
 
 ## Get matches
 ml <- matchesLink(list(g1, g2, g3, g4), nobs.a = nrow(dfA), nobs.b = nrow(dfB),
-em = em, cut = match.ut)
+em = em, thresh = .95)
 }
 
 }

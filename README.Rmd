@@ -85,7 +85,7 @@ estimate this on its own.
 
 - `tol.em`: Convergence tolerance for the EM algorithm. Default is 1e-04
 
-- `match`: Lower bound for the posterior probability of a match that
+- `threshold.match`: Lower bound for the posterior probability of a match that
 will be accepted. Default is 0.85.
 
 - `verbose`: Whether to print out runtime for each step and EM
@@ -236,12 +236,6 @@ weights. The only required input to this function is the output from
 ```{r}
 ## Run EM algorithm
 em.out <- emlinkMARmov(tc, nobs.a = nrow(dfA), nobs.b = nrow(dfB))
-
-## Postprocessing of EM algorithm
-EM <- data.frame(em.out$patterns.w)
-EM$zeta.j <- em.out$zeta.j
-EM <- EM[order(EM[, "weights"]), ] 
-match.ut <- EM$weights[ EM$zeta.j >= 0.85 ][1]
 ```
 
 As with the other functions above, `emlinkMARmov()` accepts an `n.cores`
@@ -266,20 +260,16 @@ fields
 
 and additional arguments that allow the user to specify priors calculated from auxiliary information. We will discuss these further at the end of this vignette.
 
-The code following `emlinkMARmov()` sorts the linkage patterns by the
-Fellegi-Sunter weight, and then selects the lowest weight that is
-still classified as a positive match according to the posterior
-probability that a linkage pattern is in the matched set. In this
-case, we've chosen that probability to be 0.85.
-
 #### 4) Finding the matches
 Once we've run the EM algorithm and selected our lower bound for
 accepting a match, we then run `matchesLink()` to get the paired
 indices of `dfA` and `dfB` that match. We run the function as follows:
 ```{r}
 matches.out <- matchesLink(gammalist, nobs.a = nrow(dfA), nobs.b = nrow(dfB),
-                           em = em.out, cut = match.ut)
+                           em = em.out, thresh = .95)
 ```
+Here, `thresh` indicates the range of posterior probabilities that we want to declare a match --- in our case, we've chosen to accept as a match any pair with a 95% or higher posterior matching probability. If we specify `thresh = c(.85, .95)`, for instance, the function will return all pairs with a posterior matching probability between 85% and 95%.
+
 As with the other functions above, `matchesLink()` accepts an `n.cores`
 argument. This returns a matrix where each row is a match with the relevant indices of
 `dfA` (column 1) and `dfB` (column 2).

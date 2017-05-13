@@ -6,7 +6,7 @@
 #' @usage fastLink(dfA, dfB, varnames, stringdist.match,
 #' partial.match = NULL,
 #' cut.a, cut.p, n.cores = NULL, tol.em = 1e-04,
-#' match = 0.85, verbose = FALSE)
+#' threshold.match = 0.85, verbose = FALSE)
 #'
 #' @param dfA Dataset A - to be matched to Dataset B
 #' @param dfB Dataset B - to be matched to Dataset A
@@ -33,7 +33,9 @@
 #' Must be the same length as varnames if provided. Default is NULL (FALSE for all variables).
 #' @param n.cores Number of cores to parallelize over. Default is NULL.
 #' @param tol.em Convergence tolerance for the EM Algorithm. Default is 1e-04.
-#' @param match A number between 0 and 1. The closer to 1 the more centainty you have about a given pair being a match 
+#' @param threshold.match A number between 0 and 1 indicating either the lower bound (if only one number provided) or the range of certainty that the
+#' user wants to declare a match. For instance, threshold.match = .85 will return all pairs with posterior probability greater than .85 as matches,
+#' while threshold.match = c(.85, .95) will return all pairs with posterior probability between .85 and .95 as matches.
 #' @param verbose Whether to print elapsed time for each step. Default is FALSE.
 #'
 #' @return \code{fastLink} returns a list of class 'fastLink' containing the following components:
@@ -58,7 +60,7 @@ fastLink <- function(dfA, dfB, varnames,
                      priors.obj = NULL,
                      w.lambda = NULL, w.pi = NULL, address.field = NULL,
                      gender.field = NULL,
-                     n.cores = NULL, tol.em = 1e-04, match = 0.85, verbose = FALSE){
+                     n.cores = NULL, tol.em = 1e-04, threshold.match = 0.85, verbose = FALSE){
 
     cat("\n")
     cat(c(paste(rep("=", 20), sep = "", collapse = ""), "\n"))
@@ -173,13 +175,11 @@ fastLink <- function(dfA, dfB, varnames,
         cat("\n\n")
     }
 
-    match.ut <- EM$weights[ EM$zeta.j >= match ][1]
-
     ## Get matches
     cat("Getting the indices of estimated matches.\n")
     start <- Sys.time()
     matches <- matchesLink(gammalist, nobs.a = nr_a, nobs.b = nr_b,
-                           em = resultsEM, cut = match.ut,
+                           em = resultsEM, thresh = threshold.match,
                            n.cores = n.cores)
     end <- Sys.time()
     if(verbose){

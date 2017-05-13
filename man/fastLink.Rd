@@ -7,7 +7,7 @@
 fastLink(dfA, dfB, varnames, stringdist.match,
 partial.match = NULL,
 cut.a, cut.p, n.cores = NULL, tol.em = 1e-04,
-match = 0.85, verbose = FALSE)
+threshold.match = 0.85, verbose = FALSE)
 }
 \arguments{
 \item{dfA}{Dataset A - to be matched to Dataset B}
@@ -49,7 +49,9 @@ Must be the same length as varnames if provided. Default is NULL (FALSE for all 
 
 \item{tol.em}{Convergence tolerance for the EM Algorithm. Default is 1e-04.}
 
-\item{match}{A number between 0 and 1. The closer to 1 the more centainty you have about a given pair being a match}
+\item{threshold.match}{A number between 0 and 1 indicating either the lower bound (if only one number provided) or the range of certainty that the
+user wants to declare a match. For instance, threshold.match = .85 will return all pairs with posterior probability greater than .85 as matches,
+while threshold.match = c(.85, .95) will return all pairs with posterior probability between .85 and .95 as matches.}
 
 \item{verbose}{Whether to print elapsed time for each step. Default is FALSE.}
 }

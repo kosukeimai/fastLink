@@ -5,15 +5,16 @@
 #' to the an interval of the Fellegi-Sunter
 #' weights
 #'
-#' @usage matchesLink(gammalist, nobs.a, nobs.b, em, cut, n.cores = NULL)
+#' @usage matchesLink(gammalist, nobs.a, nobs.b, em, thresh, n.cores = NULL)
 #'
 #' @param gammalist A list of objects produced by either gammaKpar or
 #' gammaCKpar. 
 #' @param nobs.a number of observations in dataset 1
 #' @param nobs.b number of observations in dataset 2
 #' @param em parameters obtained from the Expectation-Maximization algorithm under the MAR assumption. These estimates are
-#' produced by emlinkMAR
-#' @param cut is the interval of weight values for the agreements that we want to examine closer.
+#' produced by emlinkMARmov
+#' @param thresh is the interval of posterior zeta values for the agreements that we want to examine closer. Ranges between 0 and 1.
+#' Can be a vector of length 1 (from specified value to 1) or 2 (from first specified value to second specified value).
 #' @param n.cores Number of cores to parallelize over. Default is NULL.
 #'
 #' @return \code{matchesLink} returns an nmatches X 2 matrix with the indices of the
@@ -34,17 +35,10 @@
 #'
 #' ## Run EM
 #' em <- emlinkMAR(tc)
-#' EM <- data.frame(resultsEM$patterns.w)
-#' EM$zeta.j <- resultsEM$zeta.j
-#' EM <- EM[order(EM[, "weights"]), ]
-#' EM$cumsum.m <- cumsum(EM[, "p.gamma.j.m"])
-#' EM$cumsum.u <- 1 - cumsum(EM[, "p.gamma.j.u"])
-#'
-#' match.ut <- EM$weights[ EM$zeta.j >= 0.85][1]
 #'
 #' ## Get matches
 #' ml <- matchesLink(list(g1, g2, g3, g4), nobs.a = nrow(dfA), nobs.b = nrow(dfB),
-#' em = em, cut = match.ut)
+#' em = em, thresh = .95)
 #' }
 #'
 #' @export
@@ -54,10 +48,14 @@
 ## we use matchesLink
 ## ------------------------
 
-matchesLink <- function(gammalist, nobs.a, nobs.b, em, cut, n.cores = NULL) {
+matchesLink <- function(gammalist, nobs.a, nobs.b, em, thresh, n.cores = NULL) {
 
     if(is.null(n.cores)) {
         n.cores <- detectCores() - 1
+    }
+
+    if(min(thresh) < 0 | max(thresh) > 1){
+        stop("The specified threshold values are not valid posterior probabilities. These must range between 0 and 1.")
     }
 
     ## Slicing the data:
@@ -74,11 +72,18 @@ matchesLink <- function(gammalist, nobs.a, nobs.b, em, cut, n.cores = NULL) {
     n.lim.1 <- limit.1[-1] - limit.1[-last1]
     n.lim.2 <- limit.2[-1] - limit.2[-last2]
 
-    l.b <- cut[1]
-    u.b <- cut[2]
-
-    if(is.na(u.b)) {
+    ## Get the correct cuts
+    em.obj <- data.frame(em$patterns.w)
+    em.obj$zeta.j <- em$zeta.j
+    em.obj <- em.obj[order(em.obj[, "weights"]), ]
+    l.t <- thresh[1]
+    u.t <- thresh[2]
+    
+    l.b <- min(em.obj$weights[em.obj$zeta.j >= l.t])
+    if(is.na(u.t)){
         u.b <- 1e10
+    }else{
+        u.b <- max(em.obj$weights[em.obj$zeta.j < u.t])
     }
 
     tablem <- em$patterns.w[em$patterns.w[, "weights"] >= l.b & em$patterns.w[, "weights"] < u.b, ]
