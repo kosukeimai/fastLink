@@ -4,7 +4,7 @@
 \alias{emlinkRS}
 \title{emlinkRS}
 \usage{
-emlinkRS(patterns.out, em.out)
+emlinkRS(patterns.out, em.out, nobs.a, nobs.b)
 }
 \arguments{
 \item{patterns.out}{The output from `tableCounts()` or `emlinkMARmov()` (run on full dataset),
@@ -13,6 +13,10 @@ is observed.}
 
 \item{em.out}{The output from `emlinkMARmov()`, an EM object estimated
 on a smaller random sample to apply to counts from a larger sample}
+
+\item{nobs.a}{Total number of observations in dataset A}
+
+\item{nobs.b}{Total number of observations in dataset B}
 }
 \description{
 Calculates Felligi-Sunter weights and posterior zeta probabilities

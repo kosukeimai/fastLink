@@ -310,11 +310,13 @@ emlinkMARmov <- function(patterns, nobs.a, nobs.b,
 #' is observed.
 #' @param em.out The output from `emlinkMARmov()`, an EM object estimated
 #' on a smaller random sample to apply to counts from a larger sample
+#' @param nobs.a Total number of observations in dataset A
+#' @param nobs.b Total number of observations in dataset B
 #'
 #' @author Ted Enamorado <ted.enamorado@gmail.com> and Ben Fifield <benfifield@gmail.com>
 #'
 #' @export
-emlinkRS <- function(patterns.out, em.out){
+emlinkRS <- function(patterns.out, em.out, nobs.a, nobs.b){
     if("tableCounts" %in% class(patterns.out)){
         patterns.out <- patterns.out
     }else if("fastLink.EM" %in% class(patterns.out)){
@@ -385,7 +387,7 @@ emlinkRS <- function(patterns.out, em.out){
     
     output <- list("zeta.j" = zeta.j, "p.m" = em.out$p.m, "p.u" = em.out$p.u, "p.gamma.k.m" = em.out$p.gamma.k.m, "p.gamma.k.u" = em.out$p.gamma.k.u,
                    "p.gamma.j.m" = p.gamma.j.m, "p.gamma.j.u" = p.gamma.j.u, "patterns.w" = data.w, "iter.converge" = em.out$iter.converge,
-                   "nobs.a" = em.out$nobs.a, "nobs.b" = em.out$nobs.b)
+                   "nobs.a" = nobs.a, "nobs.b" = nobs.b)
     class(output) <- c("fastLink", "fastLink.EM")
     
     return(output)
