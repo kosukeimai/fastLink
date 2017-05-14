@@ -6,7 +6,7 @@
 \usage{
 dedupeMatches(matchesA, matchesB, EM,
 matchesLink, varnames, stringdist.match, partial.match,
-cut.a = 0.92, cut.p = 0.88)
+linprog, cut.a = 0.92, cut.p = 0.88)
 }
 \arguments{
 \item{matchesA}{A dataframe of the matched observations in
@@ -30,6 +30,9 @@ each variable. Must be same length as varnames.}
 a partial matching category for the string distances. Must be same length
 as varnames. Default is FALSE for all variables.}
 
+\item{linprog}{Whether to implement Winkler's linear programming solution to the deduplication
+problem. Default is false.}
+
 \item{cut.a}{Lower bound for full string-distance match, ranging between 0 and 1. Default is 0.92}
 
 \item{cut.p}{Lower bound for partial string-distance match, ranging between 0 and 1. Default is 0.88}
@@ -41,8 +44,7 @@ as varnames. Default is FALSE for all variables.}
 \item{EM}{A deduped version of the EM object}
 }
 \description{
-Dedupe matched dataframes using the linear sum assignment problem
-methodology.
+Dedupe matched dataframes.
 }
 \author{
 Ted Enamorado <ted.enamorado@gmail.com> and Ben Fifield <benfifield@gmail.com>
