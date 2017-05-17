@@ -2,10 +2,9 @@
 #'
 #' Field comparisons for string variables. Two possible agreement patterns are considered:
 #' 0 total disagreement, 2 agreement.
-#' The distance between strings is calculated using a Jaro-Winkler distance as implemented
-#' in the stringdist package.
+#' The distance between strings is calculated using a Jaro-Winkler distance.
 #'
-#' @usage gammaCK2par(matAp, matBp, n.cores = NULL, cut.a = 0.92)
+#' @usage gammaCK2par(matAp, matBp, n.cores, cut.a)
 #'
 #' @param matAp vector storing the comparison field in data set 1
 #' @param matBp vector storing the comparison field in data set 2

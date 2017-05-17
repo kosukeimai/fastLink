@@ -2,19 +2,18 @@
 % Please edit documentation in R/fastLink-package.R
 \docType{package}
 \name{fastLink-package}
-\alias{fastLink}
 \alias{fastLink-package}
 \title{Record Linkage under MAR}
 \description{
-This packages provides functions to perform link (merge
-probabilistically) two datasets when a unique identifier is missing.
+Implements a Fellegi-Sunter probabilistic record linkage model
+that allows for missing data.
 }
 \details{
 \tabular{ll}{ Package: \tab fastLink\cr Type: \tab Package\cr Version: \tab 0.1.-\cr
 Date: \tab 2017-01-27\cr License: \tab GPL (>= 3)\cr }
 }
 \author{
-Ted Enamorado \email{tede@princeton.edu} and Kosuke Imai \email{kimai@princeton.edu}
+Ted Enamorado \email{tede@princeton.edu}, Ben Fifield \email{bfifield@princeton.edu}, and Kosuke Imai \email{kimai@princeton.edu}
 
 Maintainer: Ted Enamorado \email{tede@princeton.edu}
 }

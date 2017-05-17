@@ -193,7 +193,7 @@ summary.fastLink <- function(object, thresholds = c(.95, .85, .75), weighted = T
 #'
 #' \code{aggregateEM} aggregates EM objects for easy processing by `summary.fastLink()`
 #'
-#' @usage aggregateEM(within.geo, across.geo)
+#' @usage aggregateEM(em.list, within.geo)
 #' @param em.list A list of `fastLink` or `fastLink.EM` objects that should be aggregate
 #' in `summary.fastLink()`
 #' @param within.geo A vector of booleans corresponding to whether each object in `em.list`

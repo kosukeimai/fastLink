@@ -4,6 +4,9 @@
 #' cross-state movers rates from the IRS SOI Migration data,
 #' which can be used to improve the accuracy of the EM algorithm.
 #'
+#' @usage calcMoversPriors(geo.a, geo.b, year.start, year.end,
+#' county, state.a, state.b, matchrate.lambda, remove.instate)
+#'
 #' @param geo.a The state code (if state = TRUE) or county name
 #' (if state = FALSE) for the earlier of the two voter files.
 #' @param geo.b The state code (if state = TRUE) or county name
@@ -25,15 +28,27 @@
 #' of the prior is then the match rate conditional on being an out-of-state or
 #' county mover. Default is TRUE.
 #'
+#' @return \code{calcMoversPriors} returns a list with estimates of the expected
+#' match rate, and of the expected in-state movers rate when matching within-state.
+#'
 #' @author Ben Fifield <benfifield@gmail.com>
 #'
+#' @examples calcMoversPriors(geo.a = "CA", geo.b = "CA", year.start = 2014, year.end = 2015)
+#' 
 #' @export
 calcMoversPriors <- function(geo.a, geo.b, year.start, year.end,
                              county = FALSE, state.a = NULL, state.b = NULL,
                              matchrate.lambda = FALSE, remove.instate = TRUE){
 
+    ## For visible bindings
+    start_year <- NULL; end_year <- NULL; y1_statefips <- NULL; y2_statefips <- NULL
+    y1_fips <- NULL; y2_fips <- NULL
+    
     ## Load the correct level of IRS data
     if(!county){
+        statefips <- get("statefips")
+        stateoutflow <- get("stateoutflow")
+        stateinflow <- get("stateinflow")
         outfips <- statefips$statefips[statefips$state == geo.a]
         infips <- statefips$statefips[statefips$state == geo.b]
         outf <- subset(
@@ -45,6 +60,9 @@ calcMoversPriors <- function(geo.a, geo.b, year.start, year.end,
             & y2_statefips == infips
         )
     }else{
+        countyfips <- get("countyfips")
+        countyoutflow <- get("countyoutflow")
+        countyinflow <- get("countyinflow")
         geo.a <- tolower(geo.a); geo.b <- tolower(geo.b)
         outfips <- countyfips$fips[countyfips$statecode == state.a &
                                    countyfips$countyname == geo.a]
@@ -150,7 +168,8 @@ calcMoversPriors <- function(geo.a, geo.b, year.start, year.end,
         if(!county){
             dir_mean <- m_a / (nm_a + m_a)
         }else{
-            dir_mean <- tab$est[tab$state == state.a]
+            statemove <- get("statemove")
+            dir_mean <- statemove$est[statemove$state == state.a]
         }
     }
 

@@ -7,8 +7,7 @@ Authors@R: c(
   person("Ben", "Fifield", email = "bfifield@princeton.edu", role = c("aut")),
   person("Kosuke", "Imai", email = "kimai@Princeton.Edu", role = c("aut"))
   )
-Description: This packages provides functions to perform link (merge
-    probabilistically) two datasets when a unique identifier is missing.
+Description: Implements a Fellegi-Sunter probabilistic record linkage model that allows for missing data.
 License: GPL(>= 3)
 Imports:
     Matrix,

@@ -4,7 +4,7 @@
 \alias{gammaCK2par}
 \title{gammaCK2par}
 \usage{
-gammaCK2par(matAp, matBp, n.cores = NULL, cut.a = 0.92)
+gammaCK2par(matAp, matBp, n.cores, cut.a)
 }
 \arguments{
 \item{matAp}{vector storing the comparison field in data set 1}
@@ -22,8 +22,7 @@ matching pattern, which can be fed directly into \code{tableCounts} and \code{ma
 \description{
 Field comparisons for string variables. Two possible agreement patterns are considered:
 0 total disagreement, 2 agreement.
-The distance between strings is calculated using a Jaro-Winkler distance as implemented
-in the stringdist package.
+The distance between strings is calculated using a Jaro-Winkler distance.
 }
 \examples{
 \dontrun{

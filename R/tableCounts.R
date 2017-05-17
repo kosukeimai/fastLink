@@ -2,9 +2,9 @@
 #'
 #' Count pairs with the same pattern in the cross product between two datasets.
 #'
-#' @usage tableCounts(gammalist, nobs.a, nobs.b, n.cores = NULL)
+#' @usage tableCounts(gammalist, nobs.a, nobs.b, n.cores)
 #'
-#' @param gammalist A list of objects produced by either gammaKpar or
+#' @param gammalist A list of objects produced by gammaKpar, gammaCK2par, or
 #' gammaCKpar. 
 #' @param nobs.a number of observations in dataset 1
 #' @param nobs.b number of observations in dataset 2

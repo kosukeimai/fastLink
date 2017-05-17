@@ -4,10 +4,10 @@
 \alias{tableCounts}
 \title{tableCounts}
 \usage{
-tableCounts(gammalist, nobs.a, nobs.b, n.cores = NULL)
+tableCounts(gammalist, nobs.a, nobs.b, n.cores)
 }
 \arguments{
-\item{gammalist}{A list of objects produced by either gammaKpar or
+\item{gammalist}{A list of objects produced by gammaKpar, gammaCK2par, or
 gammaCKpar.}
 
 \item{nobs.a}{number of observations in dataset 1}
