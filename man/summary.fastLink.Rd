@@ -16,7 +16,7 @@ to be aggregated together produced  by `aggregateEM`.}
 
 \item{digits}{How many digits to include in summary object. Default is 3.}
 
-\item{...}{Further arguments to be passed to \code{summary.fastLink()} command.}
+\item{...}{Further arguments to be passed to \code{summary.fastLink()}.}
 }
 \description{
 \code{summary.fastLink()} calculates and outputs FDR, FNR, and match rates for
