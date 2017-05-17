@@ -4,7 +4,7 @@
 \alias{aggregateEM}
 \title{Aggregate EM objects for use in `summary.fastLink()`}
 \usage{
-aggregateEM(within.geo, across.geo)
+aggregateEM(em.list, within.geo)
 }
 \arguments{
 \item{em.list}{A list of `fastLink` or `fastLink.EM` objects that should be aggregate

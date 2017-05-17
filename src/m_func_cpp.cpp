@@ -2,7 +2,6 @@
 
 #include <RcppArmadillo.h>
 #include <RcppEigen.h>
-#include <ctime>
 
 #ifdef _OPENMP
 #include <omp.h>

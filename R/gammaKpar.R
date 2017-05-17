@@ -2,14 +2,13 @@
 #'
 #' Field comparisons: 0 disagreement, 2 total agreement.
 #'
-#' @usage gammaKpar(matAp, matBp, n.cores = NULL)
+#' @usage gammaKpar(matAp, matBp, gender, n.cores)
 #' 
 #' @param matAp vector storing the comparison field in data set 1
 #' @param matBp vector storing the comparison field in data set 2
 #' @param gender Whether the matching variable is gender. Will override
 #' standard warnings of missingness/nonvariability. Default is FALSE.
 #' @param n.cores Number of cores to parallelize over. Default is NULL.
-#'
 #'
 #' @return \code{gammaKpar} returns a list with the indices corresponding to each
 #' matching pattern, which can be fed directly into \code{tableCounts} and \code{matchesLink}.
@@ -29,6 +28,9 @@
 ## ------------------------
 
 gammaKpar <- function(matAp, matBp, gender = FALSE, n.cores = NULL) {
+
+    ## For visible bindings
+    i <- NULL
 
     if(any(class(matAp) %in% c("tbl_df", "data.table"))){
         matAp <- as.data.frame(matAp)[,1]

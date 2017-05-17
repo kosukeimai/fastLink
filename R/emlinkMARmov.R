@@ -3,6 +3,10 @@
 #' Expectation-Maximization algorithm for Record Linkage under the
 #' Missing at Random (MAR) assumption.
 #'
+#' @usage emlinkMARmov(patterns, nobs.a, nobs.b, p.m, iter.max,
+#' tol, p.gamma.k.m, p.gamma.k.u, prior.lambda, w.lambda,
+#' prior.pi, w.pi, address.field, gender.field)
+#'
 #' @param patterns table that holds the counts for each unique agreement
 #' pattern. This object is produced by the function: tableCounts.
 #' @param nobs.a Number of observations in dataset A
@@ -22,7 +26,35 @@
 #' @param gender.field Boolean indicators for whether a given field is for gender. If so, exact match is conducted on gender.
 #' Default is NULL (FALSE for all fields). The one gender field should be set to TRUE while all other fields are set to FALSE if provided.
 #'
+#' @return \code{emlinkMARmov} returns a list with the following components:
+#' \item{zeta.j}{The posterior match probabilities for each unique pattern.}
+#' \item{p.m}{The posterior probability of a pair matching.}
+#' \item{p.u}{The posterior probability of a pair not matching.}
+#' \item{p.gamma.k.m}{The posterior of the matching probability for a specific matching field.}
+#' \item{p.gamma.k.u}{The posterior of the non-matching probability for a specific matching field.}
+#' \item{p.gamma.j.m}{The posterior probability that a pair is in the matched set given a particular agreement pattern.}
+#' \item{p.gamma.j.u}{The posterior probability that a pair is in the unmatched set given a particular agreement pattern.}
+#' \item{patterns.w}{Counts of the agreement patterns observed, along with the Felligi-Sunter Weights.}
+#' \item{iter.converge}{The number of iterations it took the EM algorithm to converge.}
+#' \item{nobs.a}{The number of observations in dataset A.}
+#' \item{nobs.b}{The number of observations in dataset B.}
+#'
 #' @author Ted Enamorado <ted.enamorado@gmail.com> and Kosuke Imai
+#'
+#' @examples
+#' \dontrun{
+#' ## Calculate gammas
+#' g1 <- gammaCKpar(dfA$firstname, dfB$firstname)
+#' g2 <- gammaCKpar(dfA$middlename, dfB$middlename)
+#' g3 <- gammaCKpar(dfA$lastname, dfB$lastname)
+#' g4 <- gammaKpar(dfA$birthyear, dfB$birthyear)
+#'
+#' ## Run tableCounts
+#' tc <- tableCounts(list(g1, g2, g3, g4), nobs.a = nrow(dfA), nobs.b = nrow(dfB))
+#'
+#' ## Run EM
+#' em <- emlinkMAR(tc, nobs.a = nrow(dfA), nobs.b = nrow(dfB))
+#' }
 #'
 #' @export
 #' @importFrom gtools rdirichlet
@@ -305,6 +337,8 @@ emlinkMARmov <- function(patterns, nobs.a, nobs.b,
 #' for matching patterns observed in a larger population that are
 #' not present in a sub-sample used to estimate the EM.
 #'
+#' @usage emlinkRS(patterns.out, em.out, nobs.a, nobs.b)
+#'
 #' @param patterns.out The output from `tableCounts()` or `emlinkMARmov()` (run on full dataset),
 #' containing all observed matching patterns in the full sample and the number of times that pattern
 #' is observed.
@@ -313,7 +347,55 @@ emlinkMARmov <- function(patterns, nobs.a, nobs.b,
 #' @param nobs.a Total number of observations in dataset A
 #' @param nobs.b Total number of observations in dataset B
 #'
+#' @return \code{emlinkMARmov} returns a list with the following components:
+#' \item{zeta.j}{The posterior match probabilities for each unique pattern.}
+#' \item{p.m}{The posterior probability of a pair matching.}
+#' \item{p.u}{The posterior probability of a pair not matching.}
+#' \item{p.gamma.k.m}{The posterior of the matching probability for a specific matching field.}
+#' \item{p.gamma.k.u}{The posterior of the non-matching probability for a specific matching field.}
+#' \item{p.gamma.j.m}{The posterior probability that a pair is in the matched set given a particular agreement pattern.}
+#' \item{p.gamma.j.u}{The posterior probability that a pair is in the unmatched set given a particular agreement pattern.}
+#' \item{patterns.w}{Counts of the agreement patterns observed, along with the Felligi-Sunter Weights.}
+#' \item{iter.converge}{The number of iterations it took the EM algorithm to converge.}
+#' \item{nobs.a}{The number of observations in dataset A.}
+#' \item{nobs.b}{The number of observations in dataset B.}
+#'
 #' @author Ted Enamorado <ted.enamorado@gmail.com> and Ben Fifield <benfifield@gmail.com>
+#'
+#' @examples
+#' \dontrun{
+#' ## -------------
+#' ## Run on subset
+#' ## -------------
+#' dfA.s <- dfA[sample(1:nrow(dfA), 50),]; dfB.s <- dfB[sample(1:nrow(dfB), 50),]
+#' 
+#' ## Calculate gammas
+#' g1 <- gammaCKpar(dfA.s$firstname, dfB.s$firstname)
+#' g2 <- gammaCKpar(dfA.s$middlename, dfB.s$middlename)
+#' g3 <- gammaCKpar(dfA.s$lastname, dfB.s$lastname)
+#' g4 <- gammaKpar(dfA.s$birthyear, dfB.s$birthyear)
+#'
+#' ## Run tableCounts
+#' tc <- tableCounts(list(g1, g2, g3, g4), nobs.a = nrow(dfA.s), nobs.b = nrow(dfB.s))
+#'
+#' ## Run EM
+#' em <- emlinkMAR(tc, nobs.a = nrow(dfA.s), nobs.b = nrow(dfB.s))
+#'
+#' ## ------------------
+#' ## Apply to full data
+#' ## ------------------
+#'
+#' ## Calculate gammas
+#' g1 <- gammaCKpar(dfA$firstname, dfB$firstname)
+#' g2 <- gammaCKpar(dfA$middlename, dfB$middlename)
+#' g3 <- gammaCKpar(dfA$lastname, dfB$lastname)
+#' g4 <- gammaKpar(dfA$birthyear, dfB$birthyear)
+#'
+#' ## Run tableCounts
+#' tc <- tableCounts(list(g1, g2, g3, g4), nobs.a = nrow(dfA), nobs.b = nrow(dfB))
+#'
+#' em.full <- emlinkRS(tc, em, nrow(dfA), nrow(dfB)
+#' }
 #'
 #' @export
 emlinkRS <- function(patterns.out, em.out, nobs.a, nobs.b){

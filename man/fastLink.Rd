@@ -5,9 +5,10 @@
 \title{fastLink}
 \usage{
 fastLink(dfA, dfB, varnames, stringdist.match,
-partial.match = NULL,
-cut.a, cut.p, n.cores = NULL, tol.em = 1e-04,
-threshold.match = 0.85, verbose = FALSE)
+partial.match, cut.a, cut.p, priors.obj, w.lambda, w.pi,
+address.field, gender.field,
+n.cores, tol.em,
+threshold.match, verbose)
 }
 \arguments{
 \item{dfA}{Dataset A - to be matched to Dataset B}

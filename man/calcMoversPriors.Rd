@@ -4,9 +4,8 @@
 \alias{calcMoversPriors}
 \title{calcMoversPriors}
 \usage{
-calcMoversPriors(geo.a, geo.b, year.start, year.end, county = FALSE,
-  state.a = NULL, state.b = NULL, matchrate.lambda = FALSE,
-  remove.instate = TRUE)
+calcMoversPriors(geo.a, geo.b, year.start, year.end,
+county, state.a, state.b, matchrate.lambda, remove.instate)
 }
 \arguments{
 \item{geo.a}{The state code (if state = TRUE) or county name
@@ -38,10 +37,18 @@ assumes that successful matches have been subsetted out. The interpretation
 of the prior is then the match rate conditional on being an out-of-state or
 county mover. Default is TRUE.}
 }
+\value{
+\code{calcMoversPriors} returns a list with estimates of the expected
+match rate, and of the expected in-state movers rate when matching within-state.
+}
 \description{
 calcMoversPriors calculates prior estimates of in-state and
 cross-state movers rates from the IRS SOI Migration data,
 which can be used to improve the accuracy of the EM algorithm.
+}
+\examples{
+calcMoversPriors(geo.a = "CA", geo.b = "CA", year.start = 2014, year.end = 2015)
+
 }
 \author{
 Ben Fifield <benfifield@gmail.com>
