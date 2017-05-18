@@ -79,12 +79,9 @@ Run the fastLink algorithm to probabilistically match
 two datasets.
 }
 \examples{
-\dontrun{
-fastLink(dfA, dfB, varnames = c("firstname", "lastname", "streetname", "birthyear"),
-stringdist.match = c("firstname", "lastname", "streetname"),
-partial.match = c("firstname", "lastname"),
-verbose = TRUE)
-}
+fl.out <- fastLink(dfA, dfB,
+varnames = c("firstname", "lastname", "streetname", "birthyear"),
+n.cores = 1)
 }
 \author{
 Ted Enamorado <ted.enamorado@gmail.com>, Ben Fifield <benfifield@gmail.com>, and Kosuke Imai

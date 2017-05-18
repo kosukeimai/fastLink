@@ -57,7 +57,9 @@
 #' @author Ted Enamorado <ted.enamorado@gmail.com>, Ben Fifield <benfifield@gmail.com>, and Kosuke Imai
 #'
 #' @examples
-#' fl.out <- fastLink(dfA, dfB, varnames = c("firstname", "lastname", "streetname", "birthyear"))
+#' fl.out <- fastLink(dfA, dfB,
+#' varnames = c("firstname", "lastname", "streetname", "birthyear"),
+#' n.cores = 1)
 #' @export
 fastLink <- function(dfA, dfB, varnames,
                      stringdist.match = NULL, partial.match = NULL,
@@ -210,32 +212,9 @@ fastLink <- function(dfA, dfB, varnames,
         if(verbose){
             cat("Running the EM algorithm took", round(difftime(end, start, units = "secs"), 2), "seconds.\n\n")
         }
-
-        ## Get output
-        EM <- data.frame(resultsEM$patterns.w)
-        EM$zeta.j <- resultsEM$zeta.j
-        EM <- EM[order(EM[, "weights"]), ] 
-        EM$cumsum.m <- cumsum(EM[, "p.gamma.j.m"])
-        EM$cumsum.u <- 1 - cumsum(EM[, "p.gamma.j.u"])
-        if(verbose){
-            cat("EM output is:\n")
-            print(EM)
-            cat("\n\n")
-        }
     }else{
+        cat("Imputing matching probabilities using provided EM object.\n")
         resultsEM <- emlinkRS(counts, em.obj, nr_a, nr_b)
-
-        ## Get output
-        EM <- data.frame(resultsEM$patterns.w)
-        EM$zeta.j <- resultsEM$zeta.j
-        EM <- EM[order(EM[, "weights"]), ] 
-        EM$cumsum.m <- cumsum(EM[, "p.gamma.j.m"])
-        EM$cumsum.u <- 1 - cumsum(EM[, "p.gamma.j.u"])
-        if(verbose){
-            cat("EM output is:\n")
-            print(EM)
-            cat("\n\n")
-        }
     }
 
     if(!estimate.only){
