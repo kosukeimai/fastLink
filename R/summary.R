@@ -185,7 +185,7 @@ summary.fastLink <- function(object, thresholds = c(.95, .85, .75), weighted = T
       tab <- cbind(c("Match Rate", "FDR", "FNR"), tab)
       colnames(tab) <- c("", paste0(thresholds * 100, "%"), "Exact")
     }
-    class(tab) <- "summary.fastLink"
+    #class(tab) <- "summary.fastLink"
     
     return(tab)
 }
