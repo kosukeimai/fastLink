@@ -261,10 +261,12 @@ fastLink <- function(dfA, dfB, varnames,
         if(dedupe.matches){
             cat("Deduping the estimated matches.\n")
             start <- Sys.time()
-            matches <- dedupeMatches(matchesA = dfA[matches$inds.a,], matchesB = dfB[matches$inds.b,],
+            ddm.out <- dedupeMatches(matchesA = dfA[matches$inds.a,], matchesB = dfB[matches$inds.b,],
                                      EM = resultsEM, matchesLink = matches, varnames = varnames,
                                      stringdist.match = stringdist.match, partial.match = partial.match,
-                                     linprog = linprog.dedupe, cut.a = cut.a, cut.p = cut.p)$matchesLink
+                                     linprog = linprog.dedupe, cut.a = cut.a, cut.p = cut.p)
+            matches <- ddm.out$matchesLink
+            resultsEM <- ddm.out$EM
             end <- Sys.time()
             if(verbose){
                 cat("Deduping the estimated matches took", round(difftime(end, start, units = "mins"), 2), "minutes.\n\n")

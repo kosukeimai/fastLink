@@ -223,9 +223,9 @@ emlinkMARmov <- function(patterns, nobs.a, nobs.b,
     ## The EM Algorithm presented in the paper starts here:
     while (abs(delta) >= tol) {
 
-        if((count %% 10) == 0) {
+        if((count %% 100) == 0) {
             cat("Iteration number", count, "\n")
-            cat("Maximum difference in log-likelihood =", delta, "\n")
+            cat("Maximum difference in log-likelihood =", round(delta, 4), "\n")
         }
 
         ## Old Paramters
