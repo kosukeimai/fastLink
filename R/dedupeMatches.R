@@ -34,6 +34,7 @@
 #' @importFrom adagio assignment
 #' @importFrom dplyr group_by summarise n "%>%"
 #' @importFrom stringdist stringdist
+#' @importFrom stats runif
 dedupeMatches <- function(matchesA, matchesB, EM, matchesLink,
                           varnames, stringdist.match, partial.match,
                           linprog = FALSE,
@@ -59,7 +60,12 @@ dedupeMatches <- function(matchesA, matchesB, EM, matchesLink,
     gammalist <- vector(mode = "list", length = length(varnames))
     namevec <- rep(NA, length(varnames))
     for(i in 1:length(gammalist)){
-
+        ## Convert to character
+        if(is.factor(matchesA[,varnames[i]]) | is.factor(matchesB[,varnames[i]])){
+            matchesA[,varnames[i]] <- as.character(matchesA[,varnames[i]])
+            matchesB[,varnames[i]] <- as.character(matchesB[,varnames[i]])
+        }
+        ## Get matches
         if(stringdist.match[i]){
             tmp <- 1 - stringdist(matchesA[,varnames[i]], matchesB[,varnames[i]], "jw")
             if(partial.match[i]){
@@ -106,6 +112,10 @@ dedupeMatches <- function(matchesA, matchesB, EM, matchesLink,
     matchesB$idB <- matchesLink[,2]
     matchesB$idA <- matchesA$idA
     matchesA$idB <- matchesB$idB
+
+    ## Remove observations with NA for zeta.j
+    matchesA <- matchesA[!is.na(matchesA$zeta.j),]
+    matchesB <- matchesB[!is.na(matchesB$zeta.j),]
 
     if(!linprog){
 

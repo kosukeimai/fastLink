@@ -7,6 +7,7 @@
 fastLink(dfA, dfB, varnames, stringdist.match,
 partial.match, cut.a, cut.p, priors.obj, w.lambda, w.pi,
 address.field, gender.field, estimate.only, em.obj,
+dedupe.matches, linprog.dedupe,
 n.cores, tol.em, threshold.match, verbose)
 }
 \arguments{
@@ -51,6 +52,10 @@ prediction of matches. Default is FALSE.}
 \item{em.obj}{An EM object from a prior run of 'fastLink' or 'emlinkMARmov'. Parameter estimates will be applied to the matching patterns
 in 'dfA' and 'dfB'. If provided. 'estimate.only' is set to FALSE. Often provided when parameters have been
 estimated on a smaller sample, and the user wants to apply them to the full dataset. Default is NULL (EM will be estimated from matching patterns in 'dfA' and 'dfB').}
+
+\item{dedupe.matches}{Whether to dedupe the set of matches returned by the algorithm. Default is TRUE.}
+
+\item{linprog.dedupe}{If deduping matches, whether to use Winkler's linear programming solution to dedupe. Default is FALSE.}
 
 \item{n.cores}{Number of cores to parallelize over. Default is NULL.}
 
