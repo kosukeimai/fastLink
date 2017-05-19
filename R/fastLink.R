@@ -161,7 +161,7 @@ fastLink <- function(dfA, dfB, varnames,
                 gammalist[[i]] <- gammaCK2par(dfA[,varnames[i]], dfB[,varnames[i]], cut.a = cut.a, n.cores = n.cores)
             }
         }else{
-            gammalist[[i]] <- gammaKpar(dfA[,varnames[i]], dfB[,varnames[i]], n.cores = n.cores)
+            gammalist[[i]] <- gammaKpar(dfA[,varnames[i]], dfB[,varnames[i]], gender = gender.field[i], n.cores = n.cores)
         }
     }
     end <- Sys.time()
