@@ -148,11 +148,13 @@ fastLink <- function(dfA, dfB, varnames,
     start <- Sys.time()
     gammalist <- vector(mode = "list", length = length(varnames))
     for(i in 1:length(gammalist)){
-        if(sum(is.na(dfA[,varnames[i]])) == nrow(dfA) | length(unique(dfA[,varnames[i]])) == 1){
-            stop(paste("You have no variation in dataset A for", varnames[i], "or all observations are missing."))
-        }
-        if(sum(is.na(dfB[,varnames[i]])) == nrow(dfB) | length(unique(dfB[,varnames[i]])) == 1){
-            stop(paste("You have no variation in dataset B for", varnames[i], "or all observations are missing."))
+        if(!gender.field[i]){
+            if(sum(is.na(dfA[,varnames[i]])) == nrow(dfA) | length(unique(dfA[,varnames[i]])) == 1){
+                stop(paste("You have no variation in dataset A for", varnames[i], "or all observations are missing."))
+            }
+            if(sum(is.na(dfB[,varnames[i]])) == nrow(dfB) | length(unique(dfB[,varnames[i]])) == 1){
+                stop(paste("You have no variation in dataset B for", varnames[i], "or all observations are missing."))
+            }
         }
         if(stringdist.match[i]){
             if(partial.match[i]){
