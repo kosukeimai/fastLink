@@ -44,8 +44,8 @@ data(samplematch)
 matches.out <- fastLink(
   dfA = dfA, dfB = dfB, 
   varnames = c("firstname", "middlename", "lastname", "housenum", "streetname", "city", "birthyear"),
-  stringdist.match = c(TRUE, TRUE, TRUE, FALSE, TRUE, TRUE, FALSE),
-  partial.match = c(TRUE, FALSE, TRUE, FALSE, TRUE, FALSE, FALSE)
+  stringdist.match = c("firstname", "middlename", "lastname", "streetname", "city"),
+  partial.match = c("firstname", "lastname", "streetname")
 )
 ```
 
@@ -63,9 +63,9 @@ matches.out <- fastLink(
 
 -   `varnames` should be a vector of variable names to be used for matching. These variable names should exist in both `dfA` and `dfB`
 
--   `stringdist.match` should be a vector of booleans of the same length as `varnames`. `TRUE` means that string-distance matching using the Jaro-Winkler similarity will be used.
+-   `stringdist.match` should be a vector of variable names present in `varnames`. For those variables included in `stringdist.match`, agreement will be calculated using Jaro-Winkler distance.
 
--   `partial.match` is another vector of booleans of the same length as `varnames`. A `TRUE` for an entry in `partial.match` and a `TRUE` for that same entry for `stringdist.match` means that a partial match category will be included in the gamma calculation.
+-   `partial.match` is another vector of variable names present in both `stringdist.match` and `varnames`. A variable included in `partial.match` will have a partial agreement category calculated in addition to disagreement and absolute agreement, as a function of Jaro-Winkler distance.
 
 Other arguments that can be provided include:
 
@@ -75,9 +75,13 @@ Other arguments that can be provided include:
 
 -   `w.pi`: The user-specified weighting of the MLE and prior estimate for the *π* parameter, a number between 0 and 1. We will discuss this option further at the end of this vignette.
 
--   `l.address`: The number of possible matching categories used for address fields, used to calculate optimal hyperparameters for the *π* prior. We will discuss this option further at the end of this vignette.
+-   `address.field`: The name of the address field, to be specified when providing a prior on the probability of moving in-state through `priors.obj`. The variable listed in `address.field` must be listed in `varnames`. We will discuss this option further at the end of this vignette.
 
--   `address.field`: A boolean vector the same length as `varnames`, where TRUE indicates an address matching field. Default is NULL. Should be specified in conjunction with `priors_obj`. We will discuss this option further at the end of this vignette.
+-   `gender.field`: The name of the gender field, if matching on gender. If provided, the EM algorithm will implement a prior that enforces near-perfect blocking on gender, so that no matches that disagree on gender will be in the matched set. Can be used in conjunction with movers priors, if the user does not want to specify the same prior for both genders when blocking.
+
+-   `estimate.only`: Whether to stop running the algorithm after running the EM estimation step. Can be used when running the algorithm on a random sample, and then applying those estimates to the full data set.
+
+-   `em.obj`: An EM object, either from an `estimate.only = TRUE` run of `fastLink` or from `emlinkMARmov()`. If provided, the algorithm will skip the EM estimation step and proceed to apply the estimates from the EM object to the full data set. To be used when the EM has been estimated on a random sample of data and should be applied to the full data set.
 
 -   `n.cores`: The number of registered cores to parallelize over. If left unspecified. the function will estimate this on its own.
 
@@ -87,7 +91,7 @@ Other arguments that can be provided include:
 
 -   `verbose`: Whether to print out runtime for each step and EM output. Default is FALSE.
 
-The output from `fastLink()` will be a list of length 2 with two entries:
+The output from `fastLink()` when `estimate.only = FALSE` will be a list of length 4 with two entries:
 
 -   `matches`: A matrix where each row is a match with the relevant indices of `dfA` (column 1) and `dfB` (column 2).
 
@@ -96,6 +100,8 @@ The output from `fastLink()` will be a list of length 2 with two entries:
 -   `nobs.a`: The number of observations in dataset A.
 
 -   `nobs.b`: The number of observations in dataset B.
+
+When `estimate.only = TRUE`, `fastLink()` outputs the EM object.
 
 The datasets can then be subsetted down to the matches as follows:
 
@@ -112,62 +118,62 @@ matches.out$EM
 
     ## $zeta.j
     ##                         [,1]
-    ##  [1,] 2.397909982278211e-163
-    ##  [2,] 5.386706904619885e-161
-    ##  [3,] 5.910955698442592e-136
-    ##  [4,] 6.381888080915767e-140
-    ##  [5,] 1.573164046920223e-112
-    ##  [6,] 4.274539906842406e-142
-    ##  [7,] 9.602401174536560e-140
-    ##  [8,] 1.053693266523918e-114
-    ##  [9,] 6.604638404355049e-155
-    ## [10,] 1.177349885455546e-133
-    ## [11,] 8.080107786419874e-133
-    ## [12,] 2.150470366100814e-109
-    ## [13,] 1.440368631011960e-111
-    ## [14,] 2.937810961890846e-138
-    ## [15,] 5.236973150856383e-117
-    ## [16,]  1.290937379527316e-89
-    ## [17,] 8.698294465912675e-121
-    ## [18,]  2.144168614335179e-93
-    ## [19,] 1.402478316132494e-159
-    ## [20,] 3.150551807584280e-157
-    ## [21,] 3.457171977244247e-132
-    ## [22,] 2.500072803022319e-138
-    ## [23,] 4.570736853785658e-138
-    ## [24,] 1.216473148022984e-114
-    ## [25,] 8.147844260033311e-117
-    ## [26,] 1.242716783788651e-140
-    ## [27,] 2.791660708364762e-138
-    ## [28,] 3.063352631656018e-113
-    ## [29,] 3.307413326200108e-117
-    ## [30,] 2.215280191694628e-119
-    ## [31,] 4.976444150306428e-117
-    ## [32,]  5.460765070215002e-92
-    ## [33,] 3.422853675328183e-132
-    ## [34,] 6.101615464552421e-111
-    ## [35,] 4.187515642879202e-110
-    ## [36,]  7.464710042621070e-89
-    ## [37,] 1.522520451944414e-115
-    ## [38,]  4.507890872891028e-98
-    ## [39,] 7.268343495954807e-137
-    ## [40,] 1.295662662890262e-115
-    ## [41,] 2.368784251477541e-115
-    ## [42,]  4.222620068506600e-94
-    ## [43,] 1.464091450258139e-139
-    ## [44,] 3.288960629209072e-137
-    ## [45,] 3.609051117391294e-112
-    ## [46,] 3.896588214247858e-116
-    ## [47,] 2.609905032985965e-118
-    ## [48,]  6.433533010470360e-91
-    ## [49,] 4.933469902828771e-109
-    ## [50,]  3.197537719124716e-93
-    ## [51,]  5.310916028328572e-97
-    ## [52,] 2.790753947589735e-114
-    ## [53,] 7.587653546980657e-117
-    ## [54,]  1.870390644469671e-89
-    ## [55,]  2.019406737178172e-93
-    ## [56,]  1.352583213113299e-95
+    ##  [1,] 8.423399523083861e-219
+    ##  [2,] 2.552509514529968e-215
+    ##  [3,] 1.086335889365416e-182
+    ##  [4,] 2.590615387887478e-188
+    ##  [5,] 3.341024563410653e-152
+    ##  [6,] 1.735174405818792e-190
+    ##  [7,] 5.258030523286990e-187
+    ##  [8,] 2.237792741735180e-154
+    ##  [9,] 1.806927705507407e-209
+    ## [10,] 3.722172620649529e-181
+    ## [11,] 2.535576040070425e-180
+    ## [12,] 7.798160693392347e-150
+    ## [13,] 5.223148488541379e-152
+    ## [14,] 1.185490854055395e-186
+    ## [15,] 2.442046566415371e-158
+    ## [16,] 3.149420636322098e-122
+    ## [17,] 4.056091089693347e-162
+    ## [18,] 5.230996474990890e-126
+    ## [19,] 1.433279928089470e-213
+    ## [20,] 4.343211601690741e-210
+    ## [21,] 1.848450166852156e-177
+    ## [22,] 2.952478557830702e-185
+    ## [23,] 3.944494164800863e-185
+    ## [24,] 1.213128648684224e-154
+    ## [25,] 8.125443058835993e-157
+    ## [26,] 3.528343429996265e-188
+    ## [27,] 1.069179984982842e-184
+    ## [28,] 4.550379080925206e-152
+    ## [29,] 1.085141546290278e-157
+    ## [30,] 7.268195219626714e-160
+    ## [31,] 2.202452513467920e-156
+    ## [32,] 9.373532973660953e-124
+    ## [33,] 7.568751168377665e-179
+    ## [34,] 1.559121501406908e-150
+    ## [35,] 1.062086992041795e-149
+    ## [36,] 2.187841334479752e-121
+    ## [37,] 4.965713492235800e-156
+    ## [38,] 1.698991281200261e-131
+    ## [39,] 6.003637609449217e-183
+    ## [40,] 1.236716635982800e-154
+    ## [41,] 1.652246225872856e-154
+    ## [42,] 3.403537200614500e-126
+    ## [43,] 1.188495489625814e-186
+    ## [44,] 3.601450978233286e-183
+    ## [45,] 1.532760379216541e-150
+    ## [46,] 3.655216276304682e-156
+    ## [47,] 2.448235951979141e-158
+    ## [48,] 3.157402866836770e-122
+    ## [49,] 3.577558774184457e-148
+    ## [50,] 3.445593814809507e-126
+    ## [51,] 5.722922143727463e-130
+    ## [52,] 5.565465001243176e-153
+    ## [53,] 4.978299130783954e-156
+    ## [54,] 6.420335398964102e-120
+    ## [55,] 1.531075226619922e-125
+    ## [56,] 1.025502496061560e-127
     ## [57,]  1.000000000000000e+00
     ## [58,]  9.999999999999627e-01
     ## 
@@ -179,25 +185,25 @@ matches.out$EM
     ## 
     ## $p.gamma.k.m
     ## $p.gamma.k.m[[1]]
-    ## [1] 2.985866490183865e-118  4.479069859119996e-90  1.000000000000000e+00
+    ## [1] 1.321471508080756e-157 1.312849658045964e-122  1.000000000000000e+00
     ## 
     ## $p.gamma.k.m[[2]]
-    ## [1] 1.304923705443954e-90 1.000000000000000e+00
+    ## [1] 4.47930376671913e-121  1.00000000000000e+00
     ## 
     ## $p.gamma.k.m[[3]]
-    ## [1] 1.220323092910490e-112  1.525991882767646e-90  1.000000000000000e+00
+    ## [1] 3.118243002813833e-152 3.903965608653493e-121  1.000000000000000e+00
     ## 
     ## $p.gamma.k.m[[4]]
-    ## [1] 5.746394898294246e-90 1.000000000000000e+00
+    ## [1] 4.028932373122356e-121  1.000000000000000e+00
     ## 
     ## $p.gamma.k.m[[5]]
-    ## [1] 7.773975977341593e-117  6.004784127379752e-90  1.000000000000000e+00
+    ## [1] 7.420299815896822e-156 4.035233365892518e-121  1.000000000000000e+00
     ## 
     ## $p.gamma.k.m[[6]]
-    ## [1] 3.227583221191933e-91 1.000000000000000e+00
+    ## [1] 3.787774420033002e-123  1.000000000000000e+00
     ## 
     ## $p.gamma.k.m[[7]]
-    ## [1] 4.81803815699856e-90 1.00000000000000e+00
+    ## [1] 1.514490578373478e-122  1.000000000000000e+00
     ## 
     ## 
     ## $p.gamma.k.u
@@ -225,62 +231,62 @@ matches.out$EM
     ## 
     ## $p.gamma.j.m
     ##                         [,1]
-    ##  [1,] 3.586236782141681e-160
-    ##  [2,] 9.378665439129888e-160
-    ##  [3,] 1.003042657324010e-135
-    ##  [4,] 6.435971579363018e-139
-    ##  [5,] 1.800091412695529e-114
-    ##  [6,] 6.435971579363018e-139
-    ##  [7,] 1.683124341347784e-138
-    ##  [8,] 1.800091412695529e-114
-    ##  [9,] 6.441341410587921e-155
-    ## [10,] 1.155983075572619e-133
-    ## [11,] 1.313388402216464e-133
-    ## [12,] 2.357047496535386e-112
-    ## [13,] 2.357047496535386e-112
-    ## [14,] 7.298873388497321e-139
-    ## [15,] 1.309878419731237e-117
-    ## [16,]  3.663628507301181e-93
-    ## [17,] 1.309878419731237e-117
-    ## [18,]  3.663628507301181e-93
-    ## [19,] 9.479391275026635e-160
-    ## [20,] 2.479034284010346e-159
-    ## [21,] 2.651312334329198e-135
-    ## [22,] 1.701200911761852e-138
-    ## [23,] 2.659208159449073e-138
-    ## [24,] 4.772297307040538e-117
-    ## [25,] 4.772297307040538e-117
-    ## [26,] 2.446160054405564e-138
-    ## [27,] 6.397156170801662e-138
-    ## [28,] 6.841720249563842e-114
-    ## [29,] 4.389954580557929e-117
-    ## [30,] 4.389954580557929e-117
-    ## [31,] 1.148053455618202e-116
-    ## [32,]  1.227836301814098e-92
-    ## [33,] 4.393617324386159e-133
-    ## [34,] 7.884921701533640e-112
-    ## [35,] 8.958578143585389e-112
-    ## [36,]  1.607734174462003e-90
-    ## [37,] 4.978537004030310e-117
-    ## [38,]  8.934636671037387e-96
-    ## [39,] 6.465860924889708e-138
-    ## [40,] 1.160383423535473e-116
-    ## [41,] 1.813836946959585e-116
-    ## [42,]  3.255167951642876e-95
-    ## [43,] 2.642311624510413e-138
-    ## [44,] 6.910128420858944e-138
-    ## [45,] 7.390341001813108e-114
-    ## [46,] 4.741974262227534e-117
-    ## [47,] 4.741974262227534e-117
-    ## [48,]  1.326293480852243e-92
-    ## [49,] 9.676944534045316e-112
-    ## [50,]  9.651083253583498e-96
-    ## [51,]  9.651083253583498e-96
-    ## [52,] 1.959284079259670e-116
-    ## [53,] 1.802311877273546e-116
-    ## [54,]  5.040926755615752e-92
-    ## [55,]  3.234484704703105e-95
-    ## [56,]  3.234484704703105e-95
+    ##  [1,] 1.259776447973984e-215
+    ##  [2,] 4.444112737309158e-214
+    ##  [3,] 1.843426499546639e-182
+    ##  [4,] 2.612569634269080e-187
+    ##  [5,] 3.822964069115501e-154
+    ##  [6,] 2.612569634269080e-187
+    ##  [7,] 9.216360575271510e-186
+    ##  [8,] 3.822964069115501e-154
+    ##  [9,] 1.762252154144999e-209
+    ## [10,] 3.654621796787107e-181
+    ## [11,] 4.121474925821486e-181
+    ## [12,] 8.547262696424840e-153
+    ## [13,] 8.547262696424840e-153
+    ## [14,] 2.945304432182650e-187
+    ## [15,] 6.108078092405673e-159
+    ## [16,] 8.937929451649369e-126
+    ## [17,] 6.108078092405673e-159
+    ## [18,] 8.937929451649369e-126
+    ## [19,] 9.687580256120389e-214
+    ## [20,] 3.417487196174223e-212
+    ## [21,] 1.417580253174008e-180
+    ## [22,] 2.009045179991131e-185
+    ## [23,] 2.294866539789997e-185
+    ## [24,] 4.759176635027596e-157
+    ## [25,] 4.759176635027596e-157
+    ## [26,] 6.945180808106827e-186
+    ## [27,] 2.450051081829723e-184
+    ## [28,] 1.016285894723384e-152
+    ## [29,] 1.440316534965337e-157
+    ## [30,] 1.440316534965337e-157
+    ## [31,] 5.081003910726385e-156
+    ## [32,] 2.107610181600352e-124
+    ## [33,] 9.715342638526223e-180
+    ## [34,] 2.014802642544630e-151
+    ## [35,] 2.272180004789232e-151
+    ## [36,] 4.712128484107293e-123
+    ## [37,] 1.623754107272321e-157
+    ## [38,] 3.367399573949623e-129
+    ## [39,] 5.340788564511359e-184
+    ## [40,] 1.107591910384888e-155
+    ## [41,] 1.265165980436328e-155
+    ## [42,] 2.623746640218716e-127
+    ## [43,] 2.144931211341200e-185
+    ## [44,] 7.566672747616554e-184
+    ## [45,] 3.138670389536204e-152
+    ## [46,] 4.448235366963885e-157
+    ## [47,] 4.448235366963885e-157
+    ## [48,] 6.509087358212886e-124
+    ## [49,] 7.017340433195035e-151
+    ## [50,] 1.039978748831230e-128
+    ## [51,] 1.039978748831230e-128
+    ## [52,] 3.907305042076638e-155
+    ## [53,] 1.182506238124549e-155
+    ## [54,] 1.730357269929704e-122
+    ## [55,] 2.452323898439606e-127
+    ## [56,] 2.452323898439606e-127
     ## [57,]  5.000000000000000e-01
     ## [58,]  5.000000000000000e-01
     ## 
@@ -299,15 +305,15 @@ matches.out$EM
     ## [11,] 3.112477167434274e-05
     ## [12,] 2.098770847899037e-07
     ## [13,] 3.133464875913262e-05
-    ## [14,] 4.757317474627734e-05
-    ## [15,] 4.789396486594211e-05
-    ## [16,] 5.434209845680956e-08
+    ## [14,] 4.757317474627726e-05
+    ## [15,] 4.789396486594202e-05
+    ## [16,] 5.434209845680946e-08
     ## [17,] 2.883546988135652e-01
     ## [18,] 3.271769100192702e-04
-    ## [19,] 1.294238890798555e-04
-    ## [20,] 1.506697469301736e-06
+    ## [19,] 1.294238890798554e-04
+    ## [20,] 1.506697469301733e-06
     ## [21,] 1.468486842283143e-07
-    ## [22,] 1.302966057965100e-04
+    ## [22,] 1.302966057965099e-04
     ## [23,] 1.114028412332929e-04
     ## [24,] 7.511991991456039e-07
     ## [25,] 1.121540404324386e-04
@@ -322,9 +328,9 @@ matches.out$EM
     ## [34,] 2.474472903135143e-05
     ## [35,] 4.096498454286010e-06
     ## [36,] 4.124121505225226e-06
-    ## [37,] 6.261361170859708e-06
+    ## [37,] 6.261361170859698e-06
     ## [38,] 3.795191143360645e-02
-    ## [39,] 1.703417352296155e-05
+    ## [39,] 1.703417352296152e-05
     ## [40,] 1.714903645973134e-05
     ## [41,] 1.466232657672632e-05
     ## [42,] 1.476119594002186e-05
@@ -335,7 +341,7 @@ matches.out$EM
     ## [47,] 3.479081792127839e-03
     ## [48,] 3.947482857522776e-06
     ## [49,] 3.755916426362859e-07
-    ## [50,] 5.779503581448722e-07
+    ## [50,] 5.779503581448713e-07
     ## [51,] 3.479659742485983e-03
     ## [52,] 1.344330380025045e-06
     ## [53,] 4.548336665057549e-04
@@ -406,62 +412,62 @@ matches.out$EM
     ## [57,]       2       2       2       2       2       2       2     43
     ## [58,]       2      NA       2       2       2       2       2      7
     ##                   weights            p.gamma.j.m           p.gamma.j.u
-    ##  [1,] -365.88606094978775 3.586236782141681e-160 2.863757478838720e-01
-    ##  [2,] -360.47155404672009 9.378665439129888e-160 3.333863768687974e-03
-    ##  [3,] -302.81405342913405 1.003042657324010e-135 3.249315259387583e-04
-    ##  [4,] -311.94773733713572 6.435971579363018e-139 1.931056964827189e-03
-    ##  [5,] -248.87572981648199 1.800091412695529e-114 2.191041982055012e-06
-    ##  [6,] -316.95369504168082 6.435971579363018e-139 2.883068048486992e-01
-    ##  [7,] -311.53918813861316 1.683124341347784e-138 3.356344306575284e-03
-    ##  [8,] -253.88168752102712 1.800091412695529e-114 3.271225679208135e-04
-    ##  [9,] -346.45220553233901 6.441341410587921e-155 1.867486300460568e-04
-    ## [10,] -297.51983962423208 1.155983075572619e-133 1.880078925547961e-04
-    ## [11,] -295.59370046485333 1.313388402216464e-133 3.112477167434274e-05
-    ## [12,] -241.65537685220127 2.357047496535386e-112 2.098770847899037e-07
-    ## [13,] -246.66133455674643 2.357047496535386e-112 3.133464875913262e-05
-    ## [14,] -308.11836640893637 7.298873388497321e-139 4.757317474627734e-05
-    ## [15,] -259.18600050082949 1.309878419731237e-117 4.789396486594211e-05
-    ## [16,] -196.11399298017574  3.663628507301181e-93 5.434209845680956e-08
-    ## [17,] -267.88895759323060 1.309878419731237e-117 2.883546988135652e-01
-    ## [18,] -204.81695007257687  3.663628507301181e-93 3.271769100192702e-04
-    ## [19,] -357.21207719761890 9.479391275026635e-160 1.294238890798555e-04
-    ## [20,] -351.79757029455118 2.479034284010346e-159 1.506697469301736e-06
-    ## [21,] -294.14006967696514 2.651312334329198e-135 1.468486842283143e-07
-    ## [22,] -308.27971128951197 1.701200911761852e-138 1.302966057965100e-04
-    ## [23,] -307.67635671311001 2.659208159449073e-138 1.114028412332929e-04
-    ## [24,] -253.73803310045793 4.772297307040538e-117 7.511991991456039e-07
-    ## [25,] -258.74399080500308 4.772297307040538e-117 1.121540404324386e-04
-    ## [26,] -313.58390139051511 2.446160054405564e-138 3.769145106752195e-02
-    ## [27,] -308.16939448744739 6.397156170801662e-138 4.387877256779533e-04
-    ## [28,] -250.51189386986132 6.841720249563842e-114 4.276598420332113e-05
-    ## [29,] -259.64557777786297 4.389954580557929e-117 2.541567840021710e-04
-    ## [30,] -264.65153548240812 4.389954580557929e-117 3.794560785152411e-02
-    ## [31,] -259.23702857934040 1.148053455618202e-116 4.417465100722750e-04
-    ## [32,] -201.57952796175442  1.227836301814098e-92 4.305435901251417e-05
-    ## [33,] -294.15004597306637 4.393617324386159e-133 2.457899072571613e-05
-    ## [34,] -245.21768006495941 7.884921701533640e-112 2.474472903135143e-05
-    ## [35,] -243.29154090558063 8.958578143585389e-112 4.096498454286010e-06
-    ## [36,] -194.35917499747370  1.607734174462003e-90 4.124121505225226e-06
-    ## [37,] -255.81620684966367 4.978537004030310e-117 6.261361170859708e-06
-    ## [38,] -215.58679803395790  8.934636671037387e-96 3.795191143360645e-02
-    ## [39,] -304.90991763834614 6.465860924889708e-138 1.703417352296155e-05
-    ## [40,] -255.97755173023924 1.160383423535473e-116 1.714903645973134e-05
-    ## [41,] -255.37419715383729 1.813836946959585e-116 1.466232657672632e-05
-    ## [42,] -206.44183124573036  3.255167951642876e-95 1.476119594002186e-05
-    ## [43,] -311.11738135555356 2.642311624510413e-138 3.455779167934082e-03
-    ## [44,] -305.70287445248590 6.910128420858944e-138 4.023070055930163e-05
-    ## [45,] -248.04537383489981 7.390341001813108e-114 3.921042918758394e-06
-    ## [46,] -257.17905774290153 4.741974262227534e-117 2.330262419375648e-05
-    ## [47,] -262.18501544744669 4.741974262227534e-117 3.479081792127839e-03
-    ## [48,] -199.11300792679290  1.326293480852243e-92 3.947482857522776e-06
-    ## [49,] -240.82502087061914 9.676944534045316e-112 3.755916426362859e-07
-    ## [50,] -204.41732090659525  9.651083253583498e-96 5.779503581448722e-07
-    ## [51,] -213.12027799899641  9.651083253583498e-96 3.479659742485983e-03
-    ## [52,] -252.90767711887577 1.959284079259670e-116 1.344330380025045e-06
-    ## [53,] -258.81522179628087 1.802311877273546e-116 4.548336665057549e-04
-    ## [54,] -195.74321427562714  5.040926755615752e-92 5.160695289252128e-07
-    ## [55,] -204.87689818362881  3.234484704703105e-95 3.066983590733346e-06
-    ## [56,] -209.88285588817394  3.234484704703105e-95 4.579006500964880e-04
+    ##  [1,] -493.57441018408292 1.259776447973984e-215 2.863757478838720e-01
+    ##  [2,] -485.55800630412904 4.444112737309158e-214 3.333863768687974e-03
+    ##  [3,] -410.42696476982599 1.843426499546639e-182 3.249315259387583e-04
+    ##  [4,] -423.37339034288374 2.612569634269080e-187 1.931056964827189e-03
+    ##  [5,] -340.22594492862675 3.822964069115501e-154 2.191041982055012e-06
+    ##  [6,] -428.37934804742883 2.612569634269080e-187 2.883068048486992e-01
+    ##  [7,] -420.36294416747489 9.216360575271510e-186 3.356344306575284e-03
+    ##  [8,] -345.23190263317190 3.822964069115501e-154 3.271225679208135e-04
+    ##  [9,] -472.08794474195878 1.762252154144999e-209 1.867486300460568e-04
+    ## [10,] -406.89288260530464 3.654621796787107e-181 1.880078925547961e-04
+    ## [11,] -404.97418420194992 4.121474925821486e-181 3.112477167434274e-05
+    ## [12,] -334.77316436075068 8.547262696424840e-153 2.098770847899037e-07
+    ## [13,] -339.77912206529584 8.547262696424840e-153 3.133464875913262e-05
+    ## [14,] -419.54995869423317 2.945304432182650e-187 4.757317474627726e-05
+    ## [15,] -354.35489655757908 6.108078092405673e-159 4.789396486594202e-05
+    ## [16,] -271.20745114332215 8.937929451649369e-126 5.434209845680946e-08
+    ## [17,] -363.05785364998025 6.108078092405673e-159 2.883546988135652e-01
+    ## [18,] -279.91040823572331 8.937929451649369e-126 3.271769100192702e-04
+    ## [19,] -481.52994764285967 9.687580256120389e-214 1.294238890798554e-04
+    ## [20,] -473.51354376290573 3.417487196174223e-212 1.506697469301733e-06
+    ## [21,] -398.38250222860279 1.417580253174008e-180 1.468486842283143e-07
+    ## [22,] -416.33488550620558 2.009045179991131e-185 1.302966057965099e-04
+    ## [23,] -416.04520978866469 2.294866539789997e-185 1.114028412332929e-04
+    ## [24,] -345.84418994746540 4.759176635027596e-157 7.511991991456039e-07
+    ## [25,] -350.85014765201055 4.759176635027596e-157 1.121540404324386e-04
+    ## [26,] -423.06445731436315 6.945180808106827e-186 3.769145106752195e-02
+    ## [27,] -415.04805343440921 2.450051081829723e-184 4.387877256779533e-04
+    ## [28,] -339.91701190010622 1.016285894723384e-152 4.276598420332113e-05
+    ## [29,] -352.86343747316391 1.440316534965337e-157 2.541567840021710e-04
+    ## [30,] -357.86939517770907 1.440316534965337e-157 3.794560785152411e-02
+    ## [31,] -349.85299129775507 5.081003910726385e-156 4.417465100722750e-04
+    ## [32,] -274.72194976345213 2.107610181600352e-124 4.305435901251417e-05
+    ## [33,] -401.57799187223901 9.715342638526223e-180 2.457899072571613e-05
+    ## [34,] -336.38292973558487 2.014802642544630e-151 2.474472903135143e-05
+    ## [35,] -334.46423133223016 2.272180004789232e-151 4.096498454286010e-06
+    ## [36,] -269.26916919557607 4.712128484107293e-123 4.124121505225226e-06
+    ## [37,] -349.04000582451340 1.623754107272321e-157 6.261361170859698e-06
+    ## [38,] -292.54790078026048 3.367399573949623e-129 3.795191143360645e-02
+    ## [39,] -411.01999477313984 5.340788564511359e-184 1.703417352296152e-05
+    ## [40,] -345.82493263648581 1.107591910384888e-155 1.714903645973134e-05
+    ## [41,] -345.53525691894487 1.265165980436328e-155 1.466232657672632e-05
+    ## [42,] -280.34019478229078 2.623746640218716e-127 1.476119594002186e-05
+    ## [43,] -419.54742739308836 2.144931211341200e-185 3.455779167934082e-03
+    ## [44,] -411.53102351313441 7.566672747616554e-184 4.023070055930163e-05
+    ## [45,] -336.39998197883142 3.138670389536204e-152 3.921042918758394e-06
+    ## [46,] -349.34640755188917 4.448235366963885e-157 2.330262419375648e-05
+    ## [47,] -354.35236525643433 4.448235366963885e-157 3.479081792127839e-03
+    ## [48,] -271.20491984217733 6.509087358212886e-124 3.947482857522776e-06
+    ## [49,] -330.94720141095536 7.017340433195035e-151 3.755916426362859e-07
+    ## [50,] -280.32791376658457 1.039978748831230e-128 5.779503581448713e-07
+    ## [51,] -289.03087085898568 1.039978748831230e-128 3.479659742485983e-03
+    ## [52,] -342.01822699767013 3.907305042076638e-155 1.344330380025045e-06
+    ## [53,] -349.03747452336859 1.182506238124549e-155 4.548336665057549e-04
+    ## [54,] -265.89002910911165 1.730357269929704e-122 5.160695289252128e-07
+    ## [55,] -278.83645468216935 2.452323898439606e-127 3.066983590733346e-06
+    ## [56,] -283.84241238671450 2.452323898439606e-127 4.579006500964880e-04
     ## [57,]   44.46486859948860  5.000000000000000e-01 2.444122297210018e-20
     ## [58,]   39.45891089494345  5.000000000000000e-01 3.649074589734563e-18
     ## 
@@ -477,17 +483,29 @@ matches.out$EM
     ## attr(,"class")
     ## [1] "fastLink"    "fastLink.EM"
 
-where the first seven columns are indicators for the matching pattern for that field. `0` indicates no match on that field, `1` indicates a partial match, `2` indicates a complete match, and `NA` indicates an NA. Other columns are:
+which is a list of parameter estimates for different fields. These fields are:
 
--   `counts`: Tallies the number of pairwise comparisons between `dfA` and `dfB` that fall in each pattern
+-   `zeta.j`: The posterior match probabilities for each unique pattern.
 
--   `weights`: The Fellegi-Sunter weight for each matching pattern
+-   `p.m`: The posterior probability of a pair matching.
 
--   `p.gamma.j.m`: Probability of being in the matched set given that matching pattern
+-   `p.u`: The posterior probability of a pair not matching.
 
--   `p.gamma.j.u`: Probability of being in the unmatched set given that matching pattern
+-   `p.gamma.k.m`: The posterior of the matching probability for a specific matching field.
 
--   `zeta.j`: Posterior probability of a particular pattern representing a true match
+-   `p.gamma.k.u`: The posterior of the non-matching probability for a specific matching field.
+
+-   `p.gamma.j.m`: The posterior probability that a pair is in the matched set given a particular agreement pattern.
+
+-   `p.gamma.j.u`: The posterior probability that a pair is in the unmatched set given a particular agreement pattern.
+
+-   `patterns.w`: Counts of the agreement patterns observed (2 = match, 1 = partial match, 0 = non-match), along with the Felligi-Sunter Weights.
+
+-   `iter.converge`: The number of iterations it took the EM algorithm to converge.
+
+-   `nobs.a`: The number of observations in dataset A.
+
+-   `nobs.b`: The number of observations in dataset B.
 
 Lastly, we can summarize the accuracy of the match using the `summary()` function:
 
@@ -708,11 +726,11 @@ priors.out <- list(lambda.prior = 50/(nrow(dfA) * nrow(dfB)), pi.prior = 0.02)
 matches.out.aux <- fastLink(
   dfA = dfA, dfB = dfB, 
   varnames = c("firstname", "middlename", "lastname", "housenum", "streetname", "city", "birthyear"),
-  stringdist.match = c(TRUE, TRUE, TRUE, FALSE, TRUE, TRUE, FALSE),
-  partial.match = c(TRUE, FALSE, TRUE, FALSE, TRUE, FALSE, FALSE),
+  stringdist.match = c("firstname", "middlename", "lastname", "streetname", "city"),
+  partial.match = c("firstname", "lastname", "streetname"),
   priors.obj = priors.out, 
   w.lambda = .5, w.pi = .5, 
-  address.field = c(FALSE, FALSE, FALSE, FALSE, TRUE, FALSE, FALSE)
+  address.field = "streetname"
 )
 ```
 
@@ -728,7 +746,7 @@ matches.out.aux <- fastLink(
     ## Getting the indices of estimated matches.
     ## Parallelizing gamma calculation using 1 cores.
 
-where `priors.obj` is an input for the the optimal prior parameters. This can be calculated by `calcMoversPriors()`, or can be provided by the user as a list with two entries named `lambda.prior` and `pi.prior`. `w.lambda` and `w.pi` are user-specified weights between 0 and 1 indicating the weighting between the MLE estimate and the prior, where a weight of 0 indicates no weight being placed on the prior. `address_field` is a vector of booleans of the same length as `varnames`, where `TRUE` indicates an address-related field used for matching. `l.address` is an integer indicating the number of matching fields used on the address variable - when a single partial match category is included, `l.address = 3`, while for a binary match/no match category `l.address = 2`.
+where `priors.obj` is an input for the the optimal prior parameters. This can be calculated by `calcMoversPriors()`, or can be provided by the user as a list with two entries named `lambda.prior` and `pi.prior`. `w.lambda` and `w.pi` are user-specified weights between 0 and 1 indicating the weighting between the MLE estimate and the prior, where a weight of 0 indicates no weight being placed on the prior. `address_field` is a vector of booleans of the same length as `varnames`, where `TRUE` indicates an address-related field used for matching.
 
 ### Incorporating Auxiliary Information when Running the Algorithm Step-by-Step
 
@@ -741,7 +759,7 @@ em.out.aux <- emlinkMARmov(tc, nobs.a = nrow(dfA), nobs.b = nrow(dfB),
                            address.field = c(FALSE, FALSE, FALSE, FALSE, TRUE, FALSE, FALSE))
 ```
 
-All other steps are the same. The newly specified arguments include the prior estimates of the parameters (`prior.lambda`, `prior.pi`), the weightings of the prior and MLE estimate (`w.lambda`, `w.pi`), the vector of boolean indicators where `TRUE` indicates an address field (`address.field`), and an integer indicating the number of matching categories for the address field (`l.address`).
+All other steps are the same. The newly specified arguments include the prior estimates of the parameters (`prior.lambda`, `prior.pi`), the weightings of the prior and MLE estimate (`w.lambda`, `w.pi`), and the vector of boolean indicators where `TRUE` indicates an address field (`address.field`).
 
 Aggregating Multiple Matches Together
 -------------------------------------
@@ -760,8 +778,8 @@ and then run `fastLink()` on both subsets:
 link.1 <- fastLink(
   dfA = subset(dfA, cluster == 1), dfB = subset(dfB, cluster == 1), 
   varnames = c("firstname", "middlename", "lastname", "housenum", "streetname", "city", "birthyear"),
-  stringdist.match = c(TRUE, TRUE, TRUE, FALSE, TRUE, TRUE, FALSE),
-  partial.match = c(TRUE, FALSE, TRUE, FALSE, TRUE, FALSE, FALSE)
+  stringdist.match = c("firstname", "middlename", "lastname", "streetname", "city"),
+  partial.match = c("firstname", "lastname", "streetname")
 )
 ```
 
@@ -781,8 +799,8 @@ link.1 <- fastLink(
 link.2 <- fastLink(
   dfA = subset(dfA, cluster == 2), dfB = subset(dfB, cluster == 2), 
   varnames = c("firstname", "middlename", "lastname", "housenum", "streetname", "city", "birthyear"),
-  stringdist.match = c(TRUE, TRUE, TRUE, FALSE, TRUE, TRUE, FALSE),
-  partial.match = c(TRUE, FALSE, TRUE, FALSE, TRUE, FALSE, FALSE)
+  stringdist.match = c("firstname", "middlename", "lastname", "streetname", "city"),
+  partial.match = c("firstname", "lastname", "streetname")
 )
 ```
 
@@ -838,3 +856,147 @@ summary(agg.out)
     ## 7        FNR          All      0%      0%      0%        
     ## 8            Within-State      0%      0%      0%        
     ## 9            Across-State      0%      0%      0%
+
+Random Sampling with `fastLink`
+-------------------------------
+
+The probabilistic modeling framework of `fastLink` is especially flexible in that it allows us to run the matching algorithm on a random smaller subset of data to be matched, and then apply those estimates to the full sample of data. This may be desired, for example, when using blocking along with a prior. We may want to block in order to reduce the number of pairwise comparisons, but may also be uncomfortable making the assumption that the same prior applies to all blocks uniformly. Random sampling allows us to run the EM algorithm with priors on a random sample from the full dataset, and the estimates can then be applied to each block separately to get matches for the entire dataset.
+
+This functionality is incorporated into the `fastLink()` wrapper, which we show in the following example:
+
+``` r
+## Take 30% random samples of dfA and dfB
+dfA.s <- dfA[sample(1:nrow(dfA), nrow(dfA) * .3),]
+dfB.s <- dfB[sample(1:nrow(dfB), nrow(dfB) * .3),]
+
+## Run the algorithm on the random samples
+rs.out <- fastLink(
+  dfA = dfA.s, dfB = dfB.s, 
+  varnames = c("firstname", "middlename", "lastname", "housenum", "streetname", "city", "birthyear"),
+  stringdist.match = c("firstname", "middlename", "lastname", "streetname", "city"),
+  partial.match = c("firstname", "lastname", "streetname"),
+  estimate.only = TRUE
+)
+```
+
+    ## 
+    ## ==================== 
+    ## fastLink(): Fast Probabilistic Record Linkage
+    ## ==================== 
+    ## 
+    ## Calculating matches for each variable.
+    ## Getting counts for zeta parameters.
+    ## Parallelizing gamma calculation using 1 cores.
+    ## Running the EM algorithm.
+
+``` r
+class(rs.out)
+```
+
+    ## [1] "fastLink"    "fastLink.EM"
+
+``` r
+## Apply to the whole dataset
+fs.out <- fastLink(
+  dfA = dfA, dfB = dfB, 
+  varnames = c("firstname", "middlename", "lastname", "housenum", "streetname", "city", "birthyear"),
+  stringdist.match = c("firstname", "middlename", "lastname", "streetname", "city"),
+  partial.match = c("firstname", "lastname", "streetname"),
+  em.obj = rs.out
+)
+```
+
+    ## 
+    ## ==================== 
+    ## fastLink(): Fast Probabilistic Record Linkage
+    ## ==================== 
+    ## 
+    ## Calculating matches for each variable.
+    ## Getting counts for zeta parameters.
+    ## Parallelizing gamma calculation using 1 cores.
+    ## Getting the indices of estimated matches.
+    ## Parallelizing gamma calculation using 1 cores.
+
+``` r
+summary(fs.out)
+```
+
+    ##                  95%     85%     75%   Exact
+    ## 1 Match Rate 14.286% 14.286% 14.286% 12.286%
+    ## 2        FDR      0%      0%      0%        
+    ## 3        FNR      0%      0%      0%
+
+In the first run of `fastLink()`, we specify `estimate.only = TRUE`, which runs the algorithm only through the EM estimation step and returns the EM object. In the second run of `fastLink()`, we provide the EM object from the first stage as an argument to `em.obj`. Then, using the parameter values calculated in the previous EM stage, we estimate posterior probabilities of belonging to the matched set for all matching patterns in the full dataset that were not present in the random sample.
+
+This functionality can also be run step-by-step as follows:
+
+``` r
+## --------------
+## 30% sample run
+## --------------
+## Calculate gammas 
+g_firstname <- gammaCKpar(dfA.s$firstname, dfB.s$firstname)
+g_middlename <- gammaCK2par(dfA.s$middlename, dfB.s$middlename)
+g_lastname <- gammaCKpar(dfA.s$lastname, dfB.s$lastname)
+g_housenum <- gammaKpar(dfA.s$housenum, dfB.s$housenum)
+g_streetname <- gammaCKpar(dfA.s$streetname, dfB.s$streetname)
+g_city <- gammaCK2par(dfA.s$city, dfB.s$city)
+g_birthyear <- gammaKpar(dfA.s$birthyear, dfB.s$birthyear)
+
+## Get counts
+gammalist <- list(g_firstname, g_middlename, g_lastname, g_housenum, g_streetname, g_city, g_birthyear)
+tc <- tableCounts(gammalist, nobs.a = nrow(dfA.s), nobs.b = nrow(dfB.s))
+```
+
+    ## Parallelizing gamma calculation using 1 cores.
+
+``` r
+## Run EM algorithm
+em.out.rs <- emlinkMARmov(tc, nobs.a = nrow(dfA), nobs.b = nrow(dfB))
+
+## ------------------------
+## Calculate on full sample
+## ------------------------
+## Calculate gammas 
+g_firstname <- gammaCKpar(dfA$firstname, dfB$firstname)
+g_middlename <- gammaCK2par(dfA$middlename, dfB$middlename)
+g_lastname <- gammaCKpar(dfA$lastname, dfB$lastname)
+g_housenum <- gammaKpar(dfA$housenum, dfB$housenum)
+g_streetname <- gammaCKpar(dfA$streetname, dfB$streetname)
+g_city <- gammaCK2par(dfA$city, dfB$city)
+g_birthyear <- gammaKpar(dfA$birthyear, dfB$birthyear)
+
+## Get counts
+gammalist <- list(g_firstname, g_middlename, g_lastname, g_housenum, g_streetname, g_city, g_birthyear)
+tc <- tableCounts(gammalist, nobs.a = nrow(dfA), nobs.b = nrow(dfB))
+```
+
+    ## Parallelizing gamma calculation using 1 cores.
+
+``` r
+## Apply random sample EM object to full dataset
+em.obj.full <- emlinkRS(patterns.out = tc, em.out = em.out.rs, nobs.a = nrow(dfA), nobs.b = nrow(dfB))
+summary(em.obj.full)
+```
+
+    ##                  95%     85%     75%   Exact
+    ## 1 Match Rate 14.286% 14.286% 14.286% 12.286%
+    ## 2        FDR      0%      0%      0%        
+    ## 3        FNR      0%      0%      0%
+
+``` r
+## Get matches
+matches.out <- matchesLink(gammalist, nobs.a = nrow(dfA), nobs.b = nrow(dfB), em = em.obj.full, thresh = .95)
+```
+
+    ## Parallelizing gamma calculation using 1 cores.
+
+where `emlinkRS()` takes an EM object and applies the parameter estimates to all new matching patterns. The arguments are:
+
+-   `patterns.out`: The output from `tableCounts()`, with counts of the occurence of each matching pattern.
+
+-   `em.out`: The output from `emlinkMARmov()`
+
+-   `nobs.a`: The number of rows in dataset A
+
+-   `nobs.b`: The number of rows in dataset B

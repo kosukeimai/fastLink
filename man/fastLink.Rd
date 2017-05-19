@@ -6,9 +6,8 @@
 \usage{
 fastLink(dfA, dfB, varnames, stringdist.match,
 partial.match, cut.a, cut.p, priors.obj, w.lambda, w.pi,
-address.field, gender.field,
-n.cores, tol.em,
-threshold.match, verbose)
+address.field, gender.field, estimate.only, em.obj,
+n.cores, tol.em, threshold.match, verbose)
 }
 \arguments{
 \item{dfA}{Dataset A - to be matched to Dataset B}
@@ -18,13 +17,13 @@ threshold.match, verbose)
 \item{varnames}{A vector of variable names to use for matching.
 Must be present in both dfA and dfB}
 
-\item{stringdist.match}{A vector of booleans, indicating whether to use
-string distance matching when determining matching patterns on
-each variable. Must be same length as varnames.}
+\item{stringdist.match}{A vector of variable names indicating
+which variables should use string distance matching. Must be a subset of
+'varnames'.}
 
-\item{partial.match}{A vector of booleans, indicating whether to include
-a partial matching category for the string distances. Must be same length
-as varnames. Default is NULL (FALSE for all variables).}
+\item{partial.match}{A vector of variable names indicating whether to include
+a partial matching category for the string distances. Must be a subset of 'varnames'
+and 'stringdist.match'.}
 
 \item{cut.a}{Lower bound for full string-distance match, ranging between 0 and 1. Default is 0.92}
 
@@ -39,12 +38,19 @@ Default is NULL (no prior information provided).}
 \item{w.pi}{How much weight to give the prior on pi versus the data. Must range between 0 (no weight on prior) and 1 (weight fully on prior).
 Default is NULL (no prior information provided).}
 
-\item{address.field}{A vector of booleans for whether a given field is an address field. To be used when 'pi.prior' is included in 'priors.obj'.
-Default is FALSE for all fields. Address fields should be set to TRUE while non-address fields are set to FALSE.}
+\item{address.field}{The name of the address field. To be used when 'pi.prior' is included in 'priors.obj'.
+Default is NULL (no matching variables should have address prior applied). Must be present in 'varnames'.}
 
-\item{gender.field}{A vector of booleans, indicating whether a matching variable
-indicates gender. If so, the exact-matching gender prior is used in the EM algorithm.
-Must be the same length as varnames if provided. Default is NULL (FALSE for all variables).}
+\item{gender.field}{The name of the field indicating gender. If provided, the exact-matching gender prior is used in the EM algorithm.
+Default is NULL (do not implement exact matching on gender). Must be present in 'varnames'.}
+
+\item{estimate.only}{Whether to stop running the algorithm after the EM step (omitting getting the matched indices of dataset A and dataset B).
+Only the EM object will be returned. Can be used when running the match on a random sample and applying to a larger dataset, or for out-of-sample
+prediction of matches. Default is FALSE.}
+
+\item{em.obj}{An EM object from a prior run of 'fastLink' or 'emlinkMARmov'. Parameter estimates will be applied to the matching patterns
+in 'dfA' and 'dfB'. If provided. 'estimate.only' is set to FALSE. Often provided when parameters have been
+estimated on a smaller sample, and the user wants to apply them to the full dataset. Default is NULL (EM will be estimated from matching patterns in 'dfA' and 'dfB').}
 
 \item{n.cores}{Number of cores to parallelize over. Default is NULL.}
 
@@ -57,23 +63,25 @@ while threshold.match = c(.85, .95) will return all pairs with posterior probabi
 \item{verbose}{Whether to print elapsed time for each step. Default is FALSE.}
 }
 \value{
-\code{fastLink} returns a list of class 'fastLink' containing the following components:
+\code{fastLink} returns a list of class 'fastLink' containing the following components if calculating matches:
 \item{matches}{An nmatches X 2 matrix containing the indices of the successful matches in \code{dfA}
 in the first column, and the indices of the corresponding successful matches in \code{dfB} in the
 second column.}
-\item{EM}{A matrix with the output of the EM algorithm, which contains the exact matching
+\item{EM}{A list with the output of the EM algorithm, which contains the exact matching
 patterns and the associated posterior probabilities of a match for each matching pattern.}
+\item{nobs.a}{The number of observations in dataset A.}
+\item{nobs.b}{The number of observations in dataset B.}
+
+If only running the EM and not returning the matched indices, \code{fastLink} only returns the EM object.
 }
 \description{
 Run the fastLink algorithm to probabilistically match
 two datasets.
 }
 \examples{
-\dontrun{
-fastLink(dfA, dfB, varnames = c("firstname", "lastname", "streetname", "birthyear"),
-stringdist.match = c(TRUE, TRUE, TRUE, FALSE), partial.match = c(TRUE, TRUE, FALSE, FALSE),
-verbose = TRUE)
-}
+fl.out <- fastLink(dfA, dfB,
+varnames = c("firstname", "lastname", "streetname", "birthyear"),
+n.cores = 1)
 }
 \author{
 Ted Enamorado <ted.enamorado@gmail.com>, Ben Fifield <benfifield@gmail.com>, and Kosuke Imai

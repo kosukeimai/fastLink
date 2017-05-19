@@ -5,20 +5,19 @@
 #'
 #' @usage fastLink(dfA, dfB, varnames, stringdist.match,
 #' partial.match, cut.a, cut.p, priors.obj, w.lambda, w.pi,
-#' address.field, gender.field,
-#' n.cores, tol.em,
-#' threshold.match, verbose)
+#' address.field, gender.field, estimate.only, em.obj,
+#' n.cores, tol.em, threshold.match, verbose)
 #'
 #' @param dfA Dataset A - to be matched to Dataset B
 #' @param dfB Dataset B - to be matched to Dataset A
 #' @param varnames A vector of variable names to use for matching.
 #' Must be present in both dfA and dfB
-#' @param stringdist.match A vector of booleans, indicating whether to use
-#' string distance matching when determining matching patterns on
-#' each variable. Must be same length as varnames.
-#' @param partial.match A vector of booleans, indicating whether to include
-#' a partial matching category for the string distances. Must be same length
-#' as varnames. Default is NULL (FALSE for all variables).
+#' @param stringdist.match A vector of variable names indicating
+#' which variables should use string distance matching. Must be a subset of
+#' 'varnames'.
+#' @param partial.match A vector of variable names indicating whether to include
+#' a partial matching category for the string distances. Must be a subset of 'varnames'
+#' and 'stringdist.match'.
 #' @param cut.a Lower bound for full string-distance match, ranging between 0 and 1. Default is 0.92
 #' @param cut.p Lower bound for partial string-distance match, ranging between 0 and 1. Default is 0.88
 #' @param priors.obj A list containing priors for auxiliary movers information,
@@ -27,11 +26,16 @@
 #' Default is NULL (no prior information provided).
 #' @param w.pi How much weight to give the prior on pi versus the data. Must range between 0 (no weight on prior) and 1 (weight fully on prior).
 #' Default is NULL (no prior information provided).
-#' @param address.field A vector of booleans for whether a given field is an address field. To be used when 'pi.prior' is included in 'priors.obj'.
-#' Default is FALSE for all fields. Address fields should be set to TRUE while non-address fields are set to FALSE.
-#' @param gender.field A vector of booleans, indicating whether a matching variable
-#' indicates gender. If so, the exact-matching gender prior is used in the EM algorithm.
-#' Must be the same length as varnames if provided. Default is NULL (FALSE for all variables).
+#' @param address.field The name of the address field. To be used when 'pi.prior' is included in 'priors.obj'.
+#' Default is NULL (no matching variables should have address prior applied). Must be present in 'varnames'.
+#' @param gender.field The name of the field indicating gender. If provided, the exact-matching gender prior is used in the EM algorithm.
+#' Default is NULL (do not implement exact matching on gender). Must be present in 'varnames'.
+#' @param estimate.only Whether to stop running the algorithm after the EM step (omitting getting the matched indices of dataset A and dataset B).
+#' Only the EM object will be returned. Can be used when running the match on a random sample and applying to a larger dataset, or for out-of-sample
+#' prediction of matches. Default is FALSE.
+#' @param em.obj An EM object from a prior run of 'fastLink' or 'emlinkMARmov'. Parameter estimates will be applied to the matching patterns
+#' in 'dfA' and 'dfB'. If provided. 'estimate.only' is set to FALSE. Often provided when parameters have been
+#' estimated on a smaller sample, and the user wants to apply them to the full dataset. Default is NULL (EM will be estimated from matching patterns in 'dfA' and 'dfB').
 #' @param n.cores Number of cores to parallelize over. Default is NULL.
 #' @param tol.em Convergence tolerance for the EM Algorithm. Default is 1e-04.
 #' @param threshold.match A number between 0 and 1 indicating either the lower bound (if only one number provided) or the range of certainty that the
@@ -39,28 +43,30 @@
 #' while threshold.match = c(.85, .95) will return all pairs with posterior probability between .85 and .95 as matches.
 #' @param verbose Whether to print elapsed time for each step. Default is FALSE.
 #'
-#' @return \code{fastLink} returns a list of class 'fastLink' containing the following components:
+#' @return \code{fastLink} returns a list of class 'fastLink' containing the following components if calculating matches:
 #' \item{matches}{An nmatches X 2 matrix containing the indices of the successful matches in \code{dfA}
 #' in the first column, and the indices of the corresponding successful matches in \code{dfB} in the
 #' second column.}
-#' \item{EM}{A matrix with the output of the EM algorithm, which contains the exact matching
+#' \item{EM}{A list with the output of the EM algorithm, which contains the exact matching
 #' patterns and the associated posterior probabilities of a match for each matching pattern.}
+#' \item{nobs.a}{The number of observations in dataset A.}
+#' \item{nobs.b}{The number of observations in dataset B.}
+#'
+#' If only running the EM and not returning the matched indices, \code{fastLink} only returns the EM object.
 #'
 #' @author Ted Enamorado <ted.enamorado@gmail.com>, Ben Fifield <benfifield@gmail.com>, and Kosuke Imai
 #'
 #' @examples
-#' \dontrun{
-#' fastLink(dfA, dfB, varnames = c("firstname", "lastname", "streetname", "birthyear"),
-#' stringdist.match = c(TRUE, TRUE, TRUE, FALSE), partial.match = c(TRUE, TRUE, FALSE, FALSE),
-#' verbose = TRUE)
-#' }
+#' fl.out <- fastLink(dfA, dfB,
+#' varnames = c("firstname", "lastname", "streetname", "birthyear"),
+#' n.cores = 1)
 #' @export
 fastLink <- function(dfA, dfB, varnames,
-                     stringdist.match, partial.match = NULL,
+                     stringdist.match = NULL, partial.match = NULL,
                      cut.a = 0.92, cut.p = 0.88,
                      priors.obj = NULL,
                      w.lambda = NULL, w.pi = NULL, address.field = NULL,
-                     gender.field = NULL,
+                     gender.field = NULL, estimate.only = FALSE, em.obj = NULL,
                      n.cores = NULL, tol.em = 1e-04, threshold.match = 0.85, verbose = FALSE){
 
     cat("\n")
@@ -68,20 +74,6 @@ fastLink <- function(dfA, dfB, varnames,
     cat("fastLink(): Fast Probabilistic Record Linkage\n")
     cat(c(paste(rep("=", 20), sep = "", collapse = ""), "\n\n"))
 
-    if(is.null(partial.match)){
-        partial.match <- rep(FALSE, length(varnames))
-    }
-    if(length(varnames) != length(stringdist.match)){
-        stop("There must be one entry in stringdist.match for each entry in varnames.")
-    }
-    if(length(varnames) != length(partial.match)){
-        stop("There must be one entry in partial.match for each entry in varnames.")
-    }
-    if(!is.null(gender.field)){
-        if(length(varnames) != length(gender.field)){
-            stop("There must be one entry in gender.field for each entry in varnames.")
-        }
-    }
     if(any(class(dfA) %in% c("tbl_df", "data.table"))){
         dfA <- as.data.frame(dfA)
     }
@@ -94,17 +86,75 @@ fastLink <- function(dfA, dfB, varnames,
     if(any(!(varnames %in% names(dfB)))){
         stop("Some variables in varnames are not present in dfB.")
     }
+    if(any(!(stringdist.match %in% varnames))){
+        stop("You have provided a variable name for stringdist.match that is not in 'varnames'.")
+    }
+    if(any(!(partial.match %in% varnames)) | any(!(partial.match %in% stringdist.match))){
+        stop("You have provided a variable name for 'partial.match' that is not present in either 'varnames' or 'stringdist.match'.")
+    }
+    if(!is.null(address.field)){
+        if(length(address.field) > 1 | length(gender.field) > 1){
+            stop("'address.field' must have at most only one variable name.")
+        }
+        if(!(address.field %in% varnames)){
+            stop("You have provided a variable name for 'address.field' that is not in 'varnames'.")
+        }
+    }
+    if(!is.null(gender.field)){
+        if(length(gender.field) > 1){
+            stop("'gender.field' must have at most one variable name.")
+        }
+        if(!(gender.field %in% varnames)){
+            stop("You have provided a variable name for 'gender.field' that is not in 'varnames'.")
+        }
+    }
+    if(!is.null(em.obj)){
+        if(!("fastLink.EM" %in% class(em.obj))){
+            stop("If providing an EM object, it must be of class 'fastLink.EM'.")
+        }
+    }
+    if(!is.null(em.obj) & estimate.only){
+        estimate.only <- FALSE
+        cat("You have provided an EM object but have set 'estimate.only' to TRUE. Setting 'estimate.only' to FALSE so that matched indices are returned.\n")
+    }
+
+    ## Create boolean indicators
+    sm.bool <- which(varnames %in% stringdist.match)
+    stringdist.match <- rep(FALSE, length(varnames))
+    if(length(sm.bool) > 0){
+        stringdist.match[sm.bool] <- TRUE
+    }
+
+    pm.bool <- which(varnames %in% partial.match)
+    partial.match <- rep(FALSE, length(varnames))
+    if(length(pm.bool) > 0){
+        partial.match[pm.bool] <- TRUE
+    }
+
+    af.bool <- which(varnames %in% address.field)
+    address.field <- rep(FALSE, length(varnames))
+    if(length(af.bool) > 0){
+        address.field[af.bool] <- TRUE
+    }
+
+    gf.bool <- which(varnames %in% gender.field)
+    gender.field <- rep(FALSE, length(varnames))
+    if(length(gf.bool) > 0){
+        gender.field[gf.bool] <- TRUE
+    }
 
     ## Create gammas
     cat("Calculating matches for each variable.\n")
     start <- Sys.time()
     gammalist <- vector(mode = "list", length = length(varnames))
     for(i in 1:length(gammalist)){
-        if(sum(is.na(dfA[,varnames[i]])) == nrow(dfA) | length(unique(dfA[,varnames[i]])) == 1){
-            stop(paste("You have no variation in dataset A for", varnames[i], "or all observations are missing."))
-        }
-        if(sum(is.na(dfB[,varnames[i]])) == nrow(dfB) | length(unique(dfB[,varnames[i]])) == 1){
-            stop(paste("You have no variation in dataset B for", varnames[i], "or all observations are missing."))
+        if(!gender.field[i]){
+            if(sum(is.na(dfA[,varnames[i]])) == nrow(dfA) | length(unique(dfA[,varnames[i]])) == 1){
+                stop(paste("You have no variation in dataset A for", varnames[i], "or all observations are missing."))
+            }
+            if(sum(is.na(dfB[,varnames[i]])) == nrow(dfB) | length(unique(dfB[,varnames[i]])) == 1){
+                stop(paste("You have no variation in dataset B for", varnames[i], "or all observations are missing."))
+            }
         }
         if(stringdist.match[i]){
             if(partial.match[i]){
@@ -113,7 +163,7 @@ fastLink <- function(dfA, dfB, varnames,
                 gammalist[[i]] <- gammaCK2par(dfA[,varnames[i]], dfB[,varnames[i]], cut.a = cut.a, n.cores = n.cores)
             }
         }else{
-            gammalist[[i]] <- gammaKpar(dfA[,varnames[i]], dfB[,varnames[i]], n.cores = n.cores)
+            gammalist[[i]] <- gammaKpar(dfA[,varnames[i]], dfB[,varnames[i]], gender = gender.field[i], n.cores = n.cores)
         }
     }
     end <- Sys.time()
@@ -134,68 +184,65 @@ fastLink <- function(dfA, dfB, varnames,
         cat("Getting counts for zeta parameters took", round(difftime(end, start, units = "mins"), 2), "minutes.\n\n")
     }
 
-    ## Run EM algorithm
-    cat("Running the EM algorithm.\n")
-    start <- Sys.time()
-    if(is.null(priors.obj)){
-        lambda.prior <- NULL
-        pi.prior <- NULL
-    }else{
-        if("lambda.prior" %in% names(priors.obj)){
-            lambda.prior <- priors.obj$lambda.prior
-        }
-        if("pi.prior" %in% names(priors.obj)){
-            if(!("lambda.prior" %in% names(priors.obj))){
-                stop("Must specify a prior for lambda if providing a prior for pi.")
-            }
-            pi.prior <- priors.obj$pi.prior
-        }else{
+    if(is.null(em.obj)){
+        ## Run EM algorithm
+        cat("Running the EM algorithm.\n")
+        start <- Sys.time()
+        if(is.null(priors.obj)){
+            lambda.prior <- NULL
             pi.prior <- NULL
+        }else{
+            if("lambda.prior" %in% names(priors.obj)){
+                lambda.prior <- priors.obj$lambda.prior
+            }
+            if("pi.prior" %in% names(priors.obj)){
+                if(!("lambda.prior" %in% names(priors.obj))){
+                    stop("Must specify a prior for lambda if providing a prior for pi.")
+                }
+                pi.prior <- priors.obj$pi.prior
+            }else{
+                pi.prior <- NULL
+            }
         }
-    }
-    resultsEM <- emlinkMARmov(patterns = counts, nobs.a = nr_a, nobs.b = nr_b,
-                              tol = tol.em,
-                              prior.lambda = lambda.prior, w.lambda = w.lambda,
-                              prior.pi = pi.prior, w.pi = w.pi,
-                              address.field = address.field, 
-                              gender.field = gender.field)
-    end <- Sys.time()
-    if(verbose){
-        cat("Running the EM algorithm took", round(difftime(end, start, units = "secs"), 2), "seconds.\n\n")
-    }
-
-    ## Get output
-    EM <- data.frame(resultsEM$patterns.w)
-    EM$zeta.j <- resultsEM$zeta.j
-    EM <- EM[order(EM[, "weights"]), ] 
-    EM$cumsum.m <- cumsum(EM[, "p.gamma.j.m"])
-    EM$cumsum.u <- 1 - cumsum(EM[, "p.gamma.j.u"])
-    if(verbose){
-        cat("EM output is:\n")
-        print(EM)
-        cat("\n\n")
+        resultsEM <- emlinkMARmov(patterns = counts, nobs.a = nr_a, nobs.b = nr_b,
+                                  tol = tol.em,
+                                  prior.lambda = lambda.prior, w.lambda = w.lambda,
+                                  prior.pi = pi.prior, w.pi = w.pi,
+                                  address.field = address.field, 
+                                  gender.field = gender.field)
+        end <- Sys.time()
+        if(verbose){
+            cat("Running the EM algorithm took", round(difftime(end, start, units = "secs"), 2), "seconds.\n\n")
+        }
+    }else{
+        cat("Imputing matching probabilities using provided EM object.\n")
+        resultsEM <- emlinkRS(counts, em.obj, nr_a, nr_b)
     }
 
-    ## Get matches
-    cat("Getting the indices of estimated matches.\n")
-    start <- Sys.time()
-    matches <- matchesLink(gammalist, nobs.a = nr_a, nobs.b = nr_b,
-                           em = resultsEM, thresh = threshold.match,
-                           n.cores = n.cores)
-    end <- Sys.time()
-    if(verbose){
-        cat("Getting the indices of estimated matches took", round(difftime(end, start, units = "mins"), 2), "minutes.\n\n")
-    }
-    colnames(matches) <- c("inds.a", "inds.b")
-    matches <- as.data.frame(matches)
+    if(!estimate.only){
+        ## Get matches
+        cat("Getting the indices of estimated matches.\n")
+        start <- Sys.time()
+        matches <- matchesLink(gammalist, nobs.a = nr_a, nobs.b = nr_b,
+                               em = resultsEM, thresh = threshold.match,
+                               n.cores = n.cores)
+        end <- Sys.time()
+        if(verbose){
+            cat("Getting the indices of estimated matches took", round(difftime(end, start, units = "mins"), 2), "minutes.\n\n")
+        }
+        colnames(matches) <- c("inds.a", "inds.b")
+        matches <- as.data.frame(matches)
 
-    ## Return object
-    out <- list()
-    out[["matches"]] <- matches
-    out[["EM"]] <- resultsEM
-    out[["nobs.a"]] <- nr_a
-    out[["nobs.b"]] <- nr_b
-    class(out) <- "fastLink"
+        ## Return object
+        out <- list()
+        out[["matches"]] <- matches
+        out[["EM"]] <- resultsEM
+        out[["nobs.a"]] <- nr_a
+        out[["nobs.b"]] <- nr_b
+        class(out) <- "fastLink"
+    }else{
+        out <- resultsEM
+    }
 
     return(out)
 

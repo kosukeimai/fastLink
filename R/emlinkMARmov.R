@@ -150,6 +150,9 @@ emlinkMARmov <- function(patterns, nobs.a, nobs.b,
     }
 
     ## Gender match
+    if(!is.null(gender.field) & sum(gender.field) == 0){
+        gender.field <- NULL
+    }
     if(!is.null(gender.field)){
         if(is.null(prior.lambda)){
             stop("If matching on gender, you must specify a prior for lambda.") 
@@ -459,6 +462,11 @@ emlinkRS <- function(patterns.out, em.out, nobs.a, nobs.b){
     log.sum <- logxpy(log(p.gamma.j.m) + log(p.m), log(p.gamma.j.u) + 
                                                    log(p.u))
     zeta.j <- exp(log.prod - log.sum)
+
+    ## Renormalize
+    p.gamma.j.m <- p.gamma.j.m/sum(p.gamma.j.m)
+    p.gamma.j.u <- p.gamma.j.u/sum(p.gamma.j.u)
+    
     weights <- log(p.gamma.j.m) - log(p.gamma.j.u)
     data.w <- cbind(patterns.out, weights, p.gamma.j.m, p.gamma.j.u)
     nc <- ncol(data.w)

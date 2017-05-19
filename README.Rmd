@@ -51,22 +51,17 @@ data(samplematch)
 matches.out <- fastLink(
   dfA = dfA, dfB = dfB, 
   varnames = c("firstname", "middlename", "lastname", "housenum", "streetname", "city", "birthyear"),
-  stringdist.match = c(TRUE, TRUE, TRUE, FALSE, TRUE, TRUE, FALSE),
-  partial.match = c(TRUE, FALSE, TRUE, FALSE, TRUE, FALSE, FALSE)
+  stringdist.match = c("firstname", "middlename", "lastname", "streetname", "city"),
+  partial.match = c("firstname", "lastname", "streetname")
 )
 ```
 
 - `varnames` should be a vector of variable names to be used for
 matching. These variable names should exist in both `dfA` and `dfB`
 
-- `stringdist.match` should be a vector of booleans of the same length
-  as `varnames`. `TRUE` means that string-distance matching using the
-  Jaro-Winkler similarity will be used.
+- `stringdist.match` should be a vector of variable names present in `varnames`. For those variables included in `stringdist.match`, agreement will be calculated using Jaro-Winkler distance.
 
-- `partial.match` is another vector of booleans of the same length as
-  `varnames`. A `TRUE` for an entry in `partial.match` and a `TRUE`
-  for that same entry for `stringdist.match` means that a partial
-  match category will be included in the gamma calculation.
+- `partial.match` is another vector of variable names present in both `stringdist.match` and `varnames`. A variable included in `partial.match` will have a partial agreement category calculated in addition to disagreement and absolute agreement, as a function of Jaro-Winkler distance.
 
 Other arguments that can be provided include:
 
@@ -76,9 +71,13 @@ Other arguments that can be provided include:
 
 - `w.pi`: The user-specified weighting of the MLE and prior estimate for the $\pi$ parameter, a number between 0 and 1. We will discuss this option further at the end of this vignette.
 
-- `l.address`: The number of possible matching categories used for address fields, used to calculate optimal hyperparameters for the $\pi$ prior. We will discuss this option further at the end of this vignette.
+- `address.field`: The name of the address field, to be specified when providing a prior on the probability of moving in-state through `priors.obj`. The variable listed in `address.field` must be listed in `varnames`. We will discuss this option further at the end of this vignette.
 
-- `address.field`: A boolean vector the same length as `varnames`, where TRUE indicates an address matching field. Default is NULL. Should be specified in conjunction with `priors_obj`. We will discuss this option further at the end of this vignette.
+- `gender.field`: The name of the gender field, if matching on gender. If provided, the EM algorithm will implement a prior that enforces near-perfect blocking on gender, so that no matches that disagree on gender will be in the matched set. Can be used in conjunction with movers priors, if the user does not want to specify the same prior for both genders when blocking.
+
+- `estimate.only`: Whether to stop running the algorithm after running the EM estimation step. Can be used when running the algorithm on a random sample, and then applying those estimates to the full data set.
+
+- `em.obj`: An EM object, either from an `estimate.only = TRUE` run of `fastLink` or from `emlinkMARmov()`. If provided, the algorithm will skip the EM estimation step and proceed to apply the estimates from the EM object to the full data set. To be used when the EM has been estimated on a random sample of data and should be applied to the full data set.
 
 - `n.cores`: The number of registered cores to parallelize over. If left unspecified. the function will
 estimate this on its own.
@@ -91,7 +90,7 @@ will be accepted. Default is 0.85.
 - `verbose`: Whether to print out runtime for each step and EM
 output. Default is FALSE.
 
-The output from `fastLink()` will be a list of length 2 with two
+The output from `fastLink()` when `estimate.only = FALSE` will be a list of length 4 with two
 entries:
 
 - `matches`: A matrix where each row is a match with the relevant
@@ -103,6 +102,8 @@ indices of `dfA` (column 1) and `dfB` (column 2).
 
 - `nobs.b`: The number of observations in dataset B.
 
+When `estimate.only = TRUE`, `fastLink()` outputs the EM object.
+
 The datasets can then be subsetted down to the matches as follows:
 ```{r}
 dfA.match <- dfA[matches.out$matches$inds.a,]
@@ -113,17 +114,29 @@ We can also examine the EM object:
 ```{r}
 matches.out$EM
 ```
-where the first seven columns are indicators for the matching pattern for that field. `0` indicates no match on that field, `1` indicates a partial match, `2` indicates a complete match, and `NA` indicates an NA. Other columns are: 
+which is a list of parameter estimates for different fields. These fields are:
 
-- `counts`: Tallies the number of pairwise comparisons between `dfA` and `dfB` that fall in each pattern
+- `zeta.j`: The posterior match probabilities for each unique pattern.
 
-- `weights`: The Fellegi-Sunter weight for each matching pattern
+- `p.m`: The posterior probability of a pair matching.
 
-- `p.gamma.j.m`: Probability of being in the matched set given that matching pattern
+- `p.u`: The posterior probability of a pair not matching.
 
-- `p.gamma.j.u`: Probability of being in the unmatched set given that matching pattern
+- `p.gamma.k.m`: The posterior of the matching probability for a specific matching field.
 
-- `zeta.j`: Posterior probability of a particular pattern representing a true match
+- `p.gamma.k.u`: The posterior of the non-matching probability for a specific matching field.
+
+- `p.gamma.j.m`: The posterior probability that a pair is in the matched set given a particular agreement pattern.
+
+- `p.gamma.j.u`: The posterior probability that a pair is in the unmatched set given a particular agreement pattern.
+
+- `patterns.w`: Counts of the agreement patterns observed (2 = match, 1 = partial match, 0 = non-match), along with the Felligi-Sunter Weights.
+
+- `iter.converge`: The number of iterations it took the EM algorithm to converge.
+
+- `nobs.a`: The number of observations in dataset A.
+
+- `nobs.b`: The number of observations in dataset B.
 
 Lastly, we can summarize the accuracy of the match using the `summary()` function:
 ```{r}
@@ -331,14 +344,14 @@ priors.out <- list(lambda.prior = 50/(nrow(dfA) * nrow(dfB)), pi.prior = 0.02)
 matches.out.aux <- fastLink(
   dfA = dfA, dfB = dfB, 
   varnames = c("firstname", "middlename", "lastname", "housenum", "streetname", "city", "birthyear"),
-  stringdist.match = c(TRUE, TRUE, TRUE, FALSE, TRUE, TRUE, FALSE),
-  partial.match = c(TRUE, FALSE, TRUE, FALSE, TRUE, FALSE, FALSE),
+  stringdist.match = c("firstname", "middlename", "lastname", "streetname", "city"),
+  partial.match = c("firstname", "lastname", "streetname"),
   priors.obj = priors.out, 
   w.lambda = .5, w.pi = .5, 
-  address.field = c(FALSE, FALSE, FALSE, FALSE, TRUE, FALSE, FALSE)
+  address.field = "streetname"
 )
 ```
-where `priors.obj` is an input for the the optimal prior parameters. This can be calculated by `calcMoversPriors()`, or can be provided by the user as a list with two entries named `lambda.prior` and `pi.prior`. `w.lambda` and `w.pi` are user-specified weights between 0 and 1 indicating the weighting between the MLE estimate and the prior, where a weight of 0 indicates no weight being placed on the prior. `address_field` is a vector of booleans of the same length as `varnames`, where `TRUE` indicates an address-related field used for matching. `l.address` is an integer indicating the number of matching fields used on the address variable - when a single partial match category is included, `l.address = 3`, while for a binary match/no match category `l.address = 2`.
+where `priors.obj` is an input for the the optimal prior parameters. This can be calculated by `calcMoversPriors()`, or can be provided by the user as a list with two entries named `lambda.prior` and `pi.prior`. `w.lambda` and `w.pi` are user-specified weights between 0 and 1 indicating the weighting between the MLE estimate and the prior, where a weight of 0 indicates no weight being placed on the prior. `address_field` is a vector of booleans of the same length as `varnames`, where `TRUE` indicates an address-related field used for matching. 
 
 ### Incorporating Auxiliary Information when Running the Algorithm Step-by-Step
 If we are running the algorithm step-by-step, we can incorporate the prior information into the EM algorithm as follows:
@@ -348,7 +361,7 @@ em.out.aux <- emlinkMARmov(tc, nobs.a = nrow(dfA), nobs.b = nrow(dfB),
                            prior.pi = priors.out$pi.prior, w.pi = .5,
                            address.field = c(FALSE, FALSE, FALSE, FALSE, TRUE, FALSE, FALSE))
 ```
-All other steps are the same. The newly specified arguments include the prior estimates of the parameters (`prior.lambda`, `prior.pi`), the weightings of the prior and MLE estimate (`w.lambda`, `w.pi`), the vector of boolean indicators where `TRUE` indicates an address field (`address.field`), and an integer indicating the number of matching categories for the address field (`l.address`).
+All other steps are the same. The newly specified arguments include the prior estimates of the parameters (`prior.lambda`, `prior.pi`), the weightings of the prior and MLE estimate (`w.lambda`, `w.pi`), and the vector of boolean indicators where `TRUE` indicates an address field (`address.field`). 
 
 ## Aggregating Multiple Matches Together
 Often, we run several different matches for a single data set - for instance, when blocking by gender or by some other criterion to reduce the number of pairwise comparisons. Here, we walk through how to aggregate those multiple matches into a single summary. First, we use the `clusterMatch()` function to partition the two datasets into two maximally similar groups:
@@ -362,14 +375,14 @@ and then run `fastLink()` on both subsets:
 link.1 <- fastLink(
   dfA = subset(dfA, cluster == 1), dfB = subset(dfB, cluster == 1), 
   varnames = c("firstname", "middlename", "lastname", "housenum", "streetname", "city", "birthyear"),
-  stringdist.match = c(TRUE, TRUE, TRUE, FALSE, TRUE, TRUE, FALSE),
-  partial.match = c(TRUE, FALSE, TRUE, FALSE, TRUE, FALSE, FALSE)
+  stringdist.match = c("firstname", "middlename", "lastname", "streetname", "city"),
+  partial.match = c("firstname", "lastname", "streetname")
 )
 link.2 <- fastLink(
   dfA = subset(dfA, cluster == 2), dfB = subset(dfB, cluster == 2), 
   varnames = c("firstname", "middlename", "lastname", "housenum", "streetname", "city", "birthyear"),
-  stringdist.match = c(TRUE, TRUE, TRUE, FALSE, TRUE, TRUE, FALSE),
-  partial.match = c(TRUE, FALSE, TRUE, FALSE, TRUE, FALSE, FALSE)
+  stringdist.match = c("firstname", "middlename", "lastname", "streetname", "city"),
+  partial.match = c("firstname", "lastname", "streetname")
 )
 ```
 To aggregate the two matches into a single summary, we use the `aggregateEM()` function as follows:
@@ -392,3 +405,89 @@ If we assume that the first `fastLink` run was for a within-geography match and 
 agg.out <- aggregateEM(em.list = list(link.1, link.2), within.geo = c(TRUE, FALSE))
 summary(agg.out)
 ```
+
+## Random Sampling with `fastLink`
+The probabilistic modeling framework of `fastLink` is especially flexible in that it allows us to run the matching algorithm on a random smaller subset of data to be matched, and then apply those estimates to the full sample of data. This may be desired, for example, when using blocking along with a prior. We may want to block in order to reduce the number of pairwise comparisons, but may also be uncomfortable making the assumption that the same prior applies to all blocks uniformly. Random sampling allows us to run the EM algorithm with priors on a random sample from the full dataset, and the estimates can then be applied to each block separately to get matches for the entire dataset. 
+
+This functionality is incorporated into the `fastLink()` wrapper, which we show in the following example:
+```{r}
+## Take 30% random samples of dfA and dfB
+dfA.s <- dfA[sample(1:nrow(dfA), nrow(dfA) * .3),]
+dfB.s <- dfB[sample(1:nrow(dfB), nrow(dfB) * .3),]
+
+## Run the algorithm on the random samples
+rs.out <- fastLink(
+  dfA = dfA.s, dfB = dfB.s, 
+  varnames = c("firstname", "middlename", "lastname", "housenum", "streetname", "city", "birthyear"),
+  stringdist.match = c("firstname", "middlename", "lastname", "streetname", "city"),
+  partial.match = c("firstname", "lastname", "streetname"),
+  estimate.only = TRUE
+)
+class(rs.out)
+
+## Apply to the whole dataset
+fs.out <- fastLink(
+  dfA = dfA, dfB = dfB, 
+  varnames = c("firstname", "middlename", "lastname", "housenum", "streetname", "city", "birthyear"),
+  stringdist.match = c("firstname", "middlename", "lastname", "streetname", "city"),
+  partial.match = c("firstname", "lastname", "streetname"),
+  em.obj = rs.out
+)
+summary(fs.out)
+```
+
+In the first run of `fastLink()`, we specify `estimate.only = TRUE`, which runs the algorithm only through the EM estimation step and returns the EM object. In the second run of `fastLink()`, we provide the EM object from the first stage as an argument to `em.obj`. Then, using the parameter values calculated in the previous EM stage, we estimate posterior probabilities of belonging to the matched set for all matching patterns in the full dataset that were not present in the random sample. 
+
+This functionality can also be run step-by-step as follows:
+```{r}
+## --------------
+## 30% sample run
+## --------------
+## Calculate gammas 
+g_firstname <- gammaCKpar(dfA.s$firstname, dfB.s$firstname)
+g_middlename <- gammaCK2par(dfA.s$middlename, dfB.s$middlename)
+g_lastname <- gammaCKpar(dfA.s$lastname, dfB.s$lastname)
+g_housenum <- gammaKpar(dfA.s$housenum, dfB.s$housenum)
+g_streetname <- gammaCKpar(dfA.s$streetname, dfB.s$streetname)
+g_city <- gammaCK2par(dfA.s$city, dfB.s$city)
+g_birthyear <- gammaKpar(dfA.s$birthyear, dfB.s$birthyear)
+
+## Get counts
+gammalist <- list(g_firstname, g_middlename, g_lastname, g_housenum, g_streetname, g_city, g_birthyear)
+tc <- tableCounts(gammalist, nobs.a = nrow(dfA.s), nobs.b = nrow(dfB.s))
+
+## Run EM algorithm
+em.out.rs <- emlinkMARmov(tc, nobs.a = nrow(dfA), nobs.b = nrow(dfB))
+
+## ------------------------
+## Calculate on full sample
+## ------------------------
+## Calculate gammas 
+g_firstname <- gammaCKpar(dfA$firstname, dfB$firstname)
+g_middlename <- gammaCK2par(dfA$middlename, dfB$middlename)
+g_lastname <- gammaCKpar(dfA$lastname, dfB$lastname)
+g_housenum <- gammaKpar(dfA$housenum, dfB$housenum)
+g_streetname <- gammaCKpar(dfA$streetname, dfB$streetname)
+g_city <- gammaCK2par(dfA$city, dfB$city)
+g_birthyear <- gammaKpar(dfA$birthyear, dfB$birthyear)
+
+## Get counts
+gammalist <- list(g_firstname, g_middlename, g_lastname, g_housenum, g_streetname, g_city, g_birthyear)
+tc <- tableCounts(gammalist, nobs.a = nrow(dfA), nobs.b = nrow(dfB))
+
+## Apply random sample EM object to full dataset
+em.obj.full <- emlinkRS(patterns.out = tc, em.out = em.out.rs, nobs.a = nrow(dfA), nobs.b = nrow(dfB))
+summary(em.obj.full)
+
+## Get matches
+matches.out <- matchesLink(gammalist, nobs.a = nrow(dfA), nobs.b = nrow(dfB), em = em.obj.full, thresh = .95)
+```
+where `emlinkRS()` takes an EM object and applies the parameter estimates to all new matching patterns. The arguments are:
+
+- `patterns.out`: The output from `tableCounts()`, with counts of the occurence of each matching pattern.
+
+- `em.out`: The output from `emlinkMARmov()`
+
+- `nobs.a`: The number of rows in dataset A
+
+- `nobs.b`: The number of rows in dataset B
