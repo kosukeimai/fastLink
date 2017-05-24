@@ -65,6 +65,10 @@ matching. These variable names should exist in both `dfA` and `dfB`
 
 Other arguments that can be provided include:
 
+- `cut.a`: Lower bound for full string-distance match, ranging between 0 and 1. Default is 0.92.
+
+- `cut.p`: Lower bound for partial string-distance match, ranging between 0 and 1. Default is 0.88.
+
 - `priors.obj`: The output from `calcMoversPriors()`, allowing the inclusion of auxiliary information on moving behavior to aid matching. We will discuss this option further at the end of this vignette.
 
 - `w.lambda`: The user-specified weighting of the MLE and prior estimate for the $\lambda$ parameter, a number between 0 and 1. We will discuss this option further at the end of this vignette.
@@ -78,6 +82,10 @@ Other arguments that can be provided include:
 - `estimate.only`: Whether to stop running the algorithm after running the EM estimation step. Can be used when running the algorithm on a random sample, and then applying those estimates to the full data set.
 
 - `em.obj`: An EM object, either from an `estimate.only = TRUE` run of `fastLink` or from `emlinkMARmov()`. If provided, the algorithm will skip the EM estimation step and proceed to apply the estimates from the EM object to the full data set. To be used when the EM has been estimated on a random sample of data and should be applied to the full data set.
+
+- `dedupe.matches`: Whether to dedupe the matches returned by the algorithm, ensuring that each observation in dataset A is matched to at most one observation in dataset B (and vice versa). Can be done either using Winkler's linear assignment solution (recommended) or by iteratively selecting the maximum posterior value for a given observation (if N size makes linear assignment solution prohibitively slow). Default is `TRUE`.
+
+- `linprog.dedupe`: Whether to use Winkler's linear programming solution to the deduplication problem (recommended when N size is not prohibitively large). Default is `FALSE`.
 
 - `n.cores`: The number of registered cores to parallelize over. If left unspecified. the function will
 estimate this on its own.
@@ -289,12 +297,40 @@ argument. This returns a matrix where each row is a match with the relevant indi
 
 The datasets can then be subsetted down to the matches as follows:
 ```{r}
-dfA.match <- dfA[matches.out[,1],]
-dfB.match <- dfB[matches.out[,2],]
+dfA.match <- dfA[matches.out$inds.a,]
+dfB.match <- dfB[matches.out$inds.b,]
 ```
 
-Lastly, we can summarize the match as done earlier by feeding the output from `emlinkMARmov()` into the `summary()` function:
+#### 5) Deduping the Matches
+After returning the matched pairs, we can dedupe them using the `dedupeMatches()` function to ensure that each observation in dataset A is matched to at most a single observation in dataset B, and vice versa. The deduplication also corrects the EM object so that it displays the proper counts of patterns. We run the function as follows:
 ```{r}
+dm.out <- dedupeMatches(dfA.match, dfB.match, EM = em.out, matchesLink = matches.out,
+                        varnames = c("firstname", "middlename", "lastname", "housenum", 
+                                     "streetname", "city", "birthyear"),
+                        stringdist.match = c(TRUE, FALSE, TRUE, FALSE, TRUE, TRUE, FALSE),
+                        partial.match = c(TRUE, FALSE, TRUE, FALSE, TRUE, FALSE, FALSE))
+```
+which returns a list with the following elements:
+
+- `matchesA`: A deduped version of dataset A (post-matching)
+
+- `matchesB`: A deduped version of dataset B (post-matching)
+
+- `EM`: The EM object with the counts corrected to reflect deduping.
+
+- `matchesLink`: Deduped indices of the matched pairs from dataset A and dataset B.
+
+Other arguments to `dedupeMatches()` include:
+
+- `linprog`: Whether to use Winkler's linear assignment solution to the deduping problem. Recommended, but can be slow on larger data sets. If set to `FALSE`, then the deduping is conducted by iteratively selecting the matched pair for a given observation with the largest posterior match probability. Default is `TRUE`.
+
+- `cut.a`: Lower bound for full string-distance match, ranging between 0 and 1. Default is 0.92.
+
+- `cut.p`: Lower bound for partial string-distance match, ranging between 0 and 1. Default is 0.88.
+
+Lastly, we can summarize the match as done earlier by feeding the output from `emlinkMARmov()` (or the `EM` entry returned by `dedupeMatches()`) into the `summary()` function:
+```{r}
+## Non-deduped dataframe
 summary(em.out)
 ```
 

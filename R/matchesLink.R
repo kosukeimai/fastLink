@@ -174,6 +174,11 @@ matchesLink <- function(gammalist, nobs.a, nobs.b, em, thresh, n.cores = NULL) {
     
     temp <- temp + 1
     rm(gammas, gammas_mat); gc()
+
+    temp <- data.frame(inds.a = temp[,1], inds.b = temp[,2])
+    
+    class(temp) <- c("fastLink", "matchesLink")
+    
     return(temp)
 }
 

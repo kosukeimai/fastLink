@@ -7,7 +7,9 @@
 fastLink(dfA, dfB, varnames, stringdist.match,
 partial.match, cut.a, cut.p, priors.obj, w.lambda, w.pi,
 address.field, gender.field, estimate.only, em.obj,
-n.cores, tol.em, threshold.match, verbose)
+dedupe.matches, linprog.dedupe,
+reweight.names, firstname.field,
+return.df, n.cores, tol.em, threshold.match, verbose)
 }
 \arguments{
 \item{dfA}{Dataset A - to be matched to Dataset B}
@@ -52,6 +54,16 @@ prediction of matches. Default is FALSE.}
 in 'dfA' and 'dfB'. If provided. 'estimate.only' is set to FALSE. Often provided when parameters have been
 estimated on a smaller sample, and the user wants to apply them to the full dataset. Default is NULL (EM will be estimated from matching patterns in 'dfA' and 'dfB').}
 
+\item{dedupe.matches}{Whether to dedupe the set of matches returned by the algorithm. Default is TRUE.}
+
+\item{linprog.dedupe}{If deduping matches, whether to use Winkler's linear programming solution to dedupe. Default is FALSE.}
+
+\item{reweight.names}{Whether to reweight the posterior match probabilities by the frequency of individual first names. Default is FALSE.}
+
+\item{firstname.field}{The name of the field indicating first name. Must be provided if reweight.names = TRUE.}
+
+\item{return.df}{Whether to return the entire dataframe of dfA and dfB instead of just the indices. Default is FALSE.}
+
 \item{n.cores}{Number of cores to parallelize over. Default is NULL.}
 
 \item{tol.em}{Convergence tolerance for the EM Algorithm. Default is 1e-04.}
@@ -71,6 +83,7 @@ second column.}
 patterns and the associated posterior probabilities of a match for each matching pattern.}
 \item{nobs.a}{The number of observations in dataset A.}
 \item{nobs.b}{The number of observations in dataset B.}
+\item{zeta.name}{If reweighting by name, the posterior probability of a match for each match in dataset A and B.}
 
 If only running the EM and not returning the matched indices, \code{fastLink} only returns the EM object.
 }

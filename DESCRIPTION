@@ -21,7 +21,8 @@ Imports:
     Rcpp (>= 0.12.9),
     Hmisc,
     FactoClass,
-    adagio
+    adagio,
+    dplyr
 Depends:
     R (>= 3.1.0)
 LinkingTo: RcppArmadillo, Rcpp, RcppEigen
