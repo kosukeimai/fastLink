@@ -7,7 +7,8 @@
 #' partial.match, cut.a, cut.p, priors.obj, w.lambda, w.pi,
 #' address.field, gender.field, estimate.only, em.obj,
 #' dedupe.matches, linprog.dedupe,
-#' n.cores, tol.em, threshold.match, verbose)
+#' reweight.names, firstname.field,
+#' return.df, n.cores, tol.em, threshold.match, verbose)
 #'
 #' @param dfA Dataset A - to be matched to Dataset B
 #' @param dfB Dataset B - to be matched to Dataset A
@@ -39,6 +40,9 @@
 #' estimated on a smaller sample, and the user wants to apply them to the full dataset. Default is NULL (EM will be estimated from matching patterns in 'dfA' and 'dfB').
 #' @param dedupe.matches Whether to dedupe the set of matches returned by the algorithm. Default is TRUE.
 #' @param linprog.dedupe If deduping matches, whether to use Winkler's linear programming solution to dedupe. Default is FALSE.
+#' @param reweight.names Whether to reweight the posterior match probabilities by the frequency of individual first names. Default is FALSE.
+#' @param firstname.field The name of the field indicating first name. Must be provided if reweight.names = TRUE.
+#' @param return.df Whether to return the entire dataframe of dfA and dfB instead of just the indices. Default is FALSE.
 #' @param n.cores Number of cores to parallelize over. Default is NULL.
 #' @param tol.em Convergence tolerance for the EM Algorithm. Default is 1e-04.
 #' @param threshold.match A number between 0 and 1 indicating either the lower bound (if only one number provided) or the range of certainty that the
@@ -54,7 +58,8 @@
 #' patterns and the associated posterior probabilities of a match for each matching pattern.}
 #' \item{nobs.a}{The number of observations in dataset A.}
 #' \item{nobs.b}{The number of observations in dataset B.}
-#'
+#' \item{zeta.name}{If reweighting by name, the posterior probability of a match for each match in dataset A and B.}
+#' 
 #' If only running the EM and not returning the matched indices, \code{fastLink} only returns the EM object.
 #'
 #' @author Ted Enamorado <ted.enamorado@gmail.com>, Ben Fifield <benfifield@gmail.com>, and Kosuke Imai
@@ -71,7 +76,9 @@ fastLink <- function(dfA, dfB, varnames,
                      w.lambda = NULL, w.pi = NULL, address.field = NULL,
                      gender.field = NULL, estimate.only = FALSE, em.obj = NULL,
                      dedupe.matches = TRUE, linprog.dedupe = FALSE,
-                     n.cores = NULL, tol.em = 1e-04, threshold.match = 0.85, verbose = FALSE){
+                     reweight.names = FALSE, firstname.field = NULL,
+                     return.df = FALSE, n.cores = NULL, tol.em = 1e-04,
+                     threshold.match = 0.85, verbose = FALSE){
 
     cat("\n")
     cat(c(paste(rep("=", 20), sep = "", collapse = ""), "\n"))
@@ -113,6 +120,14 @@ fastLink <- function(dfA, dfB, varnames,
         }
         if(!(gender.field %in% varnames)){
             stop("You have provided a variable name for 'gender.field' that is not in 'varnames'.")
+        }
+    }
+    if(!is.null(firstname.field)){
+        if(length(firstname.field) > 1){
+            stop("'firstname.field' must have at most one variable name.")
+        }
+        if(!(firstname.field %in% varnames)){
+            stop("You have provided a variable name for 'firstname.field' that is not in 'varnames'.")
         }
     }
     if(!is.null(em.obj)){
@@ -240,9 +255,9 @@ fastLink <- function(dfA, dfB, varnames,
         resultsEM <- emlinkRS(counts, em.obj, nr_a, nr_b)
     }
 
-    ## ------------------------------------
-    ## Get the estimated matches and dedupe
-    ## ------------------------------------
+    ## -----------------------------------------------
+    ## Get the estimated matches, dedupe, and reweight
+    ## -----------------------------------------------
     if(!estimate.only){
         ## Get matches
         cat("Getting the indices of estimated matches.\n")
@@ -254,8 +269,6 @@ fastLink <- function(dfA, dfB, varnames,
         if(verbose){
             cat("Getting the indices of estimated matches took", round(difftime(end, start, units = "mins"), 2), "minutes.\n\n")
         }
-        colnames(matches) <- c("inds.a", "inds.b")
-        matches <- as.data.frame(matches)
 
         ## Run deduplication
         if(dedupe.matches){
@@ -273,12 +286,33 @@ fastLink <- function(dfA, dfB, varnames,
             }
         }
 
+        ## Reweight first names
+        if(reweight.names){
+            cat("Reweighting match probabilities by frequency of occurrence.\n")
+            start <- Sys.time()
+            rwn.out <- nameReweight(dfA, dfB, EM = resultsEM, gammalist = gammalist, matchesLink = matches,
+                                    varnames = varnames, stringdist.match = stringdist.match, partial.match = partial.match,
+                                    firstname.field = firstname.field, threshold.match = threshold.match,
+                                    cut.a = cut.a, cut.p = cut.p, n.cores = n.cores)
+            end <- Sys.time()
+            if(verbose){
+                cat("Reweighting by first name took", round(difftime(end, start, units = "mins"), 2), "minutes.\n\n")
+            }
+        }
+
         ## Return object
         out <- list()
+        if(return.df){
+            out[["dfA.match"]] <- dfA[matches$inds.a,]
+            out[["dfB.match"]] <- dfB[matches$inds.b,]
+        }
         out[["matches"]] <- matches
         out[["EM"]] <- resultsEM
         out[["nobs.a"]] <- nr_a
         out[["nobs.b"]] <- nr_b
+        if(reweight.names){
+            out[["zeta.name"]] <- rwn.out
+        }
         class(out) <- "fastLink"
     }else{
         out <- resultsEM

@@ -297,8 +297,8 @@ argument. This returns a matrix where each row is a match with the relevant indi
 
 The datasets can then be subsetted down to the matches as follows:
 ```{r}
-dfA.match <- dfA[matches.out[,1],]
-dfB.match <- dfB[matches.out[,2],]
+dfA.match <- dfA[matches.out$inds.a,]
+dfB.match <- dfB[matches.out$inds.b,]
 ```
 
 #### 5) Deduping the Matches

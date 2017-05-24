@@ -108,8 +108,8 @@ dedupeMatches <- function(matchesA, matchesB, EM, matchesLink,
     ## Start dedupe
     ## ------------
     ## Ids 
-    matchesA$idA <- matchesLink[,1]
-    matchesB$idB <- matchesLink[,2]
+    matchesA$idA <- matchesLink$inds.a
+    matchesB$idB <- matchesLink$inds.b
     matchesB$idA <- matchesA$idA
     matchesA$idB <- matchesB$idB
 
