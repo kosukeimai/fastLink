@@ -52,7 +52,8 @@ dedupeMatches <- function(matchesA, matchesB, EM, matchesLink,
     }
 
     ## Get original column names
-    colnames.df <- colnames(matchesA)
+    colnames.df.a <- colnames(matchesA)
+    colnames.df.b <- colnames(matchesB)
 
     ## ----------
     ## Get gammas
@@ -263,8 +264,8 @@ dedupeMatches <- function(matchesA, matchesB, EM, matchesLink,
     ## --------------------------
     ## Correct dataframes objects
     ## --------------------------
-    matchesA <- subset(matchesA, select = colnames.df)
-    matchesB <- subset(matchesB, select = colnames.df)
+    matchesA <- subset(matchesA, select = colnames.df.a)
+    matchesB <- subset(matchesB, select = colnames.df.b)
 
     ## Return deduped object
     out <- list(matchesA = matchesA, matchesB = matchesB,
