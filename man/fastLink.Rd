@@ -5,7 +5,8 @@
 \title{fastLink}
 \usage{
 fastLink(dfA, dfB, varnames, stringdist.match,
-partial.match, cut.a, cut.p, priors.obj, w.lambda, w.pi,
+partial.match, stringdist.method, cut.a, cut.p, jw.weight,
+priors.obj, w.lambda, w.pi,
 address.field, gender.field, estimate.only, em.obj,
 dedupe.matches, linprog.dedupe,
 reweight.names, firstname.field,
@@ -27,9 +28,13 @@ which variables should use string distance matching. Must be a subset of
 a partial matching category for the string distances. Must be a subset of 'varnames'
 and 'stringdist.match'.}
 
+\item{stringdist.method}{String distance method for calculating similarity, options are: "jw" Jaro-Winkler (Default), "jaro" Jaro, and "lv" Edit}
+
 \item{cut.a}{Lower bound for full string-distance match, ranging between 0 and 1. Default is 0.92}
 
 \item{cut.p}{Lower bound for partial string-distance match, ranging between 0 and 1. Default is 0.88}
+
+\item{jw.weight}{Parameter that describes the importance of the first characters of a string (only needed if stringdist.method = "jw"). Default is .10}
 
 \item{priors.obj}{A list containing priors for auxiliary movers information,
 as output from calcMoversPriors(). Default is NULL}

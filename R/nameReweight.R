@@ -6,7 +6,8 @@
 #'
 #' @usage nameReweight(dfA, dfB, EM, gammalist, matchesLink,
 #' varnames, stringdist.match, partial.match,
-#' firstname.field, threshold.match, cut.a, cut.p, n.cores)
+#' firstname.field, threshold.match, stringdist.method, cut.a, cut.p,
+#' jw.weight, n.cores)
 #' @param dfA The full version of dataset A that is being matched.
 #' @param dfB The full version of dataset B that is being matched.
 #' @param EM The EM object from \code{emlinkMARmov()}
@@ -26,8 +27,10 @@
 #' @param threshold.match A number between 0 and 1 indicating either the lower bound (if only one number provided) or the range of certainty that the
 #' user wants to declare a match. For instance, threshold.match = .85 will return all pairs with posterior probability greater than .85 as matches,
 #' while threshold.match = c(.85, .95) will return all pairs with posterior probability between .85 and .95 as matches.
+#' @param stringdist.method String distance method for calculating similarity, options are: "jw" Jaro-Winkler (Default), "jaro" Jaro, and "lv" Edit
 #' @param cut.a Lower bound for full string-distance match, ranging between 0 and 1. Default is 0.92
 #' @param cut.p Lower bound for partial string-distance match, ranging between 0 and 1. Default is 0.88
+#' @param jw.weight Parameter that describes the importance of the first characters of a string (only needed if stringdist.method = "jw"). Default is .10
 #' @param n.cores Number of cores to parallelize over. Default is NULL.
 #'
 #' @return \code{nameReweight()} returns a list containing the following elements:
@@ -38,8 +41,18 @@
 nameReweight <- function(dfA, dfB, EM, gammalist, matchesLink,
                          varnames, stringdist.match, partial.match, 
                          firstname.field, threshold.match,
-                         cut.a = .92, cut.p = .88, n.cores = NULL){
+                         stringdist.method = "jw", cut.a = .92, cut.p = .88,
+                         jw.weight = .10, n.cores = NULL){
 
+    if(!(stringdist.method %in% c("jw", "jaro", "lv"))){
+        stop("Invalid string distance method. Method should be one of 'jw', 'jaro', or 'lv'.")
+    }
+    if(stringdist.method == "jw" & !is.null(jw.weight)){
+        if(jw.weight < 0 | jw.weight > 0.25){
+            stop("Invalid value provided for jw.weight. Remember, jw.weight in [0, 0.25].")
+        }
+    }
+    
     ## Get cores
     if(is.null(n.cores)) {
         n.cores <- detectCores() - 1
@@ -85,7 +98,20 @@ nameReweight <- function(dfA, dfB, EM, gammalist, matchesLink,
         }
         ## Get matches
         if(stringdist.match[i]){
-            tmp <- 1 - stringdist(matchesA[,varnames[i]], matchesB[,varnames[i]], "jw")
+            if(stringdist.method %in% c("jw", "jaro")){
+                if(stringdist.method == "jw"){
+                    p1 <- jw.weight
+                }else{
+                    p1 <- NULL
+                }
+                tmp <- 1 - stringdist(matchesA[,varnames[i]], matchesB[,varnames[i]], "jw", p = p1)
+            }else{
+                t <- stringdist(matchesA[,varnames[i]], matchesB[,varnames[i]], method = stringdist.method)
+                t.1 <- nchar(matchesA[,varnames[i]])
+                t.2 <- nchar(matchesB[,varnames[i]])
+                o <- ifelse(t.1 > t.2, t.1, t.2)
+                tmp <- 1 - t * (1/o)
+            }
             if(partial.match[i]){
                 gammalist[[i]] <- ifelse(
                     tmp >= cut.a, 2, ifelse(tmp >= cut.p, 1, 0)
