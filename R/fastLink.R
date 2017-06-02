@@ -4,7 +4,8 @@
 #' two datasets.
 #'
 #' @usage fastLink(dfA, dfB, varnames, stringdist.match,
-#' partial.match, cut.a, cut.p, priors.obj, w.lambda, w.pi,
+#' partial.match, stringdist.method, cut.a, cut.p, jw.weight,
+#' priors.obj, w.lambda, w.pi,
 #' address.field, gender.field, estimate.only, em.obj,
 #' dedupe.matches, linprog.dedupe,
 #' reweight.names, firstname.field,
@@ -20,8 +21,10 @@
 #' @param partial.match A vector of variable names indicating whether to include
 #' a partial matching category for the string distances. Must be a subset of 'varnames'
 #' and 'stringdist.match'.
+#' @param stringdist.method String distance method for calculating similarity, options are: "jw" Jaro-Winkler (Default), "jaro" Jaro, and "lv" Edit
 #' @param cut.a Lower bound for full string-distance match, ranging between 0 and 1. Default is 0.92
 #' @param cut.p Lower bound for partial string-distance match, ranging between 0 and 1. Default is 0.88
+#' @param jw.weight Parameter that describes the importance of the first characters of a string (only needed if stringdist.method = "jw"). Default is .10
 #' @param priors.obj A list containing priors for auxiliary movers information,
 #' as output from calcMoversPriors(). Default is NULL
 #' @param w.lambda How much weight to give the prior on lambda versus the data. Must range between 0 (no weight on prior) and 1 (weight fully on prior).
@@ -71,7 +74,8 @@
 #' @export
 fastLink <- function(dfA, dfB, varnames,
                      stringdist.match = NULL, partial.match = NULL,
-                     cut.a = 0.92, cut.p = 0.88,
+                     stringdist.method = "jw",
+                     cut.a = 0.92, cut.p = 0.88, jw.weight = .10,
                      priors.obj = NULL,
                      w.lambda = NULL, w.pi = NULL, address.field = NULL,
                      gender.field = NULL, estimate.only = FALSE, em.obj = NULL,
@@ -139,6 +143,14 @@ fastLink <- function(dfA, dfB, varnames,
         estimate.only <- FALSE
         cat("You have provided an EM object but have set 'estimate.only' to TRUE. Setting 'estimate.only' to FALSE so that matched indices are returned.\n")
     }
+    if(!(stringdist.method %in% c("jw", "jaro", "lv"))){
+        stop("Invalid string distance method. Method should be one of 'jw', 'jaro', or 'lv'.")
+    }
+    if(stringdist.method == "jw" & !is.null(jw.weight)){
+        if(jw.weight < 0 | jw.weight > 0.25){
+            stop("Invalid value provided for jw.weight. Remember, jw.weight in [0, 0.25].")
+        }
+    }
 
     ## Create boolean indicators
     sm.bool <- which(varnames %in% stringdist.match)
@@ -189,9 +201,11 @@ fastLink <- function(dfA, dfB, varnames,
         ## Get patterns
         if(stringdist.match[i]){
             if(partial.match[i]){
-                gammalist[[i]] <- gammaCKpar(dfA[,varnames[i]], dfB[,varnames[i]], cut.a = cut.a, cut.p = cut.p, n.cores = n.cores)
+                gammalist[[i]] <- gammaCKpar(
+                    dfA[,varnames[i]], dfB[,varnames[i]], cut.a = cut.a, cut.p = cut.p, method = stringdist.method, w = jw.weight, n.cores = n.cores
+                )
             }else{
-                gammalist[[i]] <- gammaCK2par(dfA[,varnames[i]], dfB[,varnames[i]], cut.a = cut.a, n.cores = n.cores)
+                gammalist[[i]] <- gammaCK2par(dfA[,varnames[i]], dfB[,varnames[i]], cut.a = cut.a, method = stringdist.method, w = jw.weight, n.cores = n.cores)
             }
         }else{
             gammalist[[i]] <- gammaKpar(dfA[,varnames[i]], dfB[,varnames[i]], gender = gender.field[i], n.cores = n.cores)
@@ -277,7 +291,8 @@ fastLink <- function(dfA, dfB, varnames,
             ddm.out <- dedupeMatches(matchesA = dfA[matches$inds.a,], matchesB = dfB[matches$inds.b,],
                                      EM = resultsEM, matchesLink = matches, varnames = varnames,
                                      stringdist.match = stringdist.match, partial.match = partial.match,
-                                     linprog = linprog.dedupe, cut.a = cut.a, cut.p = cut.p)
+                                     linprog = linprog.dedupe, stringdist.method = stringdist.method,
+                                     cut.a = cut.a, cut.p = cut.p, jw.weight = jw.weight)
             matches <- ddm.out$matchesLink
             resultsEM <- ddm.out$EM
             end <- Sys.time()
@@ -293,7 +308,8 @@ fastLink <- function(dfA, dfB, varnames,
             rwn.out <- nameReweight(dfA, dfB, EM = resultsEM, gammalist = gammalist, matchesLink = matches,
                                     varnames = varnames, stringdist.match = stringdist.match, partial.match = partial.match,
                                     firstname.field = firstname.field, threshold.match = threshold.match,
-                                    cut.a = cut.a, cut.p = cut.p, n.cores = n.cores)
+                                    stringdist.method = stringdist.method, cut.a = cut.a, cut.p = cut.p, jw.weight = jw.weight,
+                                    n.cores = n.cores)
             end <- Sys.time()
             if(verbose){
                 cat("Reweighting by first name took", round(difftime(end, start, units = "mins"), 2), "minutes.\n\n")

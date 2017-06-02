@@ -6,7 +6,8 @@
 \usage{
 nameReweight(dfA, dfB, EM, gammalist, matchesLink,
 varnames, stringdist.match, partial.match,
-firstname.field, threshold.match, cut.a, cut.p, n.cores)
+firstname.field, threshold.match, stringdist.method, cut.a, cut.p,
+jw.weight, n.cores)
 }
 \arguments{
 \item{dfA}{The full version of dataset A that is being matched.}
@@ -38,9 +39,13 @@ as varnames. Default is FALSE for all variables.}
 user wants to declare a match. For instance, threshold.match = .85 will return all pairs with posterior probability greater than .85 as matches,
 while threshold.match = c(.85, .95) will return all pairs with posterior probability between .85 and .95 as matches.}
 
+\item{stringdist.method}{String distance method for calculating similarity, options are: "jw" Jaro-Winkler (Default), "jaro" Jaro, and "lv" Edit}
+
 \item{cut.a}{Lower bound for full string-distance match, ranging between 0 and 1. Default is 0.92}
 
 \item{cut.p}{Lower bound for partial string-distance match, ranging between 0 and 1. Default is 0.88}
+
+\item{jw.weight}{Parameter that describes the importance of the first characters of a string (only needed if stringdist.method = "jw"). Default is .10}
 
 \item{n.cores}{Number of cores to parallelize over. Default is NULL.}
 }

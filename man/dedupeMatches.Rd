@@ -6,7 +6,8 @@
 \usage{
 dedupeMatches(matchesA, matchesB, EM,
 matchesLink, varnames, stringdist.match, partial.match,
-linprog, cut.a = 0.92, cut.p = 0.88)
+linprog, stringdist.method, cut.a = 0.92, cut.p = 0.88,
+jw.weight)
 }
 \arguments{
 \item{matchesA}{A dataframe of the matched observations in
@@ -33,9 +34,13 @@ as varnames. Default is FALSE for all variables.}
 \item{linprog}{Whether to implement Winkler's linear programming solution to the deduplication
 problem. Default is false.}
 
+\item{stringdist.method}{String distance method for calculating similarity, options are: "jw" Jaro-Winkler (Default), "jaro" Jaro, and "lv" Edit}
+
 \item{cut.a}{Lower bound for full string-distance match, ranging between 0 and 1. Default is 0.92}
 
 \item{cut.p}{Lower bound for partial string-distance match, ranging between 0 and 1. Default is 0.88}
+
+\item{jw.weight}{Parameter that describes the importance of the first characters of a string (only needed if stringdist.method = "jw"). Default is .10}
 }
 \value{
 \code{dedupeMatches()} returns a list containing the following elements:

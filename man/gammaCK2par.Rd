@@ -4,7 +4,7 @@
 \alias{gammaCK2par}
 \title{gammaCK2par}
 \usage{
-gammaCK2par(matAp, matBp, n.cores, cut.a)
+gammaCK2par(matAp, matBp, n.cores, cut.a, method, w)
 }
 \arguments{
 \item{matAp}{vector storing the comparison field in data set 1}
@@ -14,6 +14,10 @@ gammaCK2par(matAp, matBp, n.cores, cut.a)
 \item{n.cores}{Number of cores to parallelize over. Default is NULL.}
 
 \item{cut.a}{Lower bound for full match, ranging between 0 and 1. Default is 0.92}
+
+\item{method}{String distance method, options are: "jw" Jaro-Winkler (Default), "jaro" Jaro, and "lv" Edit}
+
+\item{w}{Parameter that describes the importance of the first characters of a string (only needed if method = "jw"). Default is .10}
 }
 \value{
 \code{gammaCK2par} returns a list with the indices corresponding to each
