@@ -99,13 +99,17 @@ nameReweight <- function(dfA, dfB, EM, gammalist, matchesLink,
         ## Get matches
         if(stringdist.match[i]){
             if(stringdist.method %in% c("jw", "jaro")){
-                p1 <- ifelse(stringdist.method == "jw", jw.weight, NULL)
+                if(stringdist.method == "jw"){
+                    p1 <- jw.weight
+                }else{
+                    p1 <- NULL
+                }
                 tmp <- 1 - stringdist(matchesA[,varnames[i]], matchesB[,varnames[i]], "jw", p = p1)
             }else{
-                t <- stringdistmatrix(matchesA[,varnames[i]], matchesB[,varnames[i]], method = stringdist.method)
+                t <- stringdist(matchesA[,varnames[i]], matchesB[,varnames[i]], method = stringdist.method)
                 t.1 <- nchar(matchesA[,varnames[i]])
                 t.2 <- nchar(matchesB[,varnames[i]])
-                o <- t(apply(t.1, 1, function(w){ ifelse(w >= t.2, w, t.2)}))
+                o <- ifelse(t.1 > t.2, t.1, t.2)
                 tmp <- 1 - t * (1/o)
             }
             if(partial.match[i]){
