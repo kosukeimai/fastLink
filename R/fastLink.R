@@ -326,6 +326,9 @@ fastLink <- function(dfA, dfB, varnames,
         out[["EM"]] <- resultsEM
         out[["nobs.a"]] <- nr_a
         out[["nobs.b"]] <- nr_b
+        if(dedupe.matches){
+            out[["max.zeta"]] <- ddm.out$max.zeta
+        }
         if(reweight.names){
             out[["zeta.name"]] <- rwn.out
         }

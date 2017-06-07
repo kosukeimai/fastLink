@@ -320,6 +320,8 @@ which returns a list with the following elements:
 
 - `matchesLink`: Deduped indices of the matched pairs from dataset A and dataset B.
 
+- `max.zeta`: The posterior matching probability for each matched pair.
+
 Other arguments to `dedupeMatches()` include:
 
 - `linprog`: Whether to use Winkler's linear assignment solution to the deduping problem. Recommended, but can be slow on larger data sets. If set to `FALSE`, then the deduping is conducted by iteratively selecting the matched pair for a given observation with the largest posterior match probability. Default is `TRUE`.

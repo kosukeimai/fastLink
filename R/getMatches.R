@@ -29,6 +29,10 @@ getMatches <- function(dfA, dfB, fl.out){
     }else{
         dfA.match <- dfA[fl.out$matches$inds.a,]
         dfB.match <- dfB[fl.out$matches$inds.b,]
+        if("max.zeta" %in% names(fl.out)){
+            dfA.match$max.zeta <- fl.out$max.zeta
+            dfB.match$max.zeta <- fl.out$max.zeta
+        }
     }
 
     return(list(dfA.match = dfA.match, dfB.match = dfB.match))
