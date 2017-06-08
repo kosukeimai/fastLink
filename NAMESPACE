@@ -3,6 +3,7 @@
 S3method(summary,fastLink)
 export(aggregateEM)
 export(calcMoversPriors)
+export(cleanAddressUSPS)
 export(clusterMatch)
 export(dedupeMatches)
 export(emlinkMARmov)
