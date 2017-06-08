@@ -17,7 +17,8 @@ cleanAddressUSPS <- function(address.field){
                             gsub(" avenue", " ave", address.field),
                      ifelse(grepl(" avn", address.field),
                             gsub(" avn", " ave", address.field),
-                            gsub(" av ", " ave ", address.field)))
+                            gsub(" av", " ave", address.field)))
+    address.field <- gsub(" avee", " ave", address.field)
     address.field <- gsub(" boulevard", " blvd", address.field)
     address.field <- gsub(" circle", " cir", address.field)
     address.field <- gsub(" court", " ct", address.field)
