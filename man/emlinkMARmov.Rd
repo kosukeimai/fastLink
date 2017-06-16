@@ -78,4 +78,3 @@ em <- emlinkMAR(tc, nobs.a = nrow(dfA), nobs.b = nrow(dfB))
 \author{
 Ted Enamorado <ted.enamorado@gmail.com> and Kosuke Imai
 }
-

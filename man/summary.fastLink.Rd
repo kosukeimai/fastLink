@@ -22,4 +22,3 @@ to be aggregated together produced  by `aggregateEM`.}
 \code{summary.fastLink()} calculates and outputs FDR, FNR, and match rates for
 estimates matches from a fastLink() object.
 }
-

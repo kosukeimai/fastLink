@@ -54,4 +54,3 @@ Dedupe matched dataframes.
 \author{
 Ted Enamorado <ted.enamorado@gmail.com> and Ben Fifield <benfifield@gmail.com>
 }
-

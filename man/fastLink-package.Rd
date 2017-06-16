@@ -18,4 +18,3 @@ Ted Enamorado \email{tede@princeton.edu}, Ben Fifield \email{bfifield@princeton.
 Maintainer: Ted Enamorado \email{tede@princeton.edu}
 }
 \keyword{package}
-

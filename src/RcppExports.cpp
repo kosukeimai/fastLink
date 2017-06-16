@@ -7,6 +7,41 @@
 
 using namespace Rcpp;
 
+// sample_index
+std::vector<arma::ivec> sample_index(const int nA, const int nB);
+RcppExport SEXP fastLink_sample_index(SEXP nASEXP, SEXP nBSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const int >::type nA(nASEXP);
+    Rcpp::traits::input_parameter< const int >::type nB(nBSEXP);
+    rcpp_result_gen = Rcpp::wrap(sample_index(nA, nB));
+    return rcpp_result_gen;
+END_RCPP
+}
+// update_theta_svb
+arma::vec update_theta_svb(const arma::vec& nA_pair, const arma::vec& nB_pair, const arma::mat& psiA, const arma::mat& psiB, const arma::vec& theta_old, const double theta_prior, const int maxQ, const int nA, const int nB, const int iter, const double a_step, const double b_step, const double kappa_step);
+RcppExport SEXP fastLink_update_theta_svb(SEXP nA_pairSEXP, SEXP nB_pairSEXP, SEXP psiASEXP, SEXP psiBSEXP, SEXP theta_oldSEXP, SEXP theta_priorSEXP, SEXP maxQSEXP, SEXP nASEXP, SEXP nBSEXP, SEXP iterSEXP, SEXP a_stepSEXP, SEXP b_stepSEXP, SEXP kappa_stepSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::vec& >::type nA_pair(nA_pairSEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type nB_pair(nB_pairSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type psiA(psiASEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type psiB(psiBSEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type theta_old(theta_oldSEXP);
+    Rcpp::traits::input_parameter< const double >::type theta_prior(theta_priorSEXP);
+    Rcpp::traits::input_parameter< const int >::type maxQ(maxQSEXP);
+    Rcpp::traits::input_parameter< const int >::type nA(nASEXP);
+    Rcpp::traits::input_parameter< const int >::type nB(nBSEXP);
+    Rcpp::traits::input_parameter< const int >::type iter(iterSEXP);
+    Rcpp::traits::input_parameter< const double >::type a_step(a_stepSEXP);
+    Rcpp::traits::input_parameter< const double >::type b_step(b_stepSEXP);
+    Rcpp::traits::input_parameter< const double >::type kappa_step(kappa_stepSEXP);
+    rcpp_result_gen = Rcpp::wrap(update_theta_svb(nA_pair, nB_pair, psiA, psiB, theta_old, theta_prior, maxQ, nA, nB, iter, a_step, b_step, kappa_step));
+    return rcpp_result_gen;
+END_RCPP
+}
 // m_func_par
 std::vector< std::vector<arma::vec> > m_func_par(const std::vector< std::vector< std::vector<arma::vec> > > temp, const std::vector< std::vector< std::vector<arma::vec> > > ptemp, const std::vector< std::vector<arma::vec> > natemp, const arma::vec limit1, const arma::vec limit2, const arma::vec nlim1, const arma::vec nlim2, const arma::mat ind, const arma::vec listid, const bool matchesLink, const int threads);
 RcppExport SEXP fastLink_m_func_par(SEXP tempSEXP, SEXP ptempSEXP, SEXP natempSEXP, SEXP limit1SEXP, SEXP limit2SEXP, SEXP nlim1SEXP, SEXP nlim2SEXP, SEXP indSEXP, SEXP listidSEXP, SEXP matchesLinkSEXP, SEXP threadsSEXP) {

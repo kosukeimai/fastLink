@@ -21,4 +21,3 @@ dfA$streetname <- cleanAddressUSPS(dfA$streetname)
 \author{
 Ted Enamorado <ted.enamorado@gmail.com> and Ben Fifield <benfifield@gmail.com>
 }
-

@@ -76,4 +76,3 @@ em.full <- emlinkRS(tc, em, nrow(dfA), nrow(dfB)
 \author{
 Ted Enamorado <ted.enamorado@gmail.com> and Ben Fifield <benfifield@gmail.com>
 }
-

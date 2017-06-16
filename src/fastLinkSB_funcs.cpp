@@ -36,10 +36,7 @@ std::vector<arma::ivec> sample_index(const int nA, const int nB) {
 }
 
 // update lambda 
-// [[Rcpp::export]]
 arma::mat update_lambda_svb(
-    // const arma::vec &pattern_vec,   // pattern vector nA + nB length
-    // const arma::mat &pattern,       // pattern mat: [#unique pattern] x [K]
     const arma::vec &nA_pair,       // pair for A: B's index
     const arma::vec &nB_pair,       // pair for B: A's index
     const arma::vec &Lk,
@@ -51,6 +48,7 @@ arma::mat update_lambda_svb(
     const double betaL,
     const int nA,
     const int nB,
+    const int maxQ,
     const int iter,
     const double a_step,
     const double b_step,
@@ -73,14 +71,14 @@ arma::mat update_lambda_svb(
                 n_grad1(count, z) = alphaL + nAB * psiA(i, z) * psiB(nA_pair(i), z) * phi(count); 
                 n_grad0(count, z) = betaL  + nAB * psiA(i, z) * psiB(nA_pair(i), z) * (1.0 - phi(count));
             }
-            ++i;
+            i += 1;
         } else {
             // count = nA + 1, ..., nA + nB
             for (int z = 0; z < maxQ; z++) {
                 n_grad1(count, z) = alphaL + nAB * psiA(nB_pair(j), z) * psiB(j, z) * phi(count); 
                 n_grad0(count, z) = betaL  + nAB * psiA(nB_pair(j), z) * psiB(j, z) * (1.0 - phi(count));
             }
-            ++j;
+            j += 1;
         }
     }
 

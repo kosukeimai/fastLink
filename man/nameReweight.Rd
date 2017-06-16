@@ -62,4 +62,3 @@ upweights if first name is uncommon.
 \author{
 Ted Enamorado <ted.enamorado@gmail.com> and Ben Fifield <benfifield@gmail.com>
 }
-

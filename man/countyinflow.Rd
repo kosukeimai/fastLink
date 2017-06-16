@@ -14,4 +14,3 @@ movers inflow rates by county, from the IRS
 Statistics on Income dataset.
 }
 \keyword{dataset}
-
