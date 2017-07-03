@@ -17,14 +17,15 @@ summarize.em <- function(x, thresholds){
     count <- min(n1, n2)
     
     ## Containers for thresholds
-    mc <- rep(NA, length(thresholds))
-    fp <- rep(NA, length(thresholds))
-    fn <- rep(NA, length(thresholds))
+    tmc <- rep(NA, length(thresholds))
+    tpc <- rep(NA, length(thresholds))
+    fpc <- rep(NA, length(thresholds))
+    fnc <- rep(NA, length(thresholds))
     for(i in 1:length(thresholds)){
-        mc[i] <- min(sum(EM$counts[EM$zeta.j >= thresholds[i]]), min(n1, n2))
-        fp[i] <- sum(EM$counts[EM$zeta.j >= thresholds[i]] * 
-                     (1 - EM$zeta.j[EM$zeta.j >= thresholds[i]]))
-        fn[i] <- sum(EM$counts[EM$zeta.j < thresholds[i]] * (EM$zeta.j[EM$zeta.j < thresholds[i]]))
+        tmc[i] <- sum(EM$counts[EM$zeta.j >= thresholds[i]] * EM$zeta.j[EM$zeta.j >= thresholds[i]])
+        tpc[i] <- min(sum(EM$counts[EM$zeta.j >= thresholds[i]]), min(n1, n2))
+        fpc[i] <- sum(EM$counts[EM$zeta.j >= thresholds[i]] * (1 - EM$zeta.j[EM$zeta.j >= thresholds[i]]))
+        fnc[i] <- sum(EM$counts[EM$zeta.j < thresholds[i]] * (EM$zeta.j[EM$zeta.j < thresholds[i]]))
     }
 
     ## Expected match rate
@@ -39,9 +40,9 @@ summarize.em <- function(x, thresholds){
         exact.matches <- EM$counts[exact.match.ind]
     }
     
-    out <- data.frame(t(c(count, mc, fp, fn, exp.match, exact.matches)))
-    names(out) <- c("count", paste0("mc.", thresholds*100), paste0("fp.", thresholds*100),  
-                    paste0("fn.", thresholds*100),  "exp.match", "exact.matches")
+    out <- data.frame(t(c(count, tmc, tpc, fpc, fnc, exp.match, exact.matches)))
+    names(out) <- c("count", paste0("tmc.", thresholds*100), paste0("tpc.", thresholds*100), paste0("fpc.", thresholds*100),  
+                    paste0("fnc.", thresholds*100),  "exp.match", "exact.matches")
 
     return(out)
     
@@ -51,19 +52,17 @@ summarize.agg <- function(x, weighted){
     
     s.calc <- function(y){
         ## Match rate
-        matches <- 100 * (y[,grep("mc.", names(y))]) * (1/y$count)
+        matches <- 100 * (y[,grep("tmc.", names(y))]) * (1/y$exp.match)
         ## Exact match rate
-        matches.E <- 100 * (y$exact.matches) * (1/y$count) 
+        matches.E <- 100 * (y$exact.matches) * (1/y$exp.match) 
         matches <- cbind(matches, matches.E)
-        colnames(matches) <- c(names(y)[grep("mc.", names(y))], "matches.E")
+        colnames(matches) <- c(names(y)[grep("tmc.", names(y))], "matches.E")
         ## FDR
-        fdr <- 100 * (y[,grep("fp.", names(y))]) * 1 / (y[,grep("mc.", names(y))])
-        names(fdr) <- names(y)[grep("fp.", names(y))]
+        fdr <- 100 * (y[,grep("fpc.", names(y))]) * 1 / (y[,grep("tpc.", names(y))])
+        names(fdr) <- names(y)[grep("fpc.", names(y))]
         ## FNR
-        tp <- y[, grep("mc.", names(y))] - y[, grep("fp.", names(y))]
-        fn <- y[, grep("fn.", names(y))]
-        fnr <- 100 * fn/(tp + fn)
-        names(fnr) <- names(y)[grep("fn.", names(y))]
+        fnr <- 100 * (y[,grep("fnc.", names(y))]) * (1 / y$exp.match)
+        names(fnr) <- names(y)[grep("fnc.", names(y))]
         return(list(fdr = fdr, fnr = fnr, matches = matches))
     }
     
@@ -77,21 +76,19 @@ summarize.agg <- function(x, weighted){
         ## Pooling
         ## -------
         ## Matches
-        matches <- 100 * (x$within[,grep("mc.", names(x$within))] + x$across[,grep("mc.", names(x$across))]) /
-            x$within$count
-        matches.E <- 100 * (x$within$exact.matches + x$across$exact.matches) / x$within$count
+        matches <- 100 * (x$within[,grep("tmc.", names(x$within))] + x$across[,grep("tmc.", names(x$across))]) /
+            (x$within$exp.match + x$across$exp.match)
+        matches.E <- 100 * (x$within$exact.matches + x$across$exact.matches) / (x$within$exp.match + x$across$exp.match)
         matches <- cbind(matches, matches.E)
-        colnames(matches) <- c(names(x$within)[grep("mc.", names(x$within))], "matches.E")
+        colnames(matches) <- c(names(x$within)[grep("tmc.", names(x$within))], "matches.E")
         ## FDR
-        fdr <- 100 * (x$within[,grep("fp.", names(x$across))] + x$across[,grep("fp.", names(x$across))]) /
-            (x$within[,grep("mc.", names(x$within))] + x$across[,grep("mc.", names(x$across))])
-        names(fdr) <- names(x$within)[grep("fp.", names(x$within))]
+        fdr <- 100 * (x$within[,grep("fpc.", names(x$across))] + x$across[,grep("fpc.", names(x$across))]) /
+            (x$within[,grep("tpc.", names(x$within))] + x$across[,grep("tpc.", names(x$across))])
+        names(fdr) <- names(x$within)[grep("fpc.", names(x$within))]
         ## FNR
-        tp <- x$within[, grep("mc.", names(x$within))] + x$across[,grep("mc.", names(x$across))] - 
-            x$within[, grep("fp.", names(x$within))] - x$across[,grep("fp.", names(x$across))]
-        fn <- x$within[, grep("fn.", names(x$within))] + x$across[,grep("fn.", names(x$across))]
-        fnr <- 100 * fn/(tp + fn)
-        names(fnr) <- names(x$within)[grep("fn.", names(x$within))]
+        fnr <- 100 * (x$within[,grep("fnc.", names(x$across))] + x$across[,grep("fnc.", names(x$across))]) /
+            (x$within$exp.match + x$across$exp.match)
+        names(fnr) <- names(x$within)[grep("fnc.", names(x$within))]
         ## Return object
         out[["pooled"]] <- list(fdr = fdr, fnr = fnr, matches = matches)
         ## ------
@@ -99,26 +96,35 @@ summarize.agg <- function(x, weighted){
         ## ------
         if(weighted){
             ## Across-unit matches
+            wm <- 100 * (x$within[,grep("tmc.", names(x$within))]) /
+                (x$within$exp.match + x$across$exp.match)
+            wm.E <- 100 * (x$within$exact.matches) / (x$within$exp.match + x$across$exp.match)
+            out$within$matches <- cbind(wm, wm.E)
             out$across$matches <- out$pooled$matches - out$within$matches
             ## Across and within-unit FDR
-            fdr.a <- 100 * (x$across[, grep("fp.", names(x$across))]) / 
-                (x$across[,grep("mc.", names(x$across))] + x$within[, grep("mc.", names(x$within))])
+            fdr.a <- 100 * (x$across[, grep("fpc.", names(x$across))]) / 
+                (x$across[,grep("tmc.", names(x$across))] + x$within[, grep("tmc.", names(x$within))])
             names(fdr.a) <- names(x$across)[grep("fd.", names(x$across))]
             out$across$fdr <- fdr.a
-            fdr.w <- 100 * (x$within[, grep("fp.", names(x$within))]) / 
-                (x$across[,grep("mc.", names(x$across))] + x$within[, grep("mc.", names(x$within))])
+            fdr.w <- 100 * (x$within[, grep("fpc.", names(x$within))]) / 
+                (x$across[,grep("tpc.", names(x$across))] + x$within[, grep("tpc.", names(x$within))])
             names(fdr.w) <- names(x$within)[grep("fd.", names(x$within))]
             out$within$fdr <- fdr.w
             ## Across and within-unit FNR
-            w.a <- x$across[,grep("mc.", names(x$across))] - x$across[,grep("fp.", names(x$across))] + 
-                x$across[,grep("fn.", names(x$across))]
-            w.w <- x$within[,grep("mc.", names(x$within))] - x$within[,grep("fp.", names(x$within))] + 
-                x$within[,grep("fn.", names(x$within))]
+            tp <- x$within[, grep("mc.", names(x$within))] + x$across[,grep("mc.", names(x$across))] - 
+                x$within[, grep("fp.", names(x$within))] - x$across[,grep("fp.", names(x$across))]
+            fn <- x$within[, grep("fn.", names(x$within))] + x$across[,grep("fn.", names(x$across))]
+            
+            w.a <- x$across[,grep("tpc.", names(x$across))] - x$across[,grep("fpc.", names(x$across))] + 
+                x$across[,grep("fnc.", names(x$across))]
+            w.w <- x$within[,grep("tpc.", names(x$within))] - x$within[,grep("fpc.", names(x$within))] + 
+                x$within[,grep("fnc.", names(x$within))]
             fnr.a <- w.a * (1/(tp + fn)) * (fnr)
-            names(fnr.a) <- names(x$across)[grep("fn.", names(x$across))]
+            
+            names(fnr.a) <- names(x$across)[grep("fnc.", names(x$across))]
             out$across$fnr <- fnr.a
             fnr.w <- w.w * (1/(tp + fn)) * (fnr)
-            names(fnr.w) <- names(x$within)[grep("fn.", names(x$within))]
+            names(fnr.w) <- names(x$within)[grep("fnc.", names(x$within))]
             out$within$fnr <- fnr.w
         }
     }
