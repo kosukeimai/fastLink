@@ -57,13 +57,18 @@ summarize.agg <- function(x, weighted){
         matches.E <- 100 * (y$exact.matches) * (1/y$exp.match) 
         matches <- cbind(matches, matches.E)
         colnames(matches) <- c(names(y)[grep("tmc.", names(y))], "matches.E")
+        ## Match count
+        matchcount <- y[,grep("tpc.", names(y))]
+        matchcount.E <- y$exact.matches
+        matchcount <- cbind(matchcount, matchcount.E)
+        colnames(matchcount) <- c(names(y)[grep("tpc.", names(y))], "matchcount.E")
         ## FDR
         fdr <- 100 * (y[,grep("fpc.", names(y))]) * 1 / (y[,grep("tpc.", names(y))])
         names(fdr) <- names(y)[grep("fpc.", names(y))]
         ## FNR
         fnr <- 100 * (y[,grep("fnc.", names(y))]) * (1 / y$exp.match)
         names(fnr) <- names(y)[grep("fnc.", names(y))]
-        return(list(fdr = fdr, fnr = fnr, matches = matches))
+        return(list(fdr = fdr, fnr = fnr, matches = matches, matchcount = matchcount))
     }
     
     if(class(x) == "data.frame"){
@@ -81,6 +86,8 @@ summarize.agg <- function(x, weighted){
         matches.E <- 100 * (x$within$exact.matches + x$across$exact.matches) / (x$within$exp.match + x$across$exp.match)
         matches <- cbind(matches, matches.E)
         colnames(matches) <- c(names(x$within)[grep("tmc.", names(x$within))], "matches.E")
+        ## Match count
+        matchcount <- out$within$matchcount + out$across$matchcount
         ## FDR
         fdr <- 100 * (x$within[,grep("fpc.", names(x$across))] + x$across[,grep("fpc.", names(x$across))]) /
             (x$within[,grep("tpc.", names(x$within))] + x$across[,grep("tpc.", names(x$across))])
@@ -90,7 +97,7 @@ summarize.agg <- function(x, weighted){
             (x$within$exp.match + x$across$exp.match)
         names(fnr) <- names(x$within)[grep("fnc.", names(x$within))]
         ## Return object
-        out[["pooled"]] <- list(fdr = fdr, fnr = fnr, matches = matches)
+        out[["pooled"]] <- list(fdr = fdr, fnr = fnr, matches = matches, matchcount = matchcount)
         ## ------
         ## Weight 
         ## ------
@@ -174,21 +181,23 @@ summary.fastLink <- function(object, thresholds = c(.95, .85, .75), weighted = T
 
     if("fastLink.agg" %in% class(object) & "across.geo" %in% names(object)){
         tab <- as.data.frame(
-          rbind(round.pct(out.agg$pooled$matches), round.pct(out.agg$within$matches),
-                round.pct(out.agg$across$matches),
-                c(round.pct(out.agg$pooled$fdr), ""), c(round.pct(out.agg$within$fdr), ""),
-                c(round.pct(out.agg$across$fdr), ""),
-                c(round.pct(out.agg$pooled$fnr), ""), c(round.pct(out.agg$within$fnr), ""),
-                c(round.pct(out.agg$across$fnr), ""))
+          rbind(c(out.agg$pooled$matchcount), c(out.agg$within$matchcount),
+                  c(out.agg$across$matchcount),
+                  round.pct(out.agg$pooled$matches), round.pct(out.agg$within$matches),
+                  round.pct(out.agg$across$matches),
+                  c(round.pct(out.agg$pooled$fdr), ""), c(round.pct(out.agg$within$fdr), ""),
+                  c(round.pct(out.agg$across$fdr), ""),
+                  c(round.pct(out.agg$pooled$fnr), ""), c(round.pct(out.agg$within$fnr), ""),
+                  c(round.pct(out.agg$across$fnr), ""))
         )
-        tab <- cbind(rep(c("All", "Within-State", "Across-State"), 3), tab)
-        tab <- cbind(c("Match Rate", "", "", "FDR", "", "", "FNR", "", ""), tab)
+        tab <- cbind(rep(c("All", "Within-State", "Across-State"), 4), tab)
+        tab <- cbind(c("Match Count", "", "", "Match Rate", "", "", "FDR", "", "", "FNR", "", ""), tab)
         colnames(tab) <- c("", "", paste0(thresholds * 100, "%"),  "Exact")
     }else{
       tab <- as.data.frame(
-        rbind(round.pct(out.agg$matches), c(round.pct(out.agg$fdr), ""), c(round.pct(out.agg$fnr), ""))
+        rbind(out.agg$matchcount, round.pct(out.agg$matches), c(round.pct(out.agg$fdr), ""), c(round.pct(out.agg$fnr), ""))
       )
-      tab <- cbind(c("Match Rate", "FDR", "FNR"), tab)
+      tab <- cbind(c("Match Count", "Match Rate", "FDR", "FNR"), tab)
       colnames(tab) <- c("", paste0(thresholds * 100, "%"), "Exact")
     }
     #class(tab) <- "summary.fastLink"
