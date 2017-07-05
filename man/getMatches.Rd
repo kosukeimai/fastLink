@@ -23,10 +23,12 @@ Subset two data frames to the matches returned by \code{fastLink()}
 or \code{matchesLink()}.
 }
 \examples{
+\dontrun{
 fl.out <- fastLink(dfA, dfB,
 varnames = c("firstname", "lastname", "streetname", "birthyear"),
 n.cores = 1)
 ret <- getMatches(dfA, dfB, fl.out)
+}
 }
 \author{
 Ben Fifield  <benfifield@gmail.com>

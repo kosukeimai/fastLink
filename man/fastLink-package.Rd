@@ -3,19 +3,28 @@
 \docType{package}
 \name{fastLink-package}
 \alias{fastLink-package}
-\title{Record Linkage under MAR}
+\title{Fast Probabilistic Record Linkage with Missing Data}
 \description{
-Implements a Fellegi-Sunter probabilistic record linkage model
-that allows for missing data.
+\code{fastLink} implements methods developed by Enamorado, Fifield, and Imai (2017)
+''Using a Probabilistic Model to Assist Merging of Large-scale Administrative Records'',
+to probabilistically merge large datasets using the Fellegi-Sunter model
+while allowing for missing data and the inclusion of auxiliary information.
+The current version of this package conducts a merge of two datasets under
+the Fellegi-Sunter model, using the Expectation-Maximization Algorithm. In addition,
+tools for conducting and summarizing data merges are included.
 }
 \details{
-\tabular{ll}{ Package: \tab fastLink\cr Type: \tab Package\cr Version: \tab 0.1.-\cr
-Date: \tab 2017-01-27\cr License: \tab GPL (>= 3)\cr }
+\tabular{ll}{ Package: \tab fastLink\cr Type: \tab Package\cr Version: \tab 0.1.0-\cr
+Date: \tab 2017-07-04\cr License: \tab GPL (>= 3)\cr }
 }
 \author{
 Ted Enamorado \email{tede@princeton.edu}, Ben Fifield \email{bfifield@princeton.edu}, and Kosuke Imai \email{kimai@princeton.edu}
 
 Maintainer: Ted Enamorado \email{tede@princeton.edu}
+}
+\references{
+Enamorado, Ted, Ben Fifield and Kosuke Imai. (2017) "Using a Probabilistic Model to Assist Merging of
+Large-scale Administrative Records." Working Paper. Available at \url{http://imai.princeton.edu/research/linkage.html}.
 }
 \keyword{package}
 

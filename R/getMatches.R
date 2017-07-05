@@ -15,10 +15,12 @@
 #' @author Ben Fifield  <benfifield@gmail.com>
 #'
 #' @examples
+#' \dontrun{
 #' fl.out <- fastLink(dfA, dfB,
 #' varnames = c("firstname", "lastname", "streetname", "birthyear"),
 #' n.cores = 1)
 #' ret <- getMatches(dfA, dfB, fl.out)
+#' }
 #' @export
 getMatches <- function(dfA, dfB, fl.out){
 

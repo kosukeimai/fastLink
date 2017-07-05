@@ -68,9 +68,11 @@
 #' @author Ted Enamorado <ted.enamorado@gmail.com>, Ben Fifield <benfifield@gmail.com>, and Kosuke Imai
 #'
 #' @examples
+#' \dontrun{
 #' fl.out <- fastLink(dfA, dfB,
 #' varnames = c("firstname", "lastname", "streetname", "birthyear"),
 #' n.cores = 1)
+#' }
 #' @export
 fastLink <- function(dfA, dfB, varnames,
                      stringdist.match = NULL, partial.match = NULL,

@@ -153,7 +153,8 @@ summarize.agg <- function(x, weighted){
 #' @param digits How many digits to include in summary object. Default is 3.
 #' @param ... Further arguments to be passed to \code{summary.fastLink()}.
 #'
-#' @S3method summary fastLink
+#' @export
+#' @method summary fastLink
 summary.fastLink <- function(object, thresholds = c(.95, .85, .75), weighted = TRUE, digits = 3, ...){
     
     round.pct <- function(x){
@@ -181,7 +182,7 @@ summary.fastLink <- function(object, thresholds = c(.95, .85, .75), weighted = T
 
     if("fastLink.agg" %in% class(object) & "across.geo" %in% names(object)){
         tab <- as.data.frame(
-          rbind(c(out.agg$pooled$matchcount), c(out.agg$within$matchcount),
+            rbind(c(out.agg$pooled$matchcount), c(out.agg$within$matchcount),
                   c(out.agg$across$matchcount),
                   round.pct(out.agg$pooled$matches), round.pct(out.agg$within$matches),
                   round.pct(out.agg$across$matches),
