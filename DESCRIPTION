@@ -13,7 +13,7 @@ Description: Implements a Fellegi-Sunter probabilistic record linkage model that
     using the Expectation-Maximization algorithm. In addition, tools for preparing, adjusting, and summarizing
     data merges are included. The package implements methods described in Enamorado, Fifield,
     and Imai (2017) ''Using a Probabilistic Model to Assist Merging of Large-scale Administrative
-    Records'' <http://imai.princeton.edu/research/linkage.html>.
+    Records'', available at <http://imai.princeton.edu/research/linkage.html>.
 License: GPL(>= 3)
 Imports:
     Matrix,
