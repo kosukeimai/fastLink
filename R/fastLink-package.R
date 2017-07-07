@@ -9,15 +9,15 @@
 #' tools for conducting and summarizing data merges are included. 
 #' 
 #' \tabular{ll}{ Package: \tab fastLink\cr Type: \tab Package\cr Version: \tab 0.1.0-\cr
-#' Date: \tab 2017-07-04\cr License: \tab GPL (>= 3)\cr }
+#' Date: \tab 2017-07-07\cr License: \tab GPL (>= 3)\cr }
 #'
 #' @name fastLink-package
 #' @useDynLib fastLink, .registration = TRUE
 #' @aliases fastLink-package 
 #' @docType package
-#' @author Ted Enamorado \email{tede@@princeton.edu}, Ben Fifield \email{bfifield@@princeton.edu}, and Kosuke Imai \email{kimai@@princeton.edu}
+#' @author Ted Enamorado \email{fastlinkr@@gmail.com}, Ben Fifield \email{fastlinkr@@gmail.com}, and Kosuke Imai \email{kimai@@princeton.edu}
 #' 
-#' Maintainer: Ted Enamorado \email{tede@@princeton.edu}
+#' Maintainer: Ted Enamorado \email{fastlinkr@@gmail.com}
 #' @references Enamorado, Ted, Ben Fifield and Kosuke Imai. (2017) "Using a Probabilistic Model to Assist Merging of
 #' Large-scale Administrative Records." Working Paper. Available at \url{http://imai.princeton.edu/research/linkage.html}.
 #' @keywords package

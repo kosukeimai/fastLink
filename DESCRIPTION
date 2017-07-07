@@ -2,11 +2,11 @@ Package: fastLink
 Type: Package
 Title: Fast Probabilistic Record Linkage with Missing Data
 Version: 0.1.0
-Date: 2017-07-04
+Date: 2017-07-07
 Authors@R: c(
-  person("Ted", "Enamorado", email = "tede@princeton.edu", role = c("aut")),
-  person("Ben", "Fifield", email = "bfifield@princeton.edu", role = c("aut", "cre")),
-  person("Kosuke", "Imai", email = "kimai@Princeton.Edu", role = c("aut"))
+  person("Ted", "Enamorado", email = "fastlinkr@gmail.com", role = c("aut", "cre")),
+  person("Ben", "Fifield", email = "fastlinkr@gmail.com", role = c("aut")),
+  person("Kosuke", "Imai", email = "kimai@Princeton.edu", role = c("aut"))
   )
 Description: Implements a Fellegi-Sunter probabilistic record linkage model that allows for missing data
     and the inclusion of auxiliary information. This includes functionalities to conduct a merge of two datasets under the Fellegi-Sunter model
@@ -34,4 +34,5 @@ Depends:
 LinkingTo: RcppArmadillo, Rcpp, RcppEigen
 Encoding: UTF-8
 LazyData: true
+BugReports: https://github.com/kosukeimai/fastLink/issues
 RoxygenNote: 5.0.1

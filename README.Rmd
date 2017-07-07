@@ -5,18 +5,19 @@ output:
     variant: markdown_github
 ---
 # fastLink: Fast Probabilistic Record Linkage [![Build Status](https://travis-ci.com/kosukeimai/fastLink.svg?token=JxpGcfuMTdnnLSenfvSD&branch=master)](https://travis-ci.com/kosukeimai/fastLink)
+Authors: [Ted Enamorado](https://www.tedenamorado.com/), [Ben Fifield](https://www.benfifield.com/), [Kosuke Imai](https://imai.princeton.edu/)
 
 ## Installation Instructions
-As `fastLink` is hosted on a private Github repo, you will need a
-Github personal access token (PAT) to install using
-`devtools`. Instructions for setting up your own PAT can be found at
-<https://github.com/settings/tokens>.
+You can install the most recent development version of `fastLink` using the `devtools` package.  First you have 
+to install `devtools` using the following code. Note that you only have to do this once:
+```{r eval=FALSE} 
+if(!require(devtools)) install.packages("devtools")
+```   
+Then, load `devtools` and use the function `install_github()` to install `fastLink`:
 
-Once you have a PAT, `fastLink` can be installed from the private repo using `devtools` as
-follows:
-```{r eval = FALSE}
+```{r eval=FALSE}
 library(devtools)
-install_github("kosukeimai/fastLink", auth_token = "[YOUR PAT HERE]")
+install_github("kosukeimai/fastLink",dependencies=TRUE)
 ```
 
 ## Simple usage example
