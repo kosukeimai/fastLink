@@ -150,7 +150,7 @@ Lastly, we can summarize the accuracy of the match using the `summary()` functio
 ```{r}
 summary(matches.out)
 ```
-where each column gives the match rate, false discovery rate (FDR) and false negative rate (FNR) under different cutoffs for matches based on the posterior probability of a match. Other arguments include:
+where each column gives the match count, true match rate, false discovery rate (FDR) and false negative rate (FNR) under different cutoffs for matches based on the posterior probability of a match. Other arguments include:
 
 - `thresholds`: A vector of thresholds between 0 and 1 to summarize the match.
 
