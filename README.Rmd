@@ -4,12 +4,16 @@ output:
   md_document:
     variant: markdown_github
 ---
-# fastLink: Fast Probabilistic Record Linkage [![Build Status](https://travis-ci.org/kosukeimai/fastLink.svg?branch=master)](https://travis-ci.org/kosukeimai/fastLink)
+# fastLink: Fast Probabilistic Record Linkage [![Build Status](https://travis-ci.org/kosukeimai/fastLink.svg?branch=master)](https://travis-ci.org/kosukeimai/fastLink) [![CRAN Version](http://www.r-pkg.org/badges/version/fastLink)](https://CRAN.R-project.org/package=fastLink)
 Authors: [Ted Enamorado](https://www.tedenamorado.com/), [Ben Fifield](https://www.benfifield.com/), [Kosuke Imai](https://imai.princeton.edu/)
 
 ## Installation Instructions
-You can install the most recent development version of `fastLink` using the `devtools` package.  First you have 
-to install `devtools` using the following code. Note that you only have to do this once:
+`fastLink` is available on CRAN and can be installed using:
+```{r eval = FALSE}
+install.packages("fastLink")
+```
+
+You can also install the most recent development version of `fastLink` using the `devtools` package.  First you have to install `devtools` using the following code. Note that you only have to do this once:
 ```{r eval=FALSE} 
 if(!require(devtools)) install.packages("devtools")
 ```   
