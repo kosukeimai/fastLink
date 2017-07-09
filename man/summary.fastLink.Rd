@@ -4,11 +4,15 @@
 \alias{summary.fastLink}
 \title{Get summaries of fastLink() objects}
 \usage{
-\method{summary}{fastLink}(object, thresholds = c(.95, .85, .75), weighted = TRUE, digits = 3, ...)
+\method{summary}{fastLink}(object, num.comparisons = 1,
+thresholds = c(.95, .85, .75), weighted = TRUE, digits = 3, ...)
 }
 \arguments{
 \item{object}{Either a single `fastLink` or `fastLink.EM` object, or a list of `fastLink` or `fastLink.EM` objects
 to be aggregated together produced  by `aggregateEM`.}
+
+\item{num.comparisons}{The number of comparisons attempted for each observation in the across-geography match step.
+A correction factor to avoid multiple-counting. Default is NULL}
 
 \item{thresholds}{A vector of posterior probabilities to calculate the summary statistics.}
 
@@ -19,7 +23,7 @@ to be aggregated together produced  by `aggregateEM`.}
 \item{...}{Further arguments to be passed to \code{summary.fastLink()}.}
 }
 \description{
-\code{summary.fastLink()} calculates and outputs FDR, FNR, and match rates for
-estimates matches from a fastLink() object.
+\code{summary.fastLink()} calculates and outputs FDR, FNR, match counts, and match rates for
+estimated matches from a fastLink() object.
 }
 

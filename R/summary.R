@@ -40,21 +40,21 @@ summarize.em <- function(x, thresholds){
         exact.matches <- EM$counts[exact.match.ind]
     }
     
-    out <- data.frame(t(c(count, tmc, tpc, fpc, fnc, exp.match, exact.matches)))
+    out <- data.frame(t(c(count, tmc, tpc, fpc, fnc, exp.match, exact.matches, n1, n2)))
     names(out) <- c("count", paste0("tmc.", thresholds*100), paste0("tpc.", thresholds*100), paste0("fpc.", thresholds*100),  
-                    paste0("fnc.", thresholds*100),  "exp.match", "exact.matches")
+                    paste0("fnc.", thresholds*100),  "exp.match", "exact.matches", "nobs.a", "nobs.b")
 
     return(out)
     
 }
 
-summarize.agg <- function(x, weighted){
+summarize.agg <- function(x, num.comparisons, weighted){
     
     s.calc <- function(y){
         ## Match rate
-        matches <- 100 * (y[,grep("tmc.", names(y))]) * (1/y$exp.match)
+        matches <- 100 * (y[,grep("tmc.", names(y))]) / min(y$nobs.a, y$nobs.b)
         ## Exact match rate
-        matches.E <- 100 * (y$exact.matches) * (1/y$exp.match) 
+        matches.E <- 100 * (y$exact.matches) / min(y$nobs.a, y$nobs.b)
         matches <- cbind(matches, matches.E)
         colnames(matches) <- c(names(y)[grep("tmc.", names(y))], "matches.E")
         ## Match count
@@ -82,8 +82,8 @@ summarize.agg <- function(x, weighted){
         ## -------
         ## Matches
         matches <- 100 * (x$within[,grep("tmc.", names(x$within))] + x$across[,grep("tmc.", names(x$across))]) /
-            (x$within$exp.match + x$across$exp.match)
-        matches.E <- 100 * (x$within$exact.matches + x$across$exact.matches) / (x$within$exp.match + x$across$exp.match)
+            min(x$within$nobs.a, x$within$nobs.b)
+        matches.E <- 100 * (x$within$exact.matches + x$across$exact.matches) / min(x$within$nobs.a, x$within$nobs.b)
         matches <- cbind(matches, matches.E)
         colnames(matches) <- c(names(x$within)[grep("tmc.", names(x$within))], "matches.E")
         ## Match count
@@ -93,8 +93,8 @@ summarize.agg <- function(x, weighted){
             (x$within[,grep("tpc.", names(x$within))] + x$across[,grep("tpc.", names(x$across))])
         names(fdr) <- names(x$within)[grep("fpc.", names(x$within))]
         ## FNR
-        fnr <- 100 * (x$within[,grep("fnc.", names(x$across))] + x$across[,grep("fnc.", names(x$across))]) /
-            (x$within$exp.match + x$across$exp.match)
+        fnr <- 100 * (x$within[,grep("fnc.", names(x$across))] + (x$across[,grep("fnc.", names(x$across))] / num.comparisons)) /
+            min(x$within$nobs.a, x$within$nobs.b)
         names(fnr) <- names(x$within)[grep("fnc.", names(x$within))]
         ## Return object
         out[["pooled"]] <- list(fdr = fdr, fnr = fnr, matches = matches, matchcount = matchcount)
@@ -104,10 +104,13 @@ summarize.agg <- function(x, weighted){
         if(weighted){
             ## Across-unit matches
             wm <- 100 * (x$within[,grep("tmc.", names(x$within))]) /
-                (x$within$exp.match + x$across$exp.match)
-            wm.E <- 100 * (x$within$exact.matches) / (x$within$exp.match + x$across$exp.match)
+                min(x$within$nobs.a, x$within$nobs.b)
+            wm.E <- 100 * (x$within$exact.matches) / min(x$within$nobs.a, x$within$nobs.b)
             out$within$matches <- cbind(wm, wm.E)
-            out$across$matches <- out$pooled$matches - out$within$matches
+            wm <- 100 * (x$across[,grep("tmc.", names(x$across))]) /
+                min(x$within$nobs.a, x$within$nobs.b)
+            wm.E <- 100 * (x$across$exact.matches) / min(x$within$nobs.a, x$within$nobs.b)
+            out$across$matches <- cbind(wm, wm.E)
             ## Across and within-unit FDR
             fdr.a <- 100 * (x$across[, grep("fpc.", names(x$across))]) / 
                 (x$across[,grep("tmc.", names(x$across))] + x$within[, grep("tmc.", names(x$within))])
@@ -118,19 +121,12 @@ summarize.agg <- function(x, weighted){
             names(fdr.w) <- names(x$within)[grep("fd.", names(x$within))]
             out$within$fdr <- fdr.w
             ## Across and within-unit FNR
-            tp <- x$within[, grep("mc.", names(x$within))] + x$across[,grep("mc.", names(x$across))] - 
-                x$within[, grep("fp.", names(x$within))] - x$across[,grep("fp.", names(x$across))]
-            fn <- x$within[, grep("fn.", names(x$within))] + x$across[,grep("fn.", names(x$across))]
-            
-            w.a <- x$across[,grep("tpc.", names(x$across))] - x$across[,grep("fpc.", names(x$across))] + 
-                x$across[,grep("fnc.", names(x$across))]
-            w.w <- x$within[,grep("tpc.", names(x$within))] - x$within[,grep("fpc.", names(x$within))] + 
-                x$within[,grep("fnc.", names(x$within))]
-            fnr.a <- w.a * (1/(tp + fn)) * (fnr)
-            
+            fnr.a <- 100 * (x$across[,grep("fnc.", names(x$across))] / num.comparisons) /
+                min(x$within$nobs.a, x$within$nobs.b)
             names(fnr.a) <- names(x$across)[grep("fnc.", names(x$across))]
             out$across$fnr <- fnr.a
-            fnr.w <- w.w * (1/(tp + fn)) * (fnr)
+            fnr.w <- 100 * (x$within[,grep("fnc.", names(x$across))]) /
+                min(x$within$nobs.a, x$within$nobs.b)
             names(fnr.w) <- names(x$within)[grep("fnc.", names(x$within))]
             out$within$fnr <- fnr.w
         }
@@ -142,12 +138,15 @@ summarize.agg <- function(x, weighted){
 
 #' Get summaries of fastLink() objects
 #'
-#' \code{summary.fastLink()} calculates and outputs FDR, FNR, and match rates for
-#' estimates matches from a fastLink() object.
+#' \code{summary.fastLink()} calculates and outputs FDR, FNR, match counts, and match rates for
+#' estimated matches from a fastLink() object.
 #'
-#' @usage \method{summary}{fastLink}(object, thresholds = c(.95, .85, .75), weighted = TRUE, digits = 3, ...)
+#' @usage \method{summary}{fastLink}(object, num.comparisons = 1,
+#' thresholds = c(.95, .85, .75), weighted = TRUE, digits = 3, ...)
 #' @param object Either a single `fastLink` or `fastLink.EM` object, or a list of `fastLink` or `fastLink.EM` objects
-#' to be aggregated together produced  by `aggregateEM`. 
+#' to be aggregated together produced  by `aggregateEM`.
+#' @param num.comparisons The number of comparisons attempted for each observation in the across-geography match step.
+#' A correction factor to avoid multiple-counting. Default is NULL
 #' @param thresholds A vector of posterior probabilities to calculate the summary statistics.
 #' @param weighted Whether to weight the cross-geography matches on FDR and FNR.
 #' @param digits How many digits to include in summary object. Default is 3.
@@ -155,7 +154,7 @@ summarize.agg <- function(x, weighted){
 #'
 #' @export
 #' @method summary fastLink
-summary.fastLink <- function(object, thresholds = c(.95, .85, .75), weighted = TRUE, digits = 3, ...){
+summary.fastLink <- function(object, num.comparisons = 1, thresholds = c(.95, .85, .75), weighted = TRUE, digits = 3, ...){
     
     round.pct <- function(x){
       a <- unlist(x)
@@ -163,21 +162,21 @@ summary.fastLink <- function(object, thresholds = c(.95, .85, .75), weighted = T
       c <- paste0(b, "%")
       return(c)
     }
-
+    
     if("fastLink.agg" %in% class(object) & !("across.geo" %in% names(object))){
         ## Extract and calculate counts
         out <- as.data.frame(do.call(rbind, lapply(object, function(x){summarize.em(x, thresholds = thresholds)})))
         out <- data.frame(t(colSums(out)))
-        out.agg <- summarize.agg(out, weighted = weighted)
+        out.agg <- summarize.agg(out, num.comparisons = num.comparisons, weighted = weighted)
     }else if("fastLink.agg" %in% class(object) & "across.geo" %in% names(object)){
         ## Extract and calculate counts
         out.w <- as.data.frame(do.call(rbind, lapply(object[["within.geo"]], function(x){summarize.em(x, thresholds = thresholds)})))
         out.a <- as.data.frame(do.call(rbind, lapply(object[["across.geo"]], function(x){summarize.em(x, thresholds = thresholds)})))
         out <- list(within = data.frame(t(colSums(out.w))), across = data.frame(t(colSums(out.a))))
-        out.agg <- summarize.agg(out, weighted = weighted)
+        out.agg <- summarize.agg(out, num.comparisons = num.comparisons, weighted = weighted)
     }else if("fastLink" %in% class(object) | "fastLink.EM" %in% class(object)){
         out <- summarize.em(object, thresholds = thresholds)
-        out.agg <- summarize.agg(out, weighted = weighted)
+        out.agg <- summarize.agg(out, num.comparisons = num.comparisons, weighted = weighted)
     } 
 
     if("fastLink.agg" %in% class(object) & "across.geo" %in% names(object)){
