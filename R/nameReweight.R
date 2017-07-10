@@ -23,7 +23,8 @@
 #' @param partial.match A vector of booleans, indicating whether to include
 #' a partial matching category for the string distances. Must be same length
 #' as varnames. Default is FALSE for all variables.
-#' @param firstname.field The name of the field indicating first name.
+#' @param firstname.field A vector of booleans, indicating whether each field indicates
+#' first name. TRUE if so, otherwise FALSE. 
 #' @param threshold.match A number between 0 and 1 indicating either the lower bound (if only one number provided) or the range of certainty that the
 #' user wants to declare a match. For instance, threshold.match = .85 will return all pairs with posterior probability greater than .85 as matches,
 #' while threshold.match = c(.85, .95) will return all pairs with posterior probability between .85 and .95 as matches.
@@ -52,6 +53,9 @@ nameReweight <- function(dfA, dfB, EM, gammalist, matchesLink,
             stop("Invalid value provided for jw.weight. Remember, jw.weight in [0, 0.25].")
         }
     }
+    if(sum(firstname.field) == 0){
+        stop("You have not indicated which field represents first name.")
+    }
     
     ## Get cores
     if(is.null(n.cores)) {
@@ -68,20 +72,21 @@ nameReweight <- function(dfA, dfB, EM, gammalist, matchesLink,
 
     ## Subset down to perfect matches on first name
     firstname.field <- which(firstname.field == TRUE)
-    EM.names <- as.matrix(EM[EM$zeta.j >= 1e-9 & EM[,firstname.field] == TRUE,])
+    EM.names <- as.matrix(EM[EM$zeta.j >= 1e-9 & EM[,firstname.field] == 2,])
     EM.names2 <- EM.names[, c(1:ncol(resultsEM$patterns.w))]
     resultsEM2 <- resultsEM
     resultsEM2$patterns.w <- EM.names2
+    resultsEM2$zeta.j <- as.matrix(EM$zeta.j[EM$zeta.j > 1e-9 & EM[,firstname.field] == 2,])
     match.ut <- min(resultsEM2$patterns.w[, "weights"]) - 0.01
 
     ## We recover all the pairs that match on name:
     list.m <- matchesLink(gammalist, nobs.a = nrow(dfA), nobs.b = nrow(dfB), em = resultsEM2, thresh = threshold.match, n.cores = n.cores)
 
     ## Datasets with such matches
-    matchesA <- dfA[ list.m[, 1], ]
-    matchesB <- dfB[ list.m[, 2], ]
-    matchesA.f <- dfA[matchesLink$inds.a,]
-    matchesB.f <- dfB[matchesLink$inds.b,]
+    dfA$ind.orig <- 1:nrow(dfA)
+    dfB$ind.orig <- 1:nrow(dfB)
+    matchesA.f <- dfA[ matchesLink$inds.a, ]
+    matchesB.f <- dfB[ matchesLink$inds.b, ]
 
     fn.field <- varnames[firstname.field]
 
@@ -92,9 +97,9 @@ nameReweight <- function(dfA, dfB, EM, gammalist, matchesLink,
     namevec <- rep(NA, length(varnames))
     for(i in 1:length(gammalist)){
         ## Convert to character
-        if(is.factor(matchesA[,varnames[i]]) | is.factor(matchesB[,varnames[i]])){
-            matchesA[,varnames[i]] <- as.character(matchesA[,varnames[i]])
-            matchesB[,varnames[i]] <- as.character(matchesB[,varnames[i]])
+        if(is.factor(matchesA.f[,varnames[i]]) | is.factor(matchesB.f[,varnames[i]])){
+            matchesA.f[,varnames[i]] <- as.character(matchesA.f[,varnames[i]])
+            matchesB.f[,varnames[i]] <- as.character(matchesB.f[,varnames[i]])
         }
         ## Get matches
         if(stringdist.match[i]){
@@ -104,11 +109,11 @@ nameReweight <- function(dfA, dfB, EM, gammalist, matchesLink,
                 }else{
                     p1 <- NULL
                 }
-                tmp <- 1 - stringdist(matchesA[,varnames[i]], matchesB[,varnames[i]], "jw", p = p1)
+                tmp <- 1 - stringdist(matchesA.f[,varnames[i]], matchesB.f[,varnames[i]], "jw", p = p1)
             }else{
-                t <- stringdist(matchesA[,varnames[i]], matchesB[,varnames[i]], method = stringdist.method)
-                t.1 <- nchar(matchesA[,varnames[i]])
-                t.2 <- nchar(matchesB[,varnames[i]])
+                t <- stringdist(matchesA.f[,varnames[i]], matchesB.f[,varnames[i]], method = stringdist.method)
+                t.1 <- nchar(matchesA.f[,varnames[i]])
+                t.2 <- nchar(matchesB.f[,varnames[i]])
                 o <- ifelse(t.1 > t.2, t.1, t.2)
                 tmp <- 1 - t * (1/o)
             }
@@ -120,7 +125,7 @@ nameReweight <- function(dfA, dfB, EM, gammalist, matchesLink,
                 gammalist[[i]] <- ifelse(tmp >= cut.a, 2, 0)
             }
         }else{
-            tmp <- matchesA[,varnames[i]] == matchesB[,varnames[i]]
+            tmp <- matchesA.f[,varnames[i]] == matchesB.f[,varnames[i]]
             gammalist[[i]] <- ifelse(tmp == TRUE, 2, 0)
         }
 
@@ -128,23 +133,32 @@ nameReweight <- function(dfA, dfB, EM, gammalist, matchesLink,
         
     }
     gammalist <- data.frame(do.call(cbind, gammalist))
-    matchesA <- cbind(matchesA, gammalist)
-    matchesA <- merge(matchesA, EM.names, by = namevec, all.x = T)	
+    names(gammalist) <- namevec
+    matchesA.f <- cbind(matchesA.f, gammalist)
+    matchesA.f <- merge(matchesA.f, EM, by = namevec, all.x = T)
+    matchesB.f <- cbind(matchesB.f, gammalist)
+    matchesB.f <- merge(matchesB.f, EM, by = namevec, all.x = T)
+
+    matchesA <- matchesA.f[ matchesA.f$ind.orig %in%
+                            intersect(matchesLink$inds.a, list.m$inds.a), ]
+    matchesB <- matchesB.f[ matchesB.f$ind.orig %in%
+                            intersect(matchesLink$inds.b, list.m$inds.b), ]
 
     ## ---------------------
     ## Start name adjustment
     ## ---------------------
     ## Factors to adjust names:
-    fn.1 <- tapply(matchesA$zeta.j, matchesA$first.name, sum)
-    fn.2 <- tapply(1 - matchesA$zeta.j, matchesA$first.name, sum)
+    fn.1 <- tapply(matchesA$zeta.j, matchesA[,fn.field], sum)
+    fn.2 <- tapply(1 - matchesA$zeta.j, matchesA[,fn.field], sum)
 
-    factor <- data.frame(cbind(fn.1, fn.2))
-    factor$first.name <- rownames(factor)
+    fcto <- data.frame(cbind(fn.1, fn.2))
+    fcto$first.name <- rownames(fcto)
+    names(fcto)[3] <- fn.field
 
     matchesA.f$id.o <- 1:nrow(matchesA.f)
     matchesB.f$id.o <- 1:nrow(matchesB.f)
-    matches.names.A <- merge(matchesA.f, factor, by = fn.field, all.x = T)
-    matches.names.B <- merge(matchesB.f, factor, by = fn.field, all.x = T)
+    matches.names.A <- merge(matchesA.f, fcto, by = fn.field, all.x = T)
+    matches.names.B <- merge(matchesB.f, fcto, by = fn.field, all.x = T)
     matches.names.A <- matches.names.A[order(matches.names.A$id.o), ]
     matches.names.B <- matches.names.B[order(matches.names.B$id.o), ]
 
@@ -153,8 +167,9 @@ nameReweight <- function(dfA, dfB, EM, gammalist, matchesLink,
     matches.names.B$zeta.j.names <- (matches.names.B$fn.1 * matches.names.B$p.gamma.j.m) /
         (matches.names.B$fn.1 * matches.names.B$p.gamma.j.m + matches.names.B$fn.2 * matches.names.B$p.gamma.j.u)
 
-    matches.names.A$zeta.j.names[matches.names.A[,firstname.field] != 2] <- NA
-    matches.names.B$zeta.j.names[matches.names.B[,firstname.field] != 2] <- NA
+    ind <- paste0("gamma.", firstname.field)
+    matches.names.A$zeta.j.names[matches.names.A[,ind] != 2] <- NA
+    matches.names.B$zeta.j.names[matches.names.B[,ind] != 2] <- NA
 
     ## ----------------------------------
     ## Output reweighted matched data set

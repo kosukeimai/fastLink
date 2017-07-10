@@ -84,7 +84,7 @@ std::vector<SpMat> unpack_matches(const std::vector< std::vector<arma::mat> > x,
   int len_x = x.size(); int i; int j; int k; std::vector<arma::mat> feature_adj;
   int matrix_length; 
   std::vector<SpMat> list_out(len_x); arma::mat adj_store;
-  int val; arma::mat feature_adj_j;
+  double val; arma::mat feature_adj_j;
   
   // Loop over features
   for(i = 0; i < len_x; i++){
@@ -105,9 +105,9 @@ std::vector<SpMat> unpack_matches(const std::vector< std::vector<arma::mat> > x,
 
     // Get correct entry for the sparse list
     if(match){
-      val = pow(2, 2 + (i * 3));
+      val = pow(2.0, 2 + (i * 3));
     }else{
-      val = pow(2, 1 + (i * 3));
+      val = pow(2.0, 1 + (i * 3));
     }
 
     // Create tripletList out of feature_adj
@@ -159,7 +159,7 @@ arma::vec getNotIn(const arma::vec vec1, const arma::vec vec2){
 std::vector<SpMat> create_sparse_na(const std::vector< std::vector<arma::vec> > nas,
 				    const arma::vec dims){
 
-  int i; int j; int k; int val; const int nobs_a = dims[0]; const int nobs_b = dims[1];
+  int i; int j; int k; double val; const int nobs_a = dims[0]; const int nobs_b = dims[1];
   arma::vec nas_a; arma::vec nas_b; std::vector<SpMat> list_out(nas.size());
   arma::vec nobs_a_notnull_inb; std::vector<arma::vec> nas_extract(2);
 
@@ -172,7 +172,7 @@ std::vector<SpMat> create_sparse_na(const std::vector< std::vector<arma::vec> > 
   for(i = 0; i < nas.size(); i++){
 
     // Get exponent value
-    val = pow(2, 3 + (i * 3));
+    val = pow(2.0, 3 + (i * 3));
 
     // Extract indices of NAs
     nas_extract = nas[i];
@@ -324,9 +324,9 @@ std::vector< std::vector<arma::vec> > m_func_par(const std::vector< std::vector<
 #ifdef _OPENMP
   omp_set_num_threads(threads);
   int threadsused = omp_get_max_threads();
-  Rcout << "Gamma calculation is parallelized. "
+  Rcout << "(Using OpenMP to parallelize calculation. "
 	<< threadsused << " threads out of "
-	<< omp_get_num_procs() << " are used."
+	<< omp_get_num_procs() << " are used.)"
 	<< std::endl;
 #pragma omp parallel for private(n, m, temp_feature, ptemp_feature) firstprivate(lims, lims_2, templist, ptemplist, natemplist, mf_out)
 #endif

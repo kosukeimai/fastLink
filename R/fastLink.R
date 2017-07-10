@@ -128,6 +128,9 @@ fastLink <- function(dfA, dfB, varnames,
             stop("You have provided a variable name for 'gender.field' that is not in 'varnames'.")
         }
     }
+    if(reweight.names == TRUE & is.null(firstname.field)){
+        stop("If reweighting the match probability by first name, you must provide the name of the field representing first name.")
+    }
     if(!is.null(firstname.field)){
         if(length(firstname.field) > 1){
             stop("'firstname.field' must have at most one variable name.")
@@ -177,6 +180,12 @@ fastLink <- function(dfA, dfB, varnames,
     gender.field <- rep(FALSE, length(varnames))
     if(length(gf.bool) > 0){
         gender.field[gf.bool] <- TRUE
+    }
+
+    fn.bool <- which(varnames %in% firstname.field)
+    firstname.field <- rep(FALSE, length(varnames))
+    if(length(fn.bool) > 0){
+        firstname.field[fn.bool] <- TRUE
     }
 
     ## ----------------------------

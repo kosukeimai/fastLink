@@ -33,7 +33,8 @@ each variable. Must be same length as varnames.}
 a partial matching category for the string distances. Must be same length
 as varnames. Default is FALSE for all variables.}
 
-\item{firstname.field}{The name of the field indicating first name.}
+\item{firstname.field}{A vector of booleans, indicating whether each field indicates
+first name. TRUE if so, otherwise FALSE.}
 
 \item{threshold.match}{A number between 0 and 1 indicating either the lower bound (if only one number provided) or the range of certainty that the
 user wants to declare a match. For instance, threshold.match = .85 will return all pairs with posterior probability greater than .85 as matches,

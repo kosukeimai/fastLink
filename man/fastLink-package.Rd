@@ -14,8 +14,8 @@ the Fellegi-Sunter model, using the Expectation-Maximization Algorithm. In addit
 tools for conducting and summarizing data merges are included.
 }
 \details{
-\tabular{ll}{ Package: \tab fastLink\cr Type: \tab Package\cr Version: \tab 0.1.0-\cr
-Date: \tab 2017-07-07\cr License: \tab GPL (>= 3)\cr }
+\tabular{ll}{ Package: \tab fastLink\cr Type: \tab Package\cr Version: \tab 0.1.1-\cr
+Date: \tab 2017-07-10\cr License: \tab GPL (>= 3)\cr }
 }
 \author{
 Ted Enamorado \email{fastlinkr@gmail.com}, Ben Fifield \email{fastlinkr@gmail.com}, and Kosuke Imai \email{kimai@princeton.edu}
