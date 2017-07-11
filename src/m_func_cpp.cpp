@@ -105,9 +105,9 @@ std::vector<SpMat> unpack_matches(const std::vector< std::vector<arma::mat> > x,
 
     // Get correct entry for the sparse list
     if(match){
-      val = pow(2.0, 2 + (i * 3));
+      val = std::pow(2.0, 2 + (i * 3));
     }else{
-      val = pow(2.0, 1 + (i * 3));
+      val = std::pow(2.0, 1 + (i * 3));
     }
 
     // Create tripletList out of feature_adj
@@ -172,7 +172,7 @@ std::vector<SpMat> create_sparse_na(const std::vector< std::vector<arma::vec> > 
   for(i = 0; i < nas.size(); i++){
 
     // Get exponent value
-    val = pow(2.0, 3 + (i * 3));
+    val = std::pow(2.0, 3 + (i * 3));
 
     // Extract indices of NAs
     nas_extract = nas[i];
