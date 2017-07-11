@@ -7,6 +7,8 @@ output:
 # fastLink: Fast Probabilistic Record Linkage [![Build Status](https://travis-ci.org/kosukeimai/fastLink.svg?branch=master)](https://travis-ci.org/kosukeimai/fastLink) [![CRAN Version](http://www.r-pkg.org/badges/version/fastLink)](https://CRAN.R-project.org/package=fastLink)
 Authors: [Ted Enamorado](https://www.tedenamorado.com/), [Ben Fifield](https://www.benfifield.com/), [Kosuke Imai](https://imai.princeton.edu/)
 
+Paper: [Using a Probabilistic Model to Assist Merging of Large-scale Administrative Records](http://imai.princeton.edu/research/files/linkage.pdf)
+
 ## Installation Instructions
 `fastLink` is available on CRAN and can be installed using:
 ```{r eval = FALSE}
