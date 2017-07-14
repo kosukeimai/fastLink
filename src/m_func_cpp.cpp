@@ -324,9 +324,9 @@ std::vector< std::vector<arma::vec> > m_func_par(const std::vector< std::vector<
 #ifdef _OPENMP
   omp_set_num_threads(threads);
   int threadsused = omp_get_max_threads();
-  Rcout << "(Using OpenMP to parallelize calculation. "
+  Rcout << "    Parallelizing calculation using OpenMP. "
 	<< threadsused << " threads out of "
-	<< omp_get_num_procs() << " are used.)"
+	<< omp_get_num_procs() << " are used."
 	<< std::endl;
 #pragma omp parallel for private(n, m, temp_feature, ptemp_feature) firstprivate(lims, lims_2, templist, ptemplist, natemplist, mf_out)
 #endif

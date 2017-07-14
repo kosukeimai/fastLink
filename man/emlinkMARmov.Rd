@@ -6,7 +6,7 @@
 \usage{
 emlinkMARmov(patterns, nobs.a, nobs.b, p.m, iter.max,
 tol, p.gamma.k.m, p.gamma.k.u, prior.lambda, w.lambda,
-prior.pi, w.pi, address.field, gender.field)
+prior.pi, w.pi, address.field, gender.field, varnames)
 }
 \arguments{
 \item{patterns}{table that holds the counts for each unique agreement
@@ -40,6 +40,9 @@ Address fields should be set to TRUE while non-address fields are set to FALSE i
 
 \item{gender.field}{Boolean indicators for whether a given field is for gender. If so, exact match is conducted on gender.
 Default is NULL (FALSE for all fields). The one gender field should be set to TRUE while all other fields are set to FALSE if provided.}
+
+\item{varnames}{The vector of variable names used for matching. Automatically provided if using \code{fastLink()} wrapper. Used for
+clean visualization of EM results in summary functions.}
 }
 \value{
 \code{emlinkMARmov} returns a list with the following components:
@@ -71,7 +74,7 @@ g4 <- gammaKpar(dfA$birthyear, dfB$birthyear)
 tc <- tableCounts(list(g1, g2, g3, g4), nobs.a = nrow(dfA), nobs.b = nrow(dfB))
 
 ## Run EM
-em <- emlinkMAR(tc, nobs.a = nrow(dfA), nobs.b = nrow(dfB))
+em <- emlinkMARmov(tc, nobs.a = nrow(dfA), nobs.b = nrow(dfB))
 }
 
 }

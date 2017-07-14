@@ -195,6 +195,10 @@ fastLink <- function(dfA, dfB, varnames,
     start <- Sys.time()
     gammalist <- vector(mode = "list", length = length(varnames))
     for(i in 1:length(gammalist)){
+        if(verbose){
+            sdb <- ifelse(stringdist.match[i], "string-distance", "exact")
+            cat("    Matching variable", varnames[i], "using", sdb, "matching.\n")
+        }
         ## Convert to character
         if(is.factor(dfA[,varnames[i]]) | is.factor(dfB[,varnames[i]])){
             dfA[,varnames[i]] <- as.character(dfA[,varnames[i]])
@@ -208,6 +212,9 @@ fastLink <- function(dfA, dfB, varnames,
             if(sum(is.na(dfB[,varnames[i]])) == nrow(dfB) | length(unique(dfB[,varnames[i]])) == 1){
                 stop(paste("You have no variation in dataset B for", varnames[i], "or all observations are missing."))
             }
+        }
+        if(sum(dfA[,varnames[i]] %in% dfB[,varnames[i]]) == 0){
+            stop(paste0("You have no exact matches for ", varnames[i], ". Please drop this variable from your analysis."))
         }
         ## Get patterns
         if(stringdist.match[i]){
@@ -270,7 +277,8 @@ fastLink <- function(dfA, dfB, varnames,
                                   prior.lambda = lambda.prior, w.lambda = w.lambda,
                                   prior.pi = pi.prior, w.pi = w.pi,
                                   address.field = address.field, 
-                                  gender.field = gender.field)
+                                  gender.field = gender.field,
+                                  varnames = varnames)
         end <- Sys.time()
         if(verbose){
             cat("Running the EM algorithm took", round(difftime(end, start, units = "secs"), 2), "seconds.\n\n")
