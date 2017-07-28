@@ -155,7 +155,7 @@ tableCounts <- function(gammalist, nobs.a, nobs.b, n.cores = NULL) {
         data.new.1 <- data.new.1[, -sub.nc]
     }
     nc <- ncol(data.new.1)
-    na.data.new <- data.new.1[, -c(nc)]
+    na.data.new <- data.new.1[, -c(nc), drop = FALSE]
     na.data.new[na.data.new == 4] <- NA
     data.new <- cbind(na.data.new, data.new.1[, nc])
     colnames(data.new)[nc] <- "counts"
