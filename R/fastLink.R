@@ -9,7 +9,7 @@
 #' address.field, gender.field, estimate.only, em.obj,
 #' dedupe.matches, linprog.dedupe,
 #' reweight.names, firstname.field,
-#' return.df, n.cores, tol.em, threshold.match, verbose)
+#' n.cores, tol.em, threshold.match, return.all, return.df, verbose)
 #'
 #' @param dfA Dataset A - to be matched to Dataset B
 #' @param dfB Dataset B - to be matched to Dataset A
@@ -45,12 +45,14 @@
 #' @param linprog.dedupe If deduping matches, whether to use Winkler's linear programming solution to dedupe. Default is FALSE.
 #' @param reweight.names Whether to reweight the posterior match probabilities by the frequency of individual first names. Default is FALSE.
 #' @param firstname.field The name of the field indicating first name. Must be provided if reweight.names = TRUE.
-#' @param return.df Whether to return the entire dataframe of dfA and dfB instead of just the indices. Default is FALSE.
 #' @param n.cores Number of cores to parallelize over. Default is NULL.
 #' @param tol.em Convergence tolerance for the EM Algorithm. Default is 1e-04.
 #' @param threshold.match A number between 0 and 1 indicating either the lower bound (if only one number provided) or the range of certainty that the
 #' user wants to declare a match. For instance, threshold.match = .85 will return all pairs with posterior probability greater than .85 as matches,
 #' while threshold.match = c(.85, .95) will return all pairs with posterior probability between .85 and .95 as matches.
+#' @param return.all Whether to return the most likely match for each observation in dfA and dfB. Overrides user setting of \code{threshold.match} by setting
+#' \code{threshold.match} to 0.0001, and automatically dedupes all matches. Default is FALSE.
+#' @param return.df Whether to return the entire dataframe of dfA and dfB instead of just the indices. Default is FALSE.
 #' @param verbose Whether to print elapsed time for each step. Default is FALSE.
 #'
 #' @return \code{fastLink} returns a list of class 'fastLink' containing the following components if calculating matches:
@@ -83,8 +85,8 @@ fastLink <- function(dfA, dfB, varnames,
                      gender.field = NULL, estimate.only = FALSE, em.obj = NULL,
                      dedupe.matches = TRUE, linprog.dedupe = FALSE,
                      reweight.names = FALSE, firstname.field = NULL,
-                     return.df = FALSE, n.cores = NULL, tol.em = 1e-04,
-                     threshold.match = 0.85, verbose = FALSE){
+                     n.cores = NULL, tol.em = 1e-04, threshold.match = 0.85,
+                     return.all = FALSE, return.df = FALSE, verbose = FALSE){
 
     cat("\n")
     cat(c(paste(rep("=", 20), sep = "", collapse = ""), "\n"))
@@ -154,6 +156,13 @@ fastLink <- function(dfA, dfB, varnames,
     if(stringdist.method == "jw" & !is.null(jw.weight)){
         if(jw.weight < 0 | jw.weight > 0.25){
             stop("Invalid value provided for jw.weight. Remember, jw.weight in [0, 0.25].")
+        }
+    }
+    if(return.all){
+        threshold.match <- 0.0001
+        if(!dedupe.matches){
+            cat("You have specified that all matches be returned but have not deduped the matches. Setting 'dedupe.matches' to TRUE.\n")
+            dedupe.matches <- TRUE
         }
     }
 
@@ -318,9 +327,19 @@ fastLink <- function(dfA, dfB, varnames,
             if(verbose){
                 cat("Deduping the estimated matches took", round(difftime(end, start, units = "mins"), 2), "minutes.\n\n")
             }
+        }else{
+            cat("Calculating the posterior for each pair of matched observations.\n")
+            start <- Sys.time()
+            zeta <- getPosterior(dfA[matches$inds.a,], dfB[matches$inds.b,], EM = resultsEM,
+                                 varnames = varnames, stringdist.match = stringdist.match, partial.match = partial.match,
+                                 stringdist.method = stringdist.method, cut.a = cut.a, cut.p = cut.p, jw.weight = jw.weight)
+            end <- Sys.time()
+            if(verbose){
+                cat("Calculating the posterior for each matched pair took", round(difftime(end, start, units = "mins"), 2), "minutes.\n\n")
+            }
         }
 
-        ## Reweight first names
+        ## Reweight first names or get zeta
         if(reweight.names){
             cat("Reweighting match probabilities by frequency of occurrence.\n")
             start <- Sys.time()
@@ -343,14 +362,16 @@ fastLink <- function(dfA, dfB, varnames,
         }
         out[["matches"]] <- matches
         out[["EM"]] <- resultsEM
-        out[["nobs.a"]] <- nr_a
-        out[["nobs.b"]] <- nr_b
         if(dedupe.matches){
-            out[["max.zeta"]] <- ddm.out$max.zeta
+            out[["posterior"]] <- ddm.out$max.zeta
+        }else{
+            out[["posterior"]] <- zeta
         }
         if(reweight.names){
             out[["zeta.name"]] <- rwn.out
         }
+        out[["nobs.a"]] <- nr_a
+        out[["nobs.b"]] <- nr_b
         class(out) <- "fastLink"
     }else{
         out <- resultsEM
