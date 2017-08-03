@@ -5,7 +5,7 @@
 \title{preprocText}
 \usage{
 preprocText(text, convert_text, tolower, soundex,
-convert_text_to)
+usps_address, convert_text_to)
 }
 \arguments{
 \item{text}{A vector of text data to convert.}
@@ -18,6 +18,9 @@ TRUE}
 TRUE.}
 
 \item{soundex}{Whether to convert the field to the Census's soundex encoding.
+Default is FALSE.}
+
+\item{usps_address}{Whether to use USPS address standardization rules to clean address fields.
 Default is FALSE.}
 
 \item{convert_text_to}{Which encoding to use when converting text. Default is 'Latin-ASCII'.
