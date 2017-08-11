@@ -151,12 +151,22 @@ gammaCK2par <- function(matAp, matBp, n.cores = NULL, cut.a = 0.92, method = "jw
     n.values.2 <- as.matrix(cbind(u.values.1[indexes.2[, 1]], u.values.2[indexes.2[, 2]]))
     matches.2 <- lapply(seq_len(nrow(n.values.2)), function(i) n.values.2[i, ])
 
-    no_cores <- n.cores
-    final.list2 <- mclapply(matches.2, function(s) {
-        ht1 <- which(matrix.1 == s[1])
-        ht2 <- which(matrix.2 == s[2])
-        list(ht1, ht2)
-    }, mc.cores = getOption("mc.cores", no_cores))
+    if(Sys.info()[['sysname']] == 'Windows') {
+        nc <- n.cores
+    		cl <- makeCluster(nc)
+    		registerDoParallel(cl)
+
+    		final.list2 <- foreach(i = 1:length(matches.2)) %dopar% {
+            ht1 <- which(matrix.1 == matches.2[[i]][[1]]); ht2 <- which(matrix.2 == matches.2[[i]][[2]])
+            list(ht1, ht2)
+      	}
+    		stopCluster(cl)
+    } else {
+        no_cores <- n.cores
+    		final.list2 <- mclapply(matches.2, function(s){
+            ht1 <- which(matrix.1 == s[1]); ht2 <- which(matrix.2 == s[2]);
+            list(ht1, ht2) }, mc.cores = getOption("mc.cores", no_cores))
+    }
     
     na.list <- list()
     na.list[[1]] <- which(matrix.1 == "9999")
