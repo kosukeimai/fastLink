@@ -66,7 +66,7 @@ summarize.agg <- function(x, num.comparisons, weighted){
         fdr <- 100 * (y[,grep("fpc.", names(y))]) * 1 / (y[,grep("tpc.", names(y))])
         names(fdr) <- names(y)[grep("fpc.", names(y))]
         ## FNR
-        fnr <- 100 * (y[,grep("fnc.", names(y))]) / y$exp.match
+        fnr <- 100 * (y[,grep("fnc.", names(y))]) / y$exp.match ## min(y$nobs.a, y$nobs.b)
         names(fnr) <- names(y)[grep("fnc.", names(y))]
         return(list(fdr = fdr, fnr = fnr, matches = matches, matchcount = matchcount))
     }
@@ -93,8 +93,8 @@ summarize.agg <- function(x, num.comparisons, weighted){
             (x$within[,grep("tpc.", names(x$within))] + x$across[,grep("tpc.", names(x$across))])
         names(fdr) <- names(x$within)[grep("fpc.", names(x$within))]
         ## FNR
-        fnr <- 100 * (x$within[,grep("fnc.", names(x$across))] + x$across[,grep("fnc.", names(x$across))] / num.comparisons) /
-            (x$within$exp.match + x$across$exp.match)
+        fnr <- 100 * (x$within[,grep("fnc.", names(x$across))] + (x$across[,grep("fnc.", names(x$across))] / num.comparisons)) /
+            x$within$exp.match ## min(x$within$nobs.a, x$within$nobs.b)
         names(fnr) <- names(x$within)[grep("fnc.", names(x$within))]
         ## Return object
         out[["pooled"]] <- list(fdr = fdr, fnr = fnr, matches = matches, matchcount = matchcount)
@@ -122,11 +122,11 @@ summarize.agg <- function(x, num.comparisons, weighted){
             out$within$fdr <- fdr.w
             ## Across and within-unit FNR
             fnr.a <- 100 * (x$across[,grep("fnc.", names(x$across))] / num.comparisons) /
-                (x$within$exp.match + x$across$exp.match)
+                x$within$exp.match ## min(x$within$nobs.a, x$within$nobs.b)
             names(fnr.a) <- names(x$across)[grep("fnc.", names(x$across))]
             out$across$fnr <- fnr.a
             fnr.w <- 100 * (x$within[,grep("fnc.", names(x$across))]) /
-                (x$within$exp.match + x$across$exp.match)
+                x$within$exp.match ## min(x$within$nobs.a, x$within$nobs.b)
             names(fnr.w) <- names(x$within)[grep("fnc.", names(x$within))]
             out$within$fnr <- fnr.w
         }
