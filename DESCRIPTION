@@ -1,8 +1,8 @@
 Package: fastLink
 Type: Package
 Title: Fast Probabilistic Record Linkage with Missing Data
-Version: 0.1.1
-Date: 2017-07-10
+Version: 0.2.0
+Date: 2017-08-31
 Authors@R: c(
   person("Ted", "Enamorado", email = "fastlinkr@gmail.com", role = c("aut", "cre")),
   person("Ben", "Fifield", email = "fastlinkr@gmail.com", role = c("aut")),
@@ -24,10 +24,14 @@ Imports:
     data.table,
     stringdist,
     stringr,
-    Rcpp (>= 0.12.9),
+    stringi,
+    Rcpp (>= 0.12.7),
     FactoClass,
     adagio,
-    dplyr
+    dplyr,
+    plotrix,
+    grDevices,
+    graphics
 Depends:
     R (>= 2.14.0)
 LinkingTo: RcppArmadillo, Rcpp, RcppEigen

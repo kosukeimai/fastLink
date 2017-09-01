@@ -5,7 +5,7 @@
 #'
 #' @usage emlinkMARmov(patterns, nobs.a, nobs.b, p.m, iter.max,
 #' tol, p.gamma.k.m, p.gamma.k.u, prior.lambda, w.lambda,
-#' prior.pi, w.pi, address.field, gender.field)
+#' prior.pi, w.pi, address.field, gender.field, varnames)
 #'
 #' @param patterns table that holds the counts for each unique agreement
 #' pattern. This object is produced by the function: tableCounts.
@@ -25,6 +25,8 @@
 #' Address fields should be set to TRUE while non-address fields are set to FALSE if provided.
 #' @param gender.field Boolean indicators for whether a given field is for gender. If so, exact match is conducted on gender.
 #' Default is NULL (FALSE for all fields). The one gender field should be set to TRUE while all other fields are set to FALSE if provided.
+#' @param varnames The vector of variable names used for matching. Automatically provided if using \code{fastLink()} wrapper. Used for
+#' clean visualization of EM results in summary functions.
 #'
 #' @return \code{emlinkMARmov} returns a list with the following components:
 #' \item{zeta.j}{The posterior match probabilities for each unique pattern.}
@@ -53,7 +55,7 @@
 #' tc <- tableCounts(list(g1, g2, g3, g4), nobs.a = nrow(dfA), nobs.b = nrow(dfB))
 #'
 #' ## Run EM
-#' em <- emlinkMAR(tc, nobs.a = nrow(dfA), nobs.b = nrow(dfB))
+#' em <- emlinkMARmov(tc, nobs.a = nrow(dfA), nobs.b = nrow(dfB))
 #' }
 #'
 #' @export
@@ -62,7 +64,7 @@ emlinkMARmov <- function(patterns, nobs.a, nobs.b,
                          p.m = 0.1, iter.max = 5000, tol = 1e-5, p.gamma.k.m = NULL, p.gamma.k.u = NULL,
                          prior.lambda = NULL, w.lambda = NULL, 
                          prior.pi = NULL, w.pi = NULL, address.field = NULL,
-                         gender.field = NULL) {
+                         gender.field = NULL, varnames = NULL) {
 
     options(digits=16)
 
@@ -326,15 +328,22 @@ emlinkMARmov <- function(patterns, nobs.a, nobs.b,
     colnames(data.w)[nc-1] <- "p.gamma.j.m"
     colnames(data.w)[nc] <- "p.gamma.j.u"
 
-	inf <- which(data.w == Inf, arr.ind = T)
-	ninf <- which(data.w == -Inf, arr.ind = T)
-		
-	data.w[inf[, 1], unique(inf[, 2])] <- 150
-	data.w[ninf[, 1], unique(ninf[, 2])] <- -150
+    inf <- which(data.w == Inf, arr.ind = T)
+    ninf <- which(data.w == -Inf, arr.ind = T)
+    
+    data.w[inf[, 1], unique(inf[, 2])] <- 150
+    data.w[ninf[, 1], unique(ninf[, 2])] <- -150
+    
+    if(!is.null(varnames)){
+        output <- list("zeta.j"= zeta.j,"p.m"= p.m, "p.u" = p.u, "p.gamma.k.m" = p.gamma.k.m, "p.gamma.k.u" = p.gamma.k.u,
+                       "p.gamma.j.m" = p.gamma.j.m, "p.gamma.j.u" = p.gamma.j.u, "patterns.w" = data.w, "iter.converge" = count,
+                       "nobs.a" = nobs.a, "nobs.b" = nobs.b, "varnames" = varnames)
+    }else{
+        output <- list("zeta.j"= zeta.j,"p.m"= p.m, "p.u" = p.u, "p.gamma.k.m" = p.gamma.k.m, "p.gamma.k.u" = p.gamma.k.u,
+                       "p.gamma.j.m" = p.gamma.j.m, "p.gamma.j.u" = p.gamma.j.u, "patterns.w" = data.w, "iter.converge" = count,
+                       "nobs.a" = nobs.a, "nobs.b" = nobs.b, "varnames" = paste0("gamma.", 1:nfeatures))
+    }
 
-    output <- list("zeta.j"= zeta.j,"p.m"= p.m, "p.u" = p.u, "p.gamma.k.m" = p.gamma.k.m, "p.gamma.k.u" = p.gamma.k.u,
-                   "p.gamma.j.m" = p.gamma.j.m, "p.gamma.j.u" = p.gamma.j.u, "patterns.w" = data.w, "iter.converge" = count,
-                   "nobs.a" = nobs.a, "nobs.b" = nobs.b)
     class(output) <- c("fastLink", "fastLink.EM")
     
     return(output)
@@ -481,15 +490,15 @@ emlinkRS <- function(patterns.out, em.out, nobs.a, nobs.b){
     colnames(data.w)[nc - 1] <- "p.gamma.j.m"  
     colnames(data.w)[nc] <- "p.gamma.j.u"
     
-	inf <- which(data.w == Inf, arr.ind = T)
-	ninf <- which(data.w == -Inf, arr.ind = T)
-		
-	data.w[inf[, 1], unique(inf[, 2])] <- 150
-	data.w[ninf[, 1], unique(ninf[, 2])] <- -150
+    inf <- which(data.w == Inf, arr.ind = T)
+    ninf <- which(data.w == -Inf, arr.ind = T)
+    
+    data.w[inf[, 1], unique(inf[, 2])] <- 150
+    data.w[ninf[, 1], unique(ninf[, 2])] <- -150
 		
     output <- list("zeta.j" = zeta.j, "p.m" = em.out$p.m, "p.u" = em.out$p.u, "p.gamma.k.m" = em.out$p.gamma.k.m, "p.gamma.k.u" = em.out$p.gamma.k.u,
                    "p.gamma.j.m" = p.gamma.j.m, "p.gamma.j.u" = p.gamma.j.u, "patterns.w" = data.w, "iter.converge" = em.out$iter.converge,
-                   "nobs.a" = nobs.a, "nobs.b" = nobs.b)
+                   "nobs.a" = nobs.a, "nobs.b" = nobs.b, "varnames" = em.out$varnames)
     class(output) <- c("fastLink", "fastLink.EM")
     
     return(output)

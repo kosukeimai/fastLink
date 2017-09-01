@@ -131,7 +131,6 @@ matchesLink <- function(gammalist, nobs.a, nobs.b, em, thresh, n.cores = NULL) {
 
     ## Run main function
     if(Sys.info()[['sysname']] == 'Darwin') {
-        cat("Parallelizing gamma calculation using", nc, "cores.\n")
     	cl <- makeCluster(nc)
     	registerDoParallel(cl)
 
