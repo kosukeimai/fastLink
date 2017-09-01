@@ -328,6 +328,12 @@ emlinkMARmov <- function(patterns, nobs.a, nobs.b,
     colnames(data.w)[nc-1] <- "p.gamma.j.m"
     colnames(data.w)[nc] <- "p.gamma.j.u"
 
+    inf <- which(data.w == Inf, arr.ind = T)
+    ninf <- which(data.w == -Inf, arr.ind = T)
+    
+    data.w[inf[, 1], unique(inf[, 2])] <- 150
+    data.w[ninf[, 1], unique(ninf[, 2])] <- -150
+    
     if(!is.null(varnames)){
         output <- list("zeta.j"= zeta.j,"p.m"= p.m, "p.u" = p.u, "p.gamma.k.m" = p.gamma.k.m, "p.gamma.k.u" = p.gamma.k.u,
                        "p.gamma.j.m" = p.gamma.j.m, "p.gamma.j.u" = p.gamma.j.u, "patterns.w" = data.w, "iter.converge" = count,
@@ -337,6 +343,7 @@ emlinkMARmov <- function(patterns, nobs.a, nobs.b,
                        "p.gamma.j.m" = p.gamma.j.m, "p.gamma.j.u" = p.gamma.j.u, "patterns.w" = data.w, "iter.converge" = count,
                        "nobs.a" = nobs.a, "nobs.b" = nobs.b, "varnames" = paste0("gamma.", 1:nfeatures))
     }
+
     class(output) <- c("fastLink", "fastLink.EM")
     
     return(output)
@@ -482,7 +489,13 @@ emlinkRS <- function(patterns.out, em.out, nobs.a, nobs.b){
     colnames(data.w)[nc - 2] <- "weights"
     colnames(data.w)[nc - 1] <- "p.gamma.j.m"  
     colnames(data.w)[nc] <- "p.gamma.j.u"
-
+    
+    inf <- which(data.w == Inf, arr.ind = T)
+    ninf <- which(data.w == -Inf, arr.ind = T)
+    
+    data.w[inf[, 1], unique(inf[, 2])] <- 150
+    data.w[ninf[, 1], unique(ninf[, 2])] <- -150
+		
     output <- list("zeta.j" = zeta.j, "p.m" = em.out$p.m, "p.u" = em.out$p.u, "p.gamma.k.m" = em.out$p.gamma.k.m, "p.gamma.k.u" = em.out$p.gamma.k.u,
                    "p.gamma.j.m" = p.gamma.j.m, "p.gamma.j.u" = p.gamma.j.u, "patterns.w" = data.w, "iter.converge" = em.out$iter.converge,
                    "nobs.a" = nobs.a, "nobs.b" = nobs.b, "varnames" = em.out$varnames)

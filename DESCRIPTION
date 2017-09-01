@@ -33,7 +33,7 @@ Imports:
     grDevices,
     graphics
 Depends:
-    R (>= 3.1.0)
+    R (>= 2.14.0)
 LinkingTo: RcppArmadillo, Rcpp, RcppEigen
 Encoding: UTF-8
 LazyData: true
