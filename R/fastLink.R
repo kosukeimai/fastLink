@@ -164,6 +164,8 @@ fastLink <- function(dfA, dfB, varnames,
             cat("You have specified that all matches be returned but have not deduped the matches. Setting 'dedupe.matches' to TRUE.\n")
             dedupe.matches <- TRUE
         }
+    }else{
+        cat("If you set return.all to FALSE, you will not be able to calculate a confusion table as a summary statistic.\n")
     }
 
     ## Create boolean indicators
@@ -372,7 +374,11 @@ fastLink <- function(dfA, dfB, varnames,
         }
         out[["nobs.a"]] <- nr_a
         out[["nobs.b"]] <- nr_b
-        class(out) <- "fastLink"
+        if(return.all){
+            class(out) <- c("fastLink", "confusionTable")
+        }else{
+            class(out) <- "fastLink"
+        }
     }else{
         out <- resultsEM
     }
