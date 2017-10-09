@@ -159,7 +159,7 @@ fastLink <- function(dfA, dfB, varnames,
         }
     }
     if(return.all){
-        threshold.match <- 0.0001
+        threshold.match <- 0.001
         if(!dedupe.matches){
             cat("You have specified that all matches be returned but have not deduped the matches. Setting 'dedupe.matches' to TRUE.\n")
             dedupe.matches <- TRUE
@@ -296,6 +296,11 @@ fastLink <- function(dfA, dfB, varnames,
         cat("Imputing matching probabilities using provided EM object.\n")
         resultsEM <- emlinkRS(counts, em.obj, nr_a, nr_b)
     }
+
+	if(max(resultsEM$zeta.j) < threshold.match) {
+		stop("No matches found for the threshold value used. Suggestion, use a different threshold.match value. Note
+			  that by default threshold.match is set to 0.85")
+	}
 
     ## -----------------------------------------------
     ## Get the estimated matches, dedupe, and reweight
