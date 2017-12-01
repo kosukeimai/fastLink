@@ -320,7 +320,7 @@ fastLink <- function(dfA, dfB, varnames,
         }
 
         ## Run deduplication
-        if(dedupe.matches){
+        if(dedupe.matches & length(matches$inds.a) > 0){
             cat("Deduping the estimated matches.\n")
             start <- Sys.time()
             ddm.out <- dedupeMatches(matchesA = dfA[matches$inds.a,], matchesB = dfB[matches$inds.b,],
@@ -334,7 +334,7 @@ fastLink <- function(dfA, dfB, varnames,
             if(verbose){
                 cat("Deduping the estimated matches took", round(difftime(end, start, units = "mins"), 2), "minutes.\n\n")
             }
-        }else{
+        }else if(length(matches$inds.a) > 0){
             cat("Calculating the posterior for each pair of matched observations.\n")
             start <- Sys.time()
             zeta <- getPosterior(dfA[matches$inds.a,], dfB[matches$inds.b,], EM = resultsEM,
@@ -347,7 +347,7 @@ fastLink <- function(dfA, dfB, varnames,
         }
 
         ## Reweight first names or get zeta
-        if(reweight.names){
+        if(reweight.names & length(matches$inds.a) > 0){
             cat("Reweighting match probabilities by frequency of occurrence.\n")
             start <- Sys.time()
             rwn.out <- nameReweight(dfA, dfB, EM = resultsEM, gammalist = gammalist, matchesLink = matches,
@@ -369,12 +369,12 @@ fastLink <- function(dfA, dfB, varnames,
         }
         out[["matches"]] <- matches
         out[["EM"]] <- resultsEM
-        if(dedupe.matches){
+        if(dedupe.matches & length(matches$inds.a) > 0){
             out[["posterior"]] <- ddm.out$max.zeta
-        }else{
+        }else if(length(matches$inds.a) > 0){
             out[["posterior"]] <- zeta
         }
-        if(reweight.names){
+        if(reweight.names & length(matches$inds.a) > 0){
             out[["zeta.name"]] <- rwn.out
         }
         out[["nobs.a"]] <- nr_a
@@ -386,6 +386,10 @@ fastLink <- function(dfA, dfB, varnames,
         }
     }else{
         out <- resultsEM
+    }
+
+    if(length(matches$inds.a) == 0){
+        warning("No matches returned at specified threshold. Please inspect the EM object and consider lowering threshold.")
     }
 
     return(out)
