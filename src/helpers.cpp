@@ -1,4 +1,4 @@
-using namespace arma;
+using namespace Rcpp;
 
 // [[Rcpp::export]]
 NumericMatrix calcPWDcpp (NumericMatrix x, NumericMatrix y) {
