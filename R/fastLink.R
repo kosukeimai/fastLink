@@ -4,7 +4,9 @@
 #' two datasets.
 #'
 #' @usage fastLink(dfA, dfB, varnames, stringdist.match,
-#' partial.match, stringdist.method, cut.a, cut.p, jw.weight,
+#' stringdist.method, numeric.match, partial.match,
+#' cut.a, cut.p, jw.weight,
+#' cut.a.num, cut.p.num,
 #' priors.obj, w.lambda, w.pi,
 #' address.field, gender.field, estimate.only, em.obj,
 #' dedupe.matches, linprog.dedupe,
@@ -17,14 +19,18 @@
 #' Must be present in both dfA and dfB
 #' @param stringdist.match A vector of variable names indicating
 #' which variables should use string distance matching. Must be a subset of
-#' 'varnames'.
+#' 'varnames' and must not be present in 'numeric.match'.
+#' @param stringdist.method String distance method for calculating similarity, options are: "jw" Jaro-Winkler (Default), "jaro" Jaro, and "lv" Edit
+#' @param numeric.match A vector of variable names indicating which variables should use numeric matching.
+#' Must be a subset of 'varnames' and must not be present in 'stringdist.match'.
 #' @param partial.match A vector of variable names indicating whether to include
 #' a partial matching category for the string distances. Must be a subset of 'varnames'
 #' and 'stringdist.match'.
-#' @param stringdist.method String distance method for calculating similarity, options are: "jw" Jaro-Winkler (Default), "jaro" Jaro, and "lv" Edit
 #' @param cut.a Lower bound for full string-distance match, ranging between 0 and 1. Default is 0.92
 #' @param cut.p Lower bound for partial string-distance match, ranging between 0 and 1. Default is 0.88
 #' @param jw.weight Parameter that describes the importance of the first characters of a string (only needed if stringdist.method = "jw"). Default is .10
+#' @param cut.a.num Lower bound for full numeric match. Default is 1
+#' @param cut.p.num Lower bound for partial numeric match. Default is 2.5
 #' @param priors.obj A list containing priors for auxiliary movers information,
 #' as output from calcMoversPriors(). Default is NULL
 #' @param w.lambda How much weight to give the prior on lambda versus the data. Must range between 0 (no weight on prior) and 1 (weight fully on prior).
@@ -77,9 +83,13 @@
 #' }
 #' @export
 fastLink <- function(dfA, dfB, varnames,
-                     stringdist.match = NULL, partial.match = NULL,
+                     stringdist.match = NULL, 
                      stringdist.method = "jw",
-                     cut.a = 0.92, cut.p = 0.88, jw.weight = .10,
+                     numeric.match = NULL, 
+                     partial.match = NULL,
+                     cut.a = 0.92, cut.p = 0.88,
+                     jw.weight = .10,
+                     cut.a.num = 1, cut.p.num = 2.5,
                      priors.obj = NULL,
                      w.lambda = NULL, w.pi = NULL, address.field = NULL,
                      gender.field = NULL, estimate.only = FALSE, em.obj = NULL,
@@ -111,8 +121,14 @@ fastLink <- function(dfA, dfB, varnames,
     if(any(!(stringdist.match %in% varnames))){
         stop("You have provided a variable name for stringdist.match that is not in 'varnames'.")
     }
-    if(any(!(partial.match %in% varnames)) | any(!(partial.match %in% stringdist.match))){
-        stop("You have provided a variable name for 'partial.match' that is not present in either 'varnames' or 'stringdist.match'.")
+    if(any(!(numeric.match %in% varnames))){
+        stop("You have provided a variable name for numeric.match that is not in 'varnames'.")
+    }
+    if(length(intersect(numeric.match, stringdist.match)) > 0){
+        stop("There is a variable present in both 'numeric.match' and 'stringdist.match'. Please select only one matching metric for each variable.")
+    }
+    if(any(!(partial.match %in% varnames)) | any(!(partial.match %in% stringdist.match)) | any(!(partial.match %in% numeric.match))){
+        stop("You have provided a variable name for 'partial.match' that is not present in either 'varnames', 'numeric.match', or 'stringdist.match'.")
     }
     if(!is.null(address.field)){
         if(length(address.field) > 1 | length(gender.field) > 1){
@@ -175,6 +191,12 @@ fastLink <- function(dfA, dfB, varnames,
         stringdist.match[sm.bool] <- TRUE
     }
 
+    nm.bool <- which(varnames %in% numeric.match)
+    numeric.match <- rep(FALSE, length(varnames))
+    if(length(nm.bool) > 0){
+        numeric.match[nm.bool] <- TRUE
+    }
+
     pm.bool <- which(varnames %in% partial.match)
     partial.match <- rep(FALSE, length(varnames))
     if(length(pm.bool) > 0){
@@ -207,8 +229,8 @@ fastLink <- function(dfA, dfB, varnames,
     gammalist <- vector(mode = "list", length = length(varnames))
     for(i in 1:length(gammalist)){
         if(verbose){
-            sdb <- ifelse(stringdist.match[i], "string-distance", "exact")
-            cat("    Matching variable", varnames[i], "using", sdb, "matching.\n")
+            matchtype <- ifelse(stringdist.match[i], "string-distance", ifelse(numeric.match[i], "numeric", "exact"))
+            cat("    Matching variable", varnames[i], "using", matchtype, "matching.\n")
         }
         ## Convert to character
         if(is.factor(dfA[,varnames[i]]) | is.factor(dfB[,varnames[i]])){
@@ -235,6 +257,16 @@ fastLink <- function(dfA, dfB, varnames,
                 )
             }else{
                 gammalist[[i]] <- gammaCK2par(dfA[,varnames[i]], dfB[,varnames[i]], cut.a = cut.a, method = stringdist.method, w = jw.weight, n.cores = n.cores)
+            }
+        }else if(numeric.match[i]){
+            if(partial.match[i]){
+                gammalist[[i]] <- gammaNUMCKpar(
+                    dfA[,varnames[i]], dfB[,varnames[i]], cut.a = cut.a.num, cut.p = cut.p.num, n.cores = n.cores
+                )
+            }else{
+                gammalist[[i]] <- gammaNUMCK2par(
+                    dfA[,varnames[i]], dfB[,varnames[i]], cut.a = cut.a.num, n.cores = n.cores
+                )
             }
         }else{
             gammalist[[i]] <- gammaKpar(dfA[,varnames[i]], dfB[,varnames[i]], gender = gender.field[i], n.cores = n.cores)
@@ -299,10 +331,10 @@ fastLink <- function(dfA, dfB, varnames,
         resultsEM <- emlinkRS(counts, em.obj, nr_a, nr_b)
     }
 
-	if(max(resultsEM$zeta.j) < threshold.match) {
-		stop("No matches found for the threshold value used. Suggestion, use a different threshold.match value. Note
+    if(max(resultsEM$zeta.j) < threshold.match) {
+        stop("No matches found for the threshold value used. We recommend trying a different threshold.match value. Note
 			  that by default threshold.match is set to 0.85")
-	}
+    }
 
     ## -----------------------------------------------
     ## Get the estimated matches, dedupe, and reweight
@@ -325,9 +357,11 @@ fastLink <- function(dfA, dfB, varnames,
             start <- Sys.time()
             ddm.out <- dedupeMatches(matchesA = dfA[matches$inds.a,], matchesB = dfB[matches$inds.b,],
                                      EM = resultsEM, matchesLink = matches, varnames = varnames,
-                                     stringdist.match = stringdist.match, partial.match = partial.match,
-                                     linprog = linprog.dedupe, stringdist.method = stringdist.method,
-                                     cut.a = cut.a, cut.p = cut.p, jw.weight = jw.weight)
+                                     stringdist.match = stringdist.match, numeric.match = numeric.match,
+                                     partial.match = partial.match, linprog = linprog.dedupe,
+                                     stringdist.method = stringdist.method,
+                                     cut.a = cut.a, cut.p = cut.p, jw.weight = jw.weight,
+                                     cut.a.num = cut.a.num, cut.p.num = cut.p.num)
             matches <- ddm.out$matchesLink
             resultsEM <- ddm.out$EM
             end <- Sys.time()
@@ -338,8 +372,10 @@ fastLink <- function(dfA, dfB, varnames,
             cat("Calculating the posterior for each pair of matched observations.\n")
             start <- Sys.time()
             zeta <- getPosterior(dfA[matches$inds.a,], dfB[matches$inds.b,], EM = resultsEM,
-                                 varnames = varnames, stringdist.match = stringdist.match, partial.match = partial.match,
-                                 stringdist.method = stringdist.method, cut.a = cut.a, cut.p = cut.p, jw.weight = jw.weight)
+                                 varnames = varnames, stringdist.match = stringdist.match,
+                                 numeric.match = numeric.match, partial.match = partial.match,
+                                 stringdist.method = stringdist.method, cut.a = cut.a, cut.p = cut.p, jw.weight = jw.weight,
+                                 cut.a.num = cut.a.num, cut.p.num = cut.p.num)
             end <- Sys.time()
             if(verbose){
                 cat("Calculating the posterior for each matched pair took", round(difftime(end, start, units = "mins"), 2), "minutes.\n\n")
@@ -351,9 +387,11 @@ fastLink <- function(dfA, dfB, varnames,
             cat("Reweighting match probabilities by frequency of occurrence.\n")
             start <- Sys.time()
             rwn.out <- nameReweight(dfA, dfB, EM = resultsEM, gammalist = gammalist, matchesLink = matches,
-                                    varnames = varnames, stringdist.match = stringdist.match, partial.match = partial.match,
+                                    varnames = varnames, stringdist.match = stringdist.match,
+                                    numeric.match = numeric.match, partial.match = partial.match,
                                     firstname.field = firstname.field, threshold.match = threshold.match,
                                     stringdist.method = stringdist.method, cut.a = cut.a, cut.p = cut.p, jw.weight = jw.weight,
+                                    cut.a.num = cut.a.num, cut.p.num = cut.p.num,
                                     n.cores = n.cores)
             end <- Sys.time()
             if(verbose){
