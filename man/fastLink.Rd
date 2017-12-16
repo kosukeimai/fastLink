@@ -5,7 +5,9 @@
 \title{fastLink}
 \usage{
 fastLink(dfA, dfB, varnames, stringdist.match,
-partial.match, stringdist.method, cut.a, cut.p, jw.weight,
+stringdist.method, numeric.match, partial.match,
+cut.a, cut.p, jw.weight,
+cut.a.num, cut.p.num,
 priors.obj, w.lambda, w.pi,
 address.field, gender.field, estimate.only, em.obj,
 dedupe.matches, linprog.dedupe,
@@ -22,19 +24,26 @@ Must be present in both dfA and dfB}
 
 \item{stringdist.match}{A vector of variable names indicating
 which variables should use string distance matching. Must be a subset of
-'varnames'.}
+'varnames' and must not be present in 'numeric.match'.}
+
+\item{stringdist.method}{String distance method for calculating similarity, options are: "jw" Jaro-Winkler (Default), "jaro" Jaro, and "lv" Edit}
+
+\item{numeric.match}{A vector of variable names indicating which variables should use numeric matching.
+Must be a subset of 'varnames' and must not be present in 'stringdist.match'.}
 
 \item{partial.match}{A vector of variable names indicating whether to include
 a partial matching category for the string distances. Must be a subset of 'varnames'
 and 'stringdist.match'.}
-
-\item{stringdist.method}{String distance method for calculating similarity, options are: "jw" Jaro-Winkler (Default), "jaro" Jaro, and "lv" Edit}
 
 \item{cut.a}{Lower bound for full string-distance match, ranging between 0 and 1. Default is 0.92}
 
 \item{cut.p}{Lower bound for partial string-distance match, ranging between 0 and 1. Default is 0.88}
 
 \item{jw.weight}{Parameter that describes the importance of the first characters of a string (only needed if stringdist.method = "jw"). Default is .10}
+
+\item{cut.a.num}{Lower bound for full numeric match. Default is 1}
+
+\item{cut.p.num}{Lower bound for partial numeric match. Default is 2.5}
 
 \item{priors.obj}{A list containing priors for auxiliary movers information,
 as output from calcMoversPriors(). Default is NULL}
@@ -109,4 +118,3 @@ n.cores = 1)
 \author{
 Ted Enamorado <ted.enamorado@gmail.com>, Ben Fifield <benfifield@gmail.com>, and Kosuke Imai
 }
-

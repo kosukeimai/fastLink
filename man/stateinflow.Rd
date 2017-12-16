@@ -14,4 +14,3 @@ movers inflow rates by state, from the IRS
 Statistics on Income dataset.
 }
 \keyword{dataset}
-

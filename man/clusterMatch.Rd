@@ -54,4 +54,3 @@ cl <- clusterMatch(dfA$firstname, dfB$firstname, nclusters = 3)
 \author{
 Ben Fifield <benfifield@gmail.com>
 }
-

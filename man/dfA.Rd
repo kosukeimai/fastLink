@@ -13,4 +13,3 @@ This data is a randomized and anonymized sample dataset
 to display features of fastLink.
 }
 \keyword{dataset}
-

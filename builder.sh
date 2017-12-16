@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Build documentation, compile C++ attributes
-# R -e 'sink("src/fastLink_init.c");tools::package_native_routine_registration_skeleton(".");sink()'
+R -e 'sink("src/fastLink_init.c");tools::package_native_routine_registration_skeleton(".", character_only = FALSE);sink()'
 R -e 'devtools::document()'
 R -e 'Rcpp::compileAttributes(verbose = TRUE)'
 
