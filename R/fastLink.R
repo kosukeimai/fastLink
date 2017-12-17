@@ -332,8 +332,7 @@ fastLink <- function(dfA, dfB, varnames,
     }
 
     if(max(resultsEM$zeta.j) < threshold.match) {
-        stop("No matches found for the threshold value used. We recommend trying a different threshold.match value. Note
-			  that by default threshold.match is set to 0.85")
+        warning(paste0("No matches found for the threshold value used. We recommend trying a lower threshold.match value. Note that you currently have threshold.match set to ", threshold.match, "."))
     }
 
     ## -----------------------------------------------
@@ -424,10 +423,6 @@ fastLink <- function(dfA, dfB, varnames,
         }
     }else{
         out <- resultsEM
-    }
-
-    if(length(matches$inds.a) == 0){
-        warning("No matches returned at specified threshold. Please inspect the EM object and consider lowering threshold.")
     }
 
     return(out)
