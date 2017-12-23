@@ -306,7 +306,11 @@ emlinkMARmov <- function(patterns, nobs.a, nobs.b,
 
         ## Updated parameters:
         p.new <- c(p.m, p.u, unlist(p.gamma.k.m), unlist(p.gamma.k.u))
-
+		
+		if(p.m < 1e-12) {
+			warning("The overall probability of finding a match is too small. Increasing the amount of overlap between the datasets might help, see e.g., clusterMatch()")
+		}
+		
         ## Max difference between the updated and old parameters:
         delta <- max(abs(p.new - p.old))
         count <- count + 1
