@@ -79,7 +79,7 @@ matchesLink <- function(gammalist, nobs.a, nobs.b, em, thresh, n.cores = NULL) {
     l.t <- thresh[1]
     u.t <- thresh[2]
     
-    l.b <- min(em.obj$weights[em.obj$zeta.j >= l.t])
+    l.b <- suppressWarnings(min(em.obj$weights[em.obj$zeta.j >= l.t]))
     if(is.na(u.t)){
         u.b <- 1e10
     }else{

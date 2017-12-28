@@ -2,7 +2,7 @@ Package: fastLink
 Type: Package
 Title: Fast Probabilistic Record Linkage with Missing Data
 Version: 0.2.1
-Date: 2017-10-03
+Date: 2017-12-17
 Authors@R: c(
   person("Ted", "Enamorado", email = "fastlinkr@gmail.com", role = c("aut", "cre")),
   person("Ben", "Fifield", email = "fastlinkr@gmail.com", role = c("aut")),
