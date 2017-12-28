@@ -221,6 +221,7 @@ emlinkMARmov <- function(patterns, nobs.a, nobs.b,
 
     delta <- 1
     count <- 1
+    warn.once <- 1
 
     ## The EM Algorithm presented in the paper starts here:
     while (abs(delta) >= tol) {
@@ -307,8 +308,9 @@ emlinkMARmov <- function(patterns, nobs.a, nobs.b,
         ## Updated parameters:
         p.new <- c(p.m, p.u, unlist(p.gamma.k.m), unlist(p.gamma.k.u))
 		
-		if(p.m < 1e-12) {
+		if(p.m < 1e-13 & warn.once == 1) {
 			warning("The overall probability of finding a match is too small. Increasing the amount of overlap between the datasets might help, see e.g., clusterMatch()")
+			warn.once <- 0
 		}
 		
         ## Max difference between the updated and old parameters:

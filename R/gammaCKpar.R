@@ -173,10 +173,12 @@ gammaCKpar <- function(matAp, matBp, n.cores = NULL, cut.a = 0.92, cut.p = 0.88,
             list(ht1, ht2)
       	}
 
-    	final.list1 <- foreach(i = 1:length(matches.1)) %dopar% {
-            ht1 <- which(matrix.1 == matches.1[[i]][[1]]); ht2 <- which(matrix.2 == matches.1[[i]][[2]])
-            list(ht1, ht2)
-      	}
+		if(length(matches.1) > 0) {
+			final.list1 <- foreach(i = 1:length(matches.1)) %dopar% {
+				ht1 <- which(matrix.1 == matches.1[[i]][[1]]); ht2 <- which(matrix.2 == matches.1[[i]][[2]])
+				list(ht1, ht2)
+				}
+			}	
     	stopCluster(cl)
     } else {
         no_cores <- n.cores
@@ -188,6 +190,11 @@ gammaCKpar <- function(matAp, matBp, n.cores = NULL, cut.a = 0.92, cut.p = 0.88,
             ht1 <- which(matrix.1 == s[1]); ht2 <- which(matrix.2 == s[2]);
             list(ht1, ht2) }, mc.cores = getOption("mc.cores", no_cores))
     }
+    
+    if(length(matches.1) == 0){ 
+    	final.list1 <- list()
+    	warning("There are no partial matches. We suggest either changing the value of cut.p or using gammaCK2par() instead") 
+    	}
     
     na.list <- list()
     na.list[[1]] <- which(matrix.1 == "9999")
