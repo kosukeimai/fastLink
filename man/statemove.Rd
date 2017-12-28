@@ -14,4 +14,3 @@ for imputation where within-county movers rates are
 not available.
 }
 \keyword{dataset}
-

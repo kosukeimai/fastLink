@@ -18,4 +18,3 @@ Default is c(0.85, 1).}
 \code{plot.fastLink()} plots the matching patterns of the EM object,
 ordering the matching patterns by the posterior probability of the match.
 }
-

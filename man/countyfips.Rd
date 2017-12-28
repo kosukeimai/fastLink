@@ -13,4 +13,3 @@ This data maps county names to FIPS codes for
 use in calculating prior movers rates.
 }
 \keyword{dataset}
-

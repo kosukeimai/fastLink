@@ -14,4 +14,3 @@
 \description{
 Print information from the EM algorithm to console.
 }
-

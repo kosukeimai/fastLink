@@ -26,4 +26,3 @@ A correction factor to avoid multiple-counting. Default is NULL}
 \code{summary.fastLink()} calculates and outputs FDR, FNR, match counts, and match rates for
 estimated matches from a fastLink() object.
 }
-

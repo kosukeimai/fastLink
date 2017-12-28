@@ -17,4 +17,3 @@ is a within-geography match or an across-geography match. Should be of equal len
 \description{
 \code{aggregateEM} aggregates EM objects for easy processing by `summary.fastLink()`
 }
-

@@ -5,9 +5,9 @@
 \title{nameReweight}
 \usage{
 nameReweight(dfA, dfB, EM, gammalist, matchesLink,
-varnames, stringdist.match, partial.match,
+varnames, stringdist.match, numeric.match, partial.match,
 firstname.field, threshold.match, stringdist.method, cut.a, cut.p,
-jw.weight, n.cores)
+jw.weight, cut.a.num, cut.p.num, n.cores)
 }
 \arguments{
 \item{dfA}{The full version of dataset A that is being matched.}
@@ -29,6 +29,10 @@ Must be present in both matchesA and matchesB.}
 string distance matching when determining matching patterns on
 each variable. Must be same length as varnames.}
 
+\item{numeric.match}{A vector of booleans, indicating whether to use
+numeric pairwise distance matching when determining matching patterns on
+each variable. Must be same length as varnames.}
+
 \item{partial.match}{A vector of booleans, indicating whether to include
 a partial matching category for the string distances. Must be same length
 as varnames. Default is FALSE for all variables.}
@@ -48,6 +52,10 @@ while threshold.match = c(.85, .95) will return all pairs with posterior probabi
 
 \item{jw.weight}{Parameter that describes the importance of the first characters of a string (only needed if stringdist.method = "jw"). Default is .10}
 
+\item{cut.a.num}{Lower bound for full numeric match. Default is 1}
+
+\item{cut.p.num}{Lower bound for partial numeric match. Default is 2.5}
+
 \item{n.cores}{Number of cores to parallelize over. Default is NULL.}
 }
 \value{
@@ -63,4 +71,3 @@ upweights if first name is uncommon.
 \author{
 Ted Enamorado <ted.enamorado@gmail.com> and Ben Fifield <benfifield@gmail.com>
 }
-

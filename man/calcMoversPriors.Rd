@@ -53,4 +53,3 @@ calcMoversPriors(geo.a = "CA", geo.b = "CA", year.start = 2014, year.end = 2015)
 \author{
 Ben Fifield <benfifield@gmail.com>
 }
-
