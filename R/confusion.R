@@ -31,10 +31,10 @@ confusion <- function(object, threshold = .85) {
         stop("You can only run 'confusion()' if 'return.all = TRUE' in 'fastLink()'.")
     }
     
-    A <- sum(object$posterior * ifelse(object$posterior >= threshold, 1, 0))
+    D <- sum(object$posterior * ifelse(object$posterior >= threshold, 1, 0))
     B <- sum((1 - object$posterior) * ifelse(object$posterior >= threshold, 1, 0))
     C <- sum(object$posterior * ifelse(object$posterior < threshold, 1, 0)) + (min(object$nobs.a, object$nobs.b) - A) * 0.001
-    D <- sum((1 - object$posterior) * ifelse(object$posterior < threshold, 1, 0)) + (min(object$nobs.a, object$nobs.b) - A) * (1 - 0.001)
+    A <- sum((1 - object$posterior) * ifelse(object$posterior < threshold, 1, 0)) + (min(object$nobs.a, object$nobs.b) - A) * (1 - 0.001)
     
     t1 <- round(rbind(c(A,B), c(C,D)), 1)
     colnames(t1) <- c("'True' Matches", "'True' Non-Matches")

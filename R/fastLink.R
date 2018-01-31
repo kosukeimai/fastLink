@@ -127,9 +127,17 @@ fastLink <- function(dfA, dfB, varnames,
     if(length(intersect(numeric.match, stringdist.match)) > 0){
         stop("There is a variable present in both 'numeric.match' and 'stringdist.match'. Please select only one matching metric for each variable.")
     }
-    if(any(!(partial.match %in% varnames)) | any(!(partial.match %in% stringdist.match)) | any(!(partial.match %in% numeric.match))){
+    if(is.null(numeric.match)) {
+      if (any(!(partial.match %in% varnames)) | any(!(partial.match %in% 
+                                                      stringdist.match))) {
         stop("You have provided a variable name for 'partial.match' that is not present in either 'varnames', 'numeric.match', or 'stringdist.match'.")
-    }
+      }
+    } else {
+      if (any(!(partial.match %in% varnames)) | any(!(partial.match %in% 
+                                                      stringdist.match)) | any(!(partial.match %in% numeric.match))) {
+        stop("You have provided a variable name for 'partial.match' that is not present in either 'varnames', 'numeric.match', or 'stringdist.match'.")
+      }
+    }    
     if(!is.null(address.field)){
         if(length(address.field) > 1 | length(gender.field) > 1){
             stop("'address.field' must have at most only one variable name.")
