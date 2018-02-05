@@ -54,7 +54,7 @@ confusion <- function(object, threshold = .85) {
     fnr  = 100 * C/(C + D)
     acc  = 100 * (A + D)/N
     
-    t2 <- round(as.matrix(c(N, sens, spec, ppv, npv, fpr, fnr, acc)), digits = 3)
+    t2 <- round(as.matrix(c(N, sens, spec, ppv, npv, fpr, fnr, acc)), digits = 4)
 
     rownames(t2) <- c("Max Number of Obs to be Matched", 
                       "Sensitivity (%)",
@@ -68,7 +68,7 @@ confusion <- function(object, threshold = .85) {
     results <- list()				 
     results$confusion.table <- t1
     options(digits = 6)
-    results$addition.info <- round(t2, digits = 3)
+    results$addition.info <- round(t2, digits = 2)
     return(results)
 }
 
