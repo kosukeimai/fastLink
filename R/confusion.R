@@ -34,14 +34,14 @@ confusion <- function(object, threshold = .85) {
 	## TM
     D <- sum(object$posterior * ifelse(object$posterior >= threshold, 1, 0))
 	## FP
-    B <- sum((1 - object$posterior) * ifelse(object$posterior >= threshold, 1, 0))
+    B <- sum(ifelse(object$posterior >= threshold, 1, 0)) - D
 	## TNM
 	A.1 <- sum((1 - object$posterior) * ifelse(object$posterior < threshold, 1, 0))
-    A <- A.1 + (min(object$nobs.a, object$nobs.b) - D - A.1 - B) * (1 - 0.001)
+    A <- A.1 + (min(object$nobs.a, object$nobs.b) - D - B - A.1) * (1 - 0.001)
 	## FN
-    C <- sum(object$posterior * ifelse(object$posterior < threshold, 1, 0)) + (min(object$nobs.a, object$nobs.b) - D - A.1 - B) * 0.001
+    C <- (min(object$nobs.a, object$nobs.b) - D - B) - A
     
-    t1 <- round(rbind(c(D, B), c(C, A)), 1)
+    t1 <- round(rbind(c(D, B), c(C, A)), 2)
     colnames(t1) <- c("'True' Matches", "'True' Non-Matches")
     rownames(t1) <- c("Declared Matches", "Declared Non-Matches")
     
