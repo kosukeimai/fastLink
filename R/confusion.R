@@ -36,7 +36,7 @@ confusion <- function(object, threshold = .85) {
 	## FP
     B <- sum(ifelse(object$posterior >= threshold, 1, 0)) - D
 	## TNM
-	A.1 <- sum((1 - object$posterior) * ifelse(object$posterior < threshold, 1, 0))
+	  A.1 <- sum((1 - object$posterior) * ifelse(object$posterior < threshold, 1, 0))
     A <- A.1 + (min(object$nobs.a, object$nobs.b) - D - B - A.1) * (1 - 0.001)
 	## FN
     C <- (min(object$nobs.a, object$nobs.b) - D - B) - A
@@ -54,7 +54,7 @@ confusion <- function(object, threshold = .85) {
     fnr  = 100 * C/(C + D)
     acc  = 100 * (A + D)/N
     
-    t2 <- round(as.matrix(c(N, sens, spec, ppv, npv, fpr, fnr, acc)), digits = 2)
+    t2 <- round(as.matrix(c(N, sens, spec, ppv, npv, fpr, fnr, acc)), digits = 3)
 
     rownames(t2) <- c("Max Number of Obs to be Matched", 
                       "Sensitivity (%)",
@@ -67,7 +67,8 @@ confusion <- function(object, threshold = .85) {
     colnames(t2) <- "results"
     results <- list()				 
     results$confusion.table <- t1
-    results$addition.info <- round(t2, 1)
+    options(digits = 6)
+    results$addition.info <- round(t2, digits = 3)
     return(results)
 }
 
