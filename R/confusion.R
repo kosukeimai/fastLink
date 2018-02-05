@@ -30,13 +30,18 @@ confusion <- function(object, threshold = .85) {
     if(!("confusionTable" %in% class(object))){
         stop("You can only run 'confusion()' if 'return.all = TRUE' in 'fastLink()'.")
     }
-    
+
+	## TM
     D <- sum(object$posterior * ifelse(object$posterior >= threshold, 1, 0))
+	## FP
     B <- sum((1 - object$posterior) * ifelse(object$posterior >= threshold, 1, 0))
-    C <- sum(object$posterior * ifelse(object$posterior < threshold, 1, 0)) + (min(object$nobs.a, object$nobs.b) - A) * 0.001
-    A <- sum((1 - object$posterior) * ifelse(object$posterior < threshold, 1, 0)) + (min(object$nobs.a, object$nobs.b) - A) * (1 - 0.001)
+	## TNM
+	A.1 <- sum((1 - object$posterior) * ifelse(object$posterior < threshold, 1, 0))
+    A <- A.1 + (min(object$nobs.a, object$nobs.b) - D - A.1 - B) * (1 - 0.001)
+	## FN
+    C <- sum(object$posterior * ifelse(object$posterior < threshold, 1, 0)) + (min(object$nobs.a, object$nobs.b) - D - A.1 - B) * 0.001
     
-    t1 <- round(rbind(c(A,B), c(C,D)), 1)
+    t1 <- round(rbind(c(D, B), c(C, A)), 1)
     colnames(t1) <- c("'True' Matches", "'True' Non-Matches")
     rownames(t1) <- c("Declared Matches", "Declared Non-Matches")
     
@@ -47,7 +52,7 @@ confusion <- function(object, threshold = .85) {
     npv  = 100 * A/(A + C)
     fpr  = 100 * B/(A + B)
     fnr  = 100 * C/(C + D)
-    acc  = 100 *(A + D)/N
+    acc  = 100 * (A + D)/N
     
     t2 <- round(as.matrix(c(N, sens, spec, ppv, npv, fpr, fnr, acc)), digits = 2)
 
