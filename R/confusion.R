@@ -65,7 +65,7 @@ confusion <- function(object, threshold = .85) {
                       "False Positive Rate (%)",
                       "False Negative Rate (%)",
                       "Correctly Clasified (%)",
-                      "F1 Score")
+                      "F1 Score (%)")
     colnames(t2) <- "results"
     results <- list()				 
     results$confusion.table <- t1
