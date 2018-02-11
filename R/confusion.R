@@ -53,8 +53,9 @@ confusion <- function(object, threshold = .85) {
     fpr  = 100 * B/(A + B)
     fnr  = 100 * C/(C + D)
     acc  = 100 * (A + D)/N
-    
-    t2 <- round(as.matrix(c(N, sens, spec, ppv, npv, fpr, fnr, acc)), digits = 4)
+    f1 = (2 * ppv * sens) / (ppv + sens)
+
+    t2 <- round(as.matrix(c(N, sens, spec, ppv, npv, fpr, fnr, acc, f1)), digits = 4)
 
     rownames(t2) <- c("Max Number of Obs to be Matched", 
                       "Sensitivity (%)",
@@ -63,7 +64,8 @@ confusion <- function(object, threshold = .85) {
                       "Negative Predicted Value (%)",
                       "False Positive Rate (%)",
                       "False Negative Rate (%)",
-                      "Correctly Clasified (%)")
+                      "Correctly Clasified (%)",
+                      "F1 Score")
     colnames(t2) <- "results"
     results <- list()				 
     results$confusion.table <- t1
