@@ -2,10 +2,10 @@
 # Generator token: 10BE3573-1514-4C36-9D1C-5A225CD40393
 
 calcPWDcpp <- function(x, y) {
-    .Call(fastLink_calcPWDcpp, x, y)
+    .Call(`_fastLink_calcPWDcpp`, x, y)
 }
 
 m_func_par <- function(temp, ptemp, natemp, limit1, limit2, nlim1, nlim2, ind, listid, matchesLink = FALSE, threads = 1L) {
-    .Call(fastLink_m_func_par, temp, ptemp, natemp, limit1, limit2, nlim1, nlim2, ind, listid, matchesLink, threads)
+    .Call(`_fastLink_m_func_par`, temp, ptemp, natemp, limit1, limit2, nlim1, nlim2, ind, listid, matchesLink, threads)
 }
 

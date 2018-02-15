@@ -9,7 +9,7 @@ using namespace Rcpp;
 
 // calcPWDcpp
 NumericMatrix calcPWDcpp(NumericMatrix x, NumericMatrix y);
-RcppExport SEXP fastLink_calcPWDcpp(SEXP xSEXP, SEXP ySEXP) {
+RcppExport SEXP _fastLink_calcPWDcpp(SEXP xSEXP, SEXP ySEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -21,7 +21,7 @@ END_RCPP
 }
 // m_func_par
 std::vector< std::vector<arma::vec> > m_func_par(const std::vector< std::vector< std::vector<arma::vec> > > temp, const std::vector< std::vector< std::vector<arma::vec> > > ptemp, const std::vector< std::vector<arma::vec> > natemp, const arma::vec limit1, const arma::vec limit2, const arma::vec nlim1, const arma::vec nlim2, const arma::mat ind, const arma::vec listid, const bool matchesLink, const int threads);
-RcppExport SEXP fastLink_m_func_par(SEXP tempSEXP, SEXP ptempSEXP, SEXP natempSEXP, SEXP limit1SEXP, SEXP limit2SEXP, SEXP nlim1SEXP, SEXP nlim2SEXP, SEXP indSEXP, SEXP listidSEXP, SEXP matchesLinkSEXP, SEXP threadsSEXP) {
+RcppExport SEXP _fastLink_m_func_par(SEXP tempSEXP, SEXP ptempSEXP, SEXP natempSEXP, SEXP limit1SEXP, SEXP limit2SEXP, SEXP nlim1SEXP, SEXP nlim2SEXP, SEXP indSEXP, SEXP listidSEXP, SEXP matchesLinkSEXP, SEXP threadsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;

@@ -8,12 +8,12 @@
 */
 
 /* .Call calls */
-extern SEXP fastLink_calcPWDcpp(SEXP, SEXP);
-extern SEXP fastLink_m_func_par(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
+extern SEXP _fastLink_calcPWDcpp(SEXP, SEXP);
+extern SEXP _fastLink_m_func_par(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
 
 static const R_CallMethodDef CallEntries[] = {
-    {"fastLink_calcPWDcpp", (DL_FUNC) &fastLink_calcPWDcpp,  2},
-    {"fastLink_m_func_par", (DL_FUNC) &fastLink_m_func_par, 11},
+    {"_fastLink_calcPWDcpp", (DL_FUNC) &_fastLink_calcPWDcpp,  2},
+    {"_fastLink_m_func_par", (DL_FUNC) &_fastLink_m_func_par, 11},
     {NULL, NULL, 0}
 };
 
