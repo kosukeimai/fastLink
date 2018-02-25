@@ -98,6 +98,7 @@ in the first column, and the indices of the corresponding successful matches in 
 second column.}
 \item{EM}{A list with the output of the EM algorithm, which contains the exact matching
 patterns and the associated posterior probabilities of a match for each matching pattern.}
+\item{patterns}{A matrix with the observed matching patterns for each successfully matched pair.}
 \item{nobs.a}{The number of observations in dataset A.}
 \item{nobs.b}{The number of observations in dataset B.}
 \item{zeta.name}{If reweighting by name, the posterior probability of a match for each match in dataset A and B.}

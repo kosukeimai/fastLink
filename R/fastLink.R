@@ -67,6 +67,7 @@
 #' second column.}
 #' \item{EM}{A list with the output of the EM algorithm, which contains the exact matching
 #' patterns and the associated posterior probabilities of a match for each matching pattern.}
+#' \item{patterns}{A matrix with the observed matching patterns for each successfully matched pair.}
 #' \item{nobs.a}{The number of observations in dataset A.}
 #' \item{nobs.b}{The number of observations in dataset B.}
 #' \item{zeta.name}{If reweighting by name, the posterior probability of a match for each match in dataset A and B.}
@@ -347,6 +348,7 @@ fastLink <- function(dfA, dfB, varnames,
     ## Get the estimated matches, dedupe, and reweight
     ## -----------------------------------------------
     if(!estimate.only){
+        
         ## Get matches
         cat("Getting the indices of estimated matches.\n")
         start <- Sys.time()
@@ -358,17 +360,27 @@ fastLink <- function(dfA, dfB, varnames,
             cat("Getting the indices of estimated matches took", round(difftime(end, start, units = "mins"), 2), "minutes.\n\n")
         }
 
+        ## Get the patterns
+        cat("Getting the match patterns for each estimated match.\n")
+        start <- Sys.time()
+        patterns <- getPatterns(matchesA = dfA[matches$inds.a], matchesB = dfB[matches$inds.b,],
+                                varnames = varnames, stringdist.match = stringdist.match,
+                                numeric.match = numeric.match, partial.match = partial.match,
+                                stringdist.method = stringdist.method,
+                                cut.a = cut.a, cut.p = cut.p, jw.weight = jw.weight,
+                                cut.a.num = cut.a.num, cut.p.num = cut.p.num)
+        end <- Sys.time()
+        if(verbose){
+            cat("Getting the match patterns for each estimated match took", round(difftime(end, start, units = "mins"), 2, ), "minutes.\n\n")
+        }
+        
         ## Run deduplication
         if(dedupe.matches & length(matches$inds.a) > 0){
             cat("Deduping the estimated matches.\n")
             start <- Sys.time()
             ddm.out <- dedupeMatches(matchesA = dfA[matches$inds.a,], matchesB = dfB[matches$inds.b,],
-                                     EM = resultsEM, matchesLink = matches, varnames = varnames,
-                                     stringdist.match = stringdist.match, numeric.match = numeric.match,
-                                     partial.match = partial.match, linprog = linprog.dedupe,
-                                     stringdist.method = stringdist.method,
-                                     cut.a = cut.a, cut.p = cut.p, jw.weight = jw.weight,
-                                     cut.a.num = cut.a.num, cut.p.num = cut.p.num)
+                                     EM = resultsEM, matchesLink = matches, patterns = patterns,
+                                     linprog = linprog.dedupe)
             matches <- ddm.out$matchesLink
             resultsEM <- ddm.out$EM
             end <- Sys.time()
@@ -379,10 +391,7 @@ fastLink <- function(dfA, dfB, varnames,
             cat("Calculating the posterior for each pair of matched observations.\n")
             start <- Sys.time()
             zeta <- getPosterior(dfA[matches$inds.a,], dfB[matches$inds.b,], EM = resultsEM,
-                                 varnames = varnames, stringdist.match = stringdist.match,
-                                 numeric.match = numeric.match, partial.match = partial.match,
-                                 stringdist.method = stringdist.method, cut.a = cut.a, cut.p = cut.p, jw.weight = jw.weight,
-                                 cut.a.num = cut.a.num, cut.p.num = cut.p.num)
+                                 patterns = patterns)
             end <- Sys.time()
             if(verbose){
                 cat("Calculating the posterior for each matched pair took", round(difftime(end, start, units = "mins"), 2), "minutes.\n\n")
@@ -394,12 +403,8 @@ fastLink <- function(dfA, dfB, varnames,
             cat("Reweighting match probabilities by frequency of occurrence.\n")
             start <- Sys.time()
             rwn.out <- nameReweight(dfA, dfB, EM = resultsEM, gammalist = gammalist, matchesLink = matches,
-                                    varnames = varnames, stringdist.match = stringdist.match,
-                                    numeric.match = numeric.match, partial.match = partial.match,
-                                    firstname.field = firstname.field, threshold.match = threshold.match,
-                                    stringdist.method = stringdist.method, cut.a = cut.a, cut.p = cut.p, jw.weight = jw.weight,
-                                    cut.a.num = cut.a.num, cut.p.num = cut.p.num,
-                                    n.cores = n.cores)
+                                    varnames = varnames, firstname.field = firstname.field,
+                                    patterns = patterns, n.cores = n.cores)
             end <- Sys.time()
             if(verbose){
                 cat("Reweighting by first name took", round(difftime(end, start, units = "mins"), 2), "minutes.\n\n")
@@ -414,6 +419,7 @@ fastLink <- function(dfA, dfB, varnames,
         }
         out[["matches"]] <- matches
         out[["EM"]] <- resultsEM
+        out[["patterns"]] <- patterns
         if(dedupe.matches & length(matches$inds.a) > 0){
             out[["posterior"]] <- ddm.out$max.zeta
         }else if(length(matches$inds.a) > 0){
