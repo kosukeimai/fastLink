@@ -26,17 +26,6 @@ getPosterior <- function(matchesA, matchesB, EM, patterns){
     if(any(class(matchesB) %in% c("tbl_df", "data.table"))){
         matchesB <- as.data.frame(matchesB)
     }
-    if(!(stringdist.method %in% c("jw", "jaro", "lv"))){
-        stop("Invalid string distance method. Method should be one of 'jw', 'jaro', or 'lv'.")
-    }
-    if(stringdist.method == "jw" & !is.null(jw.weight)){
-        if(jw.weight < 0 | jw.weight > 0.25){
-            stop("Invalid value provided for jw.weight. Remember, jw.weight in [0, 0.25].")
-        }
-    }
-    if(any(stringdist.match * numeric.match) == 1){
-        stop("There is a variable present in both 'numeric.match' and 'stringdist.match'. Please select only one matching metric for each variable.")
-    }
 
     ## Get original column names
     colnames.df.a <- colnames(matchesA)
@@ -54,6 +43,7 @@ getPosterior <- function(matchesA, matchesB, EM, patterns){
     ## ---------------------
     ## Merge EM to gammalist
     ## ---------------------
+    namevec <- names(patterns)
     matchesA <- cbind(matchesA, gammalist)
     matchesA$roworder <- 1:nrow(matchesA)
     matchesA <- merge(matchesA, emdf, by = namevec, all.x = TRUE)

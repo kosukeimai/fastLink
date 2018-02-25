@@ -371,7 +371,7 @@ fastLink <- function(dfA, dfB, varnames,
                                 cut.a.num = cut.a.num, cut.p.num = cut.p.num)
         end <- Sys.time()
         if(verbose){
-            cat("Getting the match patterns for each estimated match took", round(difftime(end, start, units = "mins"), 2, ), "minutes.\n\n")
+            cat("Getting the match patterns for each estimated match took", round(difftime(end, start, units = "mins"), 2), "minutes.\n\n")
         }
         
         ## Run deduplication
@@ -404,7 +404,7 @@ fastLink <- function(dfA, dfB, varnames,
             start <- Sys.time()
             rwn.out <- nameReweight(dfA, dfB, EM = resultsEM, gammalist = gammalist, matchesLink = matches,
                                     varnames = varnames, firstname.field = firstname.field,
-                                    patterns = patterns, n.cores = n.cores)
+                                    patterns = patterns, threshold.match = threshold.match, n.cores = n.cores)
             end <- Sys.time()
             if(verbose){
                 cat("Reweighting by first name took", round(difftime(end, start, units = "mins"), 2), "minutes.\n\n")

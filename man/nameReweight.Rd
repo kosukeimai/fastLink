@@ -5,7 +5,7 @@
 \title{nameReweight}
 \usage{
 nameReweight(dfA, dfB, EM, gammalist, matchesLink,
-varnames, firstname.field, patterns, n.cores)
+varnames, firstname.field, patterns, threshold.match, n.cores)
 }
 \arguments{
 \item{dfA}{The full version of dataset A that is being matched.}
@@ -27,6 +27,10 @@ Must be present in both matchesA and matchesB.}
 first name. TRUE if so, otherwise FALSE.}
 
 \item{patterns}{The output from \code{getPatterns()}.}
+
+\item{threshold.match}{A number between 0 and 1 indicating either the lower bound (if only one number provided) or the range of certainty that the
+user wants to declare a match. For instance, threshold.match = .85 will return all pairs with posterior probability greater than .85 as matches,
+while threshold.match = c(.85, .95) will return all pairs with posterior probability between .85 and .95 as matches.}
 
 \item{n.cores}{Number of cores to parallelize over. Default is NULL.}
 }

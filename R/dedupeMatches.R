@@ -55,6 +55,7 @@ dedupeMatches <- function(matchesA, matchesB, EM, matchesLink,
     ## ---------------------
     ## Merge EM to gammalist
     ## ---------------------
+    namevec <- names(patterns)
     matchesA <- cbind(matchesA, gammalist)
     matchesB <- cbind(matchesB, gammalist)
     matchesA$roworder <- 1:nrow(matchesA)

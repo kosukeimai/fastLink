@@ -5,7 +5,7 @@
 #' upweights if first name is uncommon.
 #'
 #' @usage nameReweight(dfA, dfB, EM, gammalist, matchesLink,
-#' varnames, firstname.field, patterns, n.cores)
+#' varnames, firstname.field, patterns, threshold.match, n.cores)
 #' @param dfA The full version of dataset A that is being matched.
 #' @param dfB The full version of dataset B that is being matched.
 #' @param EM The EM object from \code{emlinkMARmov()}
@@ -18,6 +18,9 @@
 #' @param firstname.field A vector of booleans, indicating whether each field indicates
 #' first name. TRUE if so, otherwise FALSE.
 #' @param patterns The output from \code{getPatterns()}.
+#' @param threshold.match A number between 0 and 1 indicating either the lower bound (if only one number provided) or the range of certainty that the
+#' user wants to declare a match. For instance, threshold.match = .85 will return all pairs with posterior probability greater than .85 as matches,
+#' while threshold.match = c(.85, .95) will return all pairs with posterior probability between .85 and .95 as matches.
 #' @param n.cores Number of cores to parallelize over. Default is NULL.
 #'
 #' @return \code{nameReweight()} returns a list containing the following elements:
@@ -26,7 +29,8 @@
 #' @author Ted Enamorado <ted.enamorado@gmail.com> and Ben Fifield <benfifield@gmail.com>
 #' @export
 nameReweight <- function(dfA, dfB, EM, gammalist, matchesLink,
-                         varnames, firstname.field, patterns, n.cores = NULL){
+                         varnames, firstname.field, patterns,
+                         threshold.match, n.cores = NULL){
 
     if(sum(firstname.field) == 0){
         stop("You have not indicated which field represents first name.")
@@ -69,6 +73,7 @@ nameReweight <- function(dfA, dfB, EM, gammalist, matchesLink,
     gammalist <- patterns
 
     ## Merge gammalist
+    namevec <- names(patterns)
     matchesA.f <- cbind(matchesA.f, gammalist)
     matchesA.f <- merge(matchesA.f, EM, by = namevec, all.x = T)
     matchesB.f <- cbind(matchesB.f, gammalist)
