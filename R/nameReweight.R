@@ -5,9 +5,7 @@
 #' upweights if first name is uncommon.
 #'
 #' @usage nameReweight(dfA, dfB, EM, gammalist, matchesLink,
-#' varnames, stringdist.match, numeric.match, partial.match,
-#' firstname.field, threshold.match, stringdist.method, cut.a, cut.p,
-#' jw.weight, cut.a.num, cut.p.num, n.cores)
+#' varnames, firstname.field, patterns, threshold.match, n.cores)
 #' @param dfA The full version of dataset A that is being matched.
 #' @param dfB The full version of dataset B that is being matched.
 #' @param EM The EM object from \code{emlinkMARmov()}
@@ -17,26 +15,12 @@
 #' @param matchesLink The output from \code{matchesLink()}.
 #' @param varnames A vector of variable names to use for matching.
 #' Must be present in both matchesA and matchesB.
-#' @param stringdist.match A vector of booleans, indicating whether to use
-#' string distance matching when determining matching patterns on
-#' each variable. Must be same length as varnames.
-#' @param numeric.match A vector of booleans, indicating whether to use
-#' numeric pairwise distance matching when determining matching patterns on
-#' each variable. Must be same length as varnames.
-#' @param partial.match A vector of booleans, indicating whether to include
-#' a partial matching category for the string distances. Must be same length
-#' as varnames. Default is FALSE for all variables.
 #' @param firstname.field A vector of booleans, indicating whether each field indicates
-#' first name. TRUE if so, otherwise FALSE. 
+#' first name. TRUE if so, otherwise FALSE.
+#' @param patterns The output from \code{getPatterns()}.
 #' @param threshold.match A number between 0 and 1 indicating either the lower bound (if only one number provided) or the range of certainty that the
 #' user wants to declare a match. For instance, threshold.match = .85 will return all pairs with posterior probability greater than .85 as matches,
 #' while threshold.match = c(.85, .95) will return all pairs with posterior probability between .85 and .95 as matches.
-#' @param stringdist.method String distance method for calculating similarity, options are: "jw" Jaro-Winkler (Default), "jaro" Jaro, and "lv" Edit
-#' @param cut.a Lower bound for full string-distance match, ranging between 0 and 1. Default is 0.92
-#' @param cut.p Lower bound for partial string-distance match, ranging between 0 and 1. Default is 0.88
-#' @param jw.weight Parameter that describes the importance of the first characters of a string (only needed if stringdist.method = "jw"). Default is .10
-#' @param cut.a.num Lower bound for full numeric match. Default is 1
-#' @param cut.p.num Lower bound for partial numeric match. Default is 2.5
 #' @param n.cores Number of cores to parallelize over. Default is NULL.
 #'
 #' @return \code{nameReweight()} returns a list containing the following elements:
@@ -45,25 +29,11 @@
 #' @author Ted Enamorado <ted.enamorado@gmail.com> and Ben Fifield <benfifield@gmail.com>
 #' @export
 nameReweight <- function(dfA, dfB, EM, gammalist, matchesLink,
-                         varnames, stringdist.match,
-                         numeric.match, partial.match, 
-                         firstname.field, threshold.match,
-                         stringdist.method = "jw", cut.a = .92, cut.p = .88,
-                         jw.weight = .10, cut.a.num = 1, cut.p.num = 2.5, n.cores = NULL){
+                         varnames, firstname.field, patterns,
+                         threshold.match, n.cores = NULL){
 
-    if(!(stringdist.method %in% c("jw", "jaro", "lv"))){
-        stop("Invalid string distance method. Method should be one of 'jw', 'jaro', or 'lv'.")
-    }
-    if(stringdist.method == "jw" & !is.null(jw.weight)){
-        if(jw.weight < 0 | jw.weight > 0.25){
-            stop("Invalid value provided for jw.weight. Remember, jw.weight in [0, 0.25].")
-        }
-    }
     if(sum(firstname.field) == 0){
         stop("You have not indicated which field represents first name.")
-    }
-    if(any(stringdist.match * numeric.match) == 1){
-        stop("There is a variable present in both 'numeric.match' and 'stringdist.match'. Please select only one matching metric for each variable.")
     }
     
     ## Get cores
@@ -99,56 +69,11 @@ nameReweight <- function(dfA, dfB, EM, gammalist, matchesLink,
 
     fn.field <- varnames[firstname.field]
 
-    ## ----------
-    ## Get gammas
-    ## ----------
-    gammalist <- vector(mode = "list", length = length(varnames))
-    namevec <- rep(NA, length(varnames))
-    for(i in 1:length(gammalist)){
-        ## Convert to character
-        if(is.factor(matchesA[,varnames[i]]) | is.factor(matchesB[,varnames[i]])){
-            matchesA[,varnames[i]] <- as.character(matchesA[,varnames[i]])
-            matchesB[,varnames[i]] <- as.character(matchesB[,varnames[i]])
-        }
-        ## Get matches
-        if(stringdist.match[i]){
-            if(stringdist.method %in% c("jw", "jaro")){
-                if(stringdist.method == "jw"){
-                    p1 <- jw.weight
-                }else{
-                    p1 <- NULL
-                }
-                tmp <- 1 - stringdist(matchesA[,varnames[i]], matchesB[,varnames[i]], "jw", p = p1)
-            }else{
-                t <- stringdist(matchesA[,varnames[i]], matchesB[,varnames[i]], method = stringdist.method)
-                t.1 <- nchar(matchesA[,varnames[i]])
-                t.2 <- nchar(matchesB[,varnames[i]])
-                o <- ifelse(t.1 > t.2, t.1, t.2)
-                tmp <- 1 - t * (1/o)
-            }
-            if(partial.match[i]){
-                gammalist[[i]] <- ifelse(
-                    tmp >= cut.a, 2, ifelse(tmp >= cut.p, 1, 0)
-                )
-            }else{
-                gammalist[[i]] <- ifelse(tmp >= cut.a, 2, 0)
-            }
-        }else if(numeric.match[i]){
-            tmp <- calcPWDcpp(matchesA[,varnames[i]], matchesB[,varnames[i]])
-            if(partial.match[i]){
-                gammalist[[i]] <- ifelse(
-                    tmp >= cut.a.num, 2, ifelse(tmp >= cut.p.num, 1, 0)
-                )
-            }else{
-                gammalist[[i]] <- ifelse(tmp >= cut.a.num, 2, 0)
-            }
-        }else{
-            tmp <- matchesA[,varnames[i]] == matchesB[,varnames[i]]
-            gammalist[[i]] <- ifelse(tmp == TRUE, 2, 0)
-        }
-    }
-    gammalist <- data.frame(do.call(cbind, gammalist))
-    names(gammalist) <- namevec
+    ## Gammalist
+    gammalist <- patterns
+
+    ## Merge gammalist
+    namevec <- names(patterns)
     matchesA.f <- cbind(matchesA.f, gammalist)
     matchesA.f <- merge(matchesA.f, EM, by = namevec, all.x = T)
     matchesB.f <- cbind(matchesB.f, gammalist)

@@ -5,9 +5,7 @@
 \title{nameReweight}
 \usage{
 nameReweight(dfA, dfB, EM, gammalist, matchesLink,
-varnames, stringdist.match, numeric.match, partial.match,
-firstname.field, threshold.match, stringdist.method, cut.a, cut.p,
-jw.weight, cut.a.num, cut.p.num, n.cores)
+varnames, firstname.field, patterns, threshold.match, n.cores)
 }
 \arguments{
 \item{dfA}{The full version of dataset A that is being matched.}
@@ -25,36 +23,14 @@ and \code{matchesLink()}.}
 \item{varnames}{A vector of variable names to use for matching.
 Must be present in both matchesA and matchesB.}
 
-\item{stringdist.match}{A vector of booleans, indicating whether to use
-string distance matching when determining matching patterns on
-each variable. Must be same length as varnames.}
-
-\item{numeric.match}{A vector of booleans, indicating whether to use
-numeric pairwise distance matching when determining matching patterns on
-each variable. Must be same length as varnames.}
-
-\item{partial.match}{A vector of booleans, indicating whether to include
-a partial matching category for the string distances. Must be same length
-as varnames. Default is FALSE for all variables.}
-
 \item{firstname.field}{A vector of booleans, indicating whether each field indicates
 first name. TRUE if so, otherwise FALSE.}
+
+\item{patterns}{The output from \code{getPatterns()}.}
 
 \item{threshold.match}{A number between 0 and 1 indicating either the lower bound (if only one number provided) or the range of certainty that the
 user wants to declare a match. For instance, threshold.match = .85 will return all pairs with posterior probability greater than .85 as matches,
 while threshold.match = c(.85, .95) will return all pairs with posterior probability between .85 and .95 as matches.}
-
-\item{stringdist.method}{String distance method for calculating similarity, options are: "jw" Jaro-Winkler (Default), "jaro" Jaro, and "lv" Edit}
-
-\item{cut.a}{Lower bound for full string-distance match, ranging between 0 and 1. Default is 0.92}
-
-\item{cut.p}{Lower bound for partial string-distance match, ranging between 0 and 1. Default is 0.88}
-
-\item{jw.weight}{Parameter that describes the importance of the first characters of a string (only needed if stringdist.method = "jw"). Default is .10}
-
-\item{cut.a.num}{Lower bound for full numeric match. Default is 1}
-
-\item{cut.p.num}{Lower bound for partial numeric match. Default is 2.5}
 
 \item{n.cores}{Number of cores to parallelize over. Default is NULL.}
 }

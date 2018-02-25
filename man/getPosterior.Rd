@@ -4,9 +4,7 @@
 \alias{getPosterior}
 \title{getPosterior}
 \usage{
-getPosterior(matchesA, matchesB, EM, varnames, stringdist.match,
-numeric.match, partial.match, stringdist.method, cut.a, cut.p, jw.weight,
-cut.a.num, cut.p.num)
+getPosterior(matchesA, matchesB, EM, patterns)
 }
 \arguments{
 \item{matchesA}{A dataframe of the matched observations in
@@ -17,32 +15,7 @@ dataset B, with all variables used to inform the match.}
 
 \item{EM}{The EM object from \code{emlinkMARmov()}}
 
-\item{varnames}{A vector of variable names to use for matching.
-Must be present in both matchesA and matchesB.}
-
-\item{stringdist.match}{A vector of booleans, indicating whether to use
-string distance matching when determining matching patterns on
-each variable. Must be same length as varnames.}
-
-\item{numeric.match}{A vector of booleans, indicating whether to use
-numeric pairwise distance matching when determining matching patterns on
-each variable. Must be same length as varnames.}
-
-\item{partial.match}{A vector of booleans, indicating whether to include
-a partial matching category for the string distances. Must be same length
-as varnames. Default is FALSE for all variables.}
-
-\item{stringdist.method}{String distance method for calculating similarity, options are: "jw" Jaro-Winkler (Default), "jaro" Jaro, and "lv" Edit}
-
-\item{cut.a}{Lower bound for full string-distance match, ranging between 0 and 1. Default is 0.92}
-
-\item{cut.p}{Lower bound for partial string-distance match, ranging between 0 and 1. Default is 0.88}
-
-\item{jw.weight}{Parameter that describes the importance of the first characters of a string (only needed if stringdist.method = "jw"). Default is .10}
-
-\item{cut.a.num}{Lower bound for full numeric match. Default is 1}
-
-\item{cut.p.num}{Lower bound for partial numeric match. Default is 2.5}
+\item{patterns}{The output from \code{getPatterns()}.}
 }
 \value{
 \code{getPosterior} returns the posterior probability of a match for each matched pair of observations
