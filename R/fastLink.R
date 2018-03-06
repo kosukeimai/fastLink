@@ -363,7 +363,7 @@ fastLink <- function(dfA, dfB, varnames,
         ## Get the patterns
         cat("Getting the match patterns for each estimated match.\n")
         start <- Sys.time()
-        patterns <- getPatterns(matchesA = dfA[matches$inds.a], matchesB = dfB[matches$inds.b,],
+        patterns <- getPatterns(matchesA = dfA[matches$inds.a, ], matchesB = dfB[matches$inds.b, ],
                                 varnames = varnames, stringdist.match = stringdist.match,
                                 numeric.match = numeric.match, partial.match = partial.match,
                                 stringdist.method = stringdist.method,
