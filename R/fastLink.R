@@ -361,18 +361,12 @@ fastLink <- function(dfA, dfB, varnames,
         }
 
         ## Get the patterns
-        cat("Getting the match patterns for each estimated match.\n")
-        start <- Sys.time()
         patterns <- getPatterns(matchesA = dfA[matches$inds.a, ], matchesB = dfB[matches$inds.b, ],
                                 varnames = varnames, stringdist.match = stringdist.match,
                                 numeric.match = numeric.match, partial.match = partial.match,
                                 stringdist.method = stringdist.method,
                                 cut.a = cut.a, cut.p = cut.p, jw.weight = jw.weight,
                                 cut.a.num = cut.a.num, cut.p.num = cut.p.num)
-        end <- Sys.time()
-        if(verbose){
-            cat("Getting the match patterns for each estimated match took", round(difftime(end, start, units = "mins"), 2), "minutes.\n\n")
-        }
         
         ## Run deduplication
         if(dedupe.matches & length(matches$inds.a) > 0){
@@ -396,6 +390,20 @@ fastLink <- function(dfA, dfB, varnames,
             if(verbose){
                 cat("Calculating the posterior for each matched pair took", round(difftime(end, start, units = "mins"), 2), "minutes.\n\n")
             }
+        }
+
+        ## Get the patterns
+        cat("Getting the match patterns for each estimated match.\n")
+        start <- Sys.time()
+        patterns <- getPatterns(matchesA = dfA[matches$inds.a, ], matchesB = dfB[matches$inds.b, ],
+                                varnames = varnames, stringdist.match = stringdist.match,
+                                numeric.match = numeric.match, partial.match = partial.match,
+                                stringdist.method = stringdist.method,
+                                cut.a = cut.a, cut.p = cut.p, jw.weight = jw.weight,
+                                cut.a.num = cut.a.num, cut.p.num = cut.p.num)
+        end <- Sys.time()
+        if(verbose){
+            cat("Getting the match patterns for each estimated match took", round(difftime(end, start, units = "mins"), 2), "minutes.\n\n")
         }
 
         ## Reweight first names or get zeta
