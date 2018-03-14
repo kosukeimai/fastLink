@@ -134,8 +134,7 @@ fastLink <- function(dfA, dfB, varnames,
         stop("You have provided a variable name for 'partial.match' that is not present in either 'varnames', 'numeric.match', or 'stringdist.match'.")
       }
     } else {
-      if (any(!(partial.match %in% varnames)) | any(!(partial.match %in% 
-                                                      stringdist.match)) | any(!(partial.match %in% numeric.match))) {
+      if (any(!(partial.match %in% varnames)) | any(!(partial.match %in% unique(c(stringdist.match, numeric.match))))) {
         stop("You have provided a variable name for 'partial.match' that is not present in either 'varnames', 'numeric.match', or 'stringdist.match'.")
       }
     }    
