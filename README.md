@@ -3,7 +3,19 @@ fastLink: Fast Probabilistic Record Linkage [![Build Status](https://travis-ci.o
 
 Authors: [Ted Enamorado](https://www.tedenamorado.com/), [Ben Fifield](https://www.benfifield.com/), [Kosuke Imai](https://imai.princeton.edu/)
 
-Paper: [Using a Probabilistic Model to Assist Merging of Large-scale Administrative Records](http://imai.princeton.edu/research/files/linkage.pdf)
+For a detailed description of the method see: [Using a Probabilistic Model to Assist Merging of Large-scale Administrative Records](http://imai.princeton.edu/research/files/linkage.pdf)
+
+Applications of the method:
+
+[Validating Self-reported Turnout by Linking Public Opinion Surveys with Administrative Records](http://imai.princeton.edu/research/files/turnout.pdf)
+
+Technical reports:
+
+[User’s Guide and Codebook for the ANES 2016 Time Series Voter Validation Supplemental Data](http://www.electionstudies.org/studypages/anes_timeseries_2016/anes_timeseries_2016voteval_userguidecodebook.pdf)
+
+Data:
+
+[ANES 2016 Time Series Voter Validation Supplemental Data](http://www.electionstudies.org/studypages/download/datacenter_all_NoData.php)
 
 Installation Instructions
 -------------------------
