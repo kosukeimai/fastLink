@@ -98,7 +98,7 @@ getPatterns <- function(matchesA, matchesB, varnames,
                     tmp <= cut.a.num, 2, ifelse(tmp <= cut.p.num, 1, 0)
                 )
             }else{
-                gammalist[[i]] <- ifelse(tmp >= cut.a.num, 2, 0)
+                gammalist[[i]] <- ifelse(tmp <= cut.a.num, 2, 0)
             }
         }else{
             tmp <- matchesA[,varnames[i]] == matchesB[,varnames[i]]
