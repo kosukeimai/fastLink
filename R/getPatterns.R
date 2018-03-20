@@ -93,6 +93,7 @@ getPatterns <- function(matchesA, matchesB, varnames,
             }
         }else if(numeric.match[i]){
             tmp <- abs(matchesA[,varnames[i]] - matchesB[,varnames[i]])
+            print(tmp)
             if(partial.match[i]){
                 gammalist[[i]] <- ifelse(
                     tmp >= cut.a.num, 2, ifelse(tmp >= cut.p.num, 1, 0)
