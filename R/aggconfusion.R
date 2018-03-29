@@ -13,8 +13,8 @@
 #' @author Ted Enamorado <ted.enamorado@gmail.com> and Ben Fifield <benfifield@gmail.com>
 #'
 #' @export
-aggconfusion <- function(x) {
-  y <- unlist(x)
+aggconfusion <- function(object) {
+  y <- unlist(object)
   
   D <- sum(y[grep("confusion.table1", names(y))])
   B <- sum(y[grep("confusion.table2", names(y))])
