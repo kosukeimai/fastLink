@@ -4,10 +4,10 @@
 \alias{aggconfusion}
 \title{Aggregates confusion tables obtained from fastLink}
 \usage{
-confusion(object)
+aggconfusion(object)
 }
 \arguments{
-\item{object}{A list that contains at least one confusion table obtained via confusion() }
+\item{object}{A list that contains at least one confusion table obtained via 'confusion()' }
 }
 \value{
 'aggconfusion()' returns two tables - one calculating the confusion table, and another
