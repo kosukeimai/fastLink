@@ -255,7 +255,7 @@ fastLink <- function(dfA, dfB, varnames,
             }
         }
         if(sum(dfA[,varnames[i]] %in% dfB[,varnames[i]]) == 0){
-            stop(paste0("You have no exact matches for ", varnames[i], ". Please drop this variable from your analysis."))
+            cat(paste0("You have no exact matches for ", varnames[i], ". Please drop this variable from your analysis."))
         }
         ## Get patterns
         if(stringdist.match[i]){
