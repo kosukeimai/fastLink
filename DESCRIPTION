@@ -39,3 +39,4 @@ Encoding: UTF-8
 LazyData: true
 BugReports: https://github.com/kosukeimai/fastLink/issues
 RoxygenNote: 6.0.1
+Suggests: testthat
