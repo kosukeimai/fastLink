@@ -6,29 +6,31 @@ set.seed(738969) ## From random.org, 2018/04/16
 ## ---------
 ## Run tests
 ## ---------
-## test_that("fastLink() gives correct results on sample data.", {
+test_that("fastLink() gives correct results on sample data.", {
 
-##     ## Run match
-##     fl_out <- fastLink(
-##         dfA = dfA, dfB = dfB,
-##         varnames = c("firstname", "middlename", "lastname", "housenum",
-##                      "streetname", "city", "birthyear"),
-##         return.all = TRUE
-##     )
-##     ct_out <- confusion(fl_out)
+    ## Run match
+    fl_out <- fastLink(
+        dfA = dfA, dfB = dfB,
+        varnames = c("firstname", "middlename", "lastname", "housenum",
+                     "streetname", "city", "birthyear"),
+        return.all = TRUE, n.cores = 1
+    )
 
-##     ## Test class
-##     expect_is(fl_out, "fastLink", label = "Test class is fastLink.")
-##     expect_is(fl_out, "confusionTable", label = "Test class is confusionTable.")
+    ## Test class
+    expect_is(fl_out, "fastLink", label = "Test class is fastLink.")
+    expect_is(fl_out, "confusionTable", label = "Test class is confusionTable.")
+
+    ## Confusion table
+    ct_out <- confusion(fl_out)
     
-##     ## Test output
-##     expect_equivalent(
-##         as.vector(round(ct_out$confusion.table, 2)),
-##         round(c(50.0, 0.3, 0.0, 299.7), 2),
-##         label = "We get the right baseline results from fastLink()."
-##     )
+    ## Test output
+    expect_equivalent(
+        as.vector(round(ct_out$confusion.table, 2)),
+        round(c(50.0, 0.3, 0.0, 299.7), 2),
+        label = "We get the right baseline results from fastLink()."
+    )
 
-## })
+})
 
 test_that("fastLink() throws errors when we expect it to.", {
 
