@@ -4,8 +4,7 @@
 \alias{emlinklog}
 \title{emlinklog}
 \usage{
-emlinklog(patterns, nobs.a, nobs.b, p.m, p.gamma.j.m, p.gamma.j.u, iter.max,
-tol, varnames)
+emlinklog(patterns, nobs.a, nobs.b, p.m, iter.max, tol, p.gamma.j.m, p.gamma.j.u, varnames)
 }
 \arguments{
 \item{patterns}{table that holds the counts for each unique agreement
