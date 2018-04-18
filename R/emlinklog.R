@@ -83,7 +83,7 @@ emlinklog <- function(patterns, nobs.a, nobs.b,
   ## Number of unique patterns:
   N <- nrow(gamma.j.k)
   
-  p.gamma.k.m <- p.gamma.k.u <- list()
+  p.gamma.k.m <- p.gamma.k.u <- NULL
   
   ## Overall Prob of finding a Match
   p.u <- 1 - p.m
