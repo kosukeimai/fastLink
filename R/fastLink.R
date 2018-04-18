@@ -97,7 +97,7 @@ fastLink <- function(dfA, dfB, varnames,
                      dedupe.matches = TRUE, linprog.dedupe = FALSE,
                      reweight.names = FALSE, firstname.field = NULL,
                      n.cores = NULL, tol.em = 1e-04, threshold.match = 0.85,
-                     return.all = FALSE, return.df = FALSE, verbose = FALSE){
+                     return.all = FALSE, return.df = FALSE, cond.indep = TRUE, verbose = FALSE){
 
     cat("\n")
     cat(c(paste(rep("=", 20), sep = "", collapse = ""), "\n"))
@@ -323,13 +323,16 @@ fastLink <- function(dfA, dfB, varnames,
                 pi.prior <- NULL
             }
         }
-        resultsEM <- emlinkMARmov(patterns = counts, nobs.a = nr_a, nobs.b = nr_b,
+        if(cond.indep == FALSE) {
+                     resultsEM <- emlinklog(patterns = counts, nobs.a = nr_a, nobs.b = nr_b, tol = tol.em)  
+        } else {     resultsEM <- emlinkMARmov(patterns = counts, nobs.a = nr_a, nobs.b = nr_b,
                                   tol = tol.em,
                                   prior.lambda = lambda.prior, w.lambda = w.lambda,
                                   prior.pi = pi.prior, w.pi = w.pi,
                                   address.field = address.field, 
                                   gender.field = gender.field,
                                   varnames = varnames)
+        }
         end <- Sys.time()
         if(verbose){
             cat("Running the EM algorithm took", round(difftime(end, start, units = "secs"), 2), "seconds.\n\n")

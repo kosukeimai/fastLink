@@ -21,12 +21,12 @@ on a smaller random sample to apply to counts from a larger sample}
 \value{
 \code{emlinkMARmov} returns a list with the following components:
 \item{zeta.j}{The posterior match probabilities for each unique pattern.}
-\item{p.m}{The posterior probability of a pair matching.}
-\item{p.u}{The posterior probability of a pair not matching.}
-\item{p.gamma.k.m}{The posterior of the matching probability for a specific matching field.}
-\item{p.gamma.k.u}{The posterior of the non-matching probability for a specific matching field.}
-\item{p.gamma.j.m}{The posterior probability that a pair is in the matched set given a particular agreement pattern.}
-\item{p.gamma.j.u}{The posterior probability that a pair is in the unmatched set given a particular agreement pattern.}
+\item{p.m}{The probability of finding a match.}
+\item{p.u}{The probability of finding a non-match.}
+\item{p.gamma.k.m}{The probabilities of observing the values in field k conditional of being in the set of matches.}
+\item{p.gamma.k.u}{The probabilities of observing the values in field k conditional of being in the set of non-matches.}
+\item{p.gamma.j.m}{The probability of observing a particular agreement pattern conditional on being in the set of matches.}
+\item{p.gamma.j.u}{The probability of observing a particular agreement pattern conditional on being in the set of non-matches.}
 \item{patterns.w}{Counts of the agreement patterns observed, along with the Felligi-Sunter Weights.}
 \item{iter.converge}{The number of iterations it took the EM algorithm to converge.}
 \item{nobs.a}{The number of observations in dataset A.}
