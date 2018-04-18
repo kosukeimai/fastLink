@@ -47,7 +47,7 @@
 #' @export
 #' @importFrom gtools rdirichlet
 emlinklog <- function(patterns, nobs.a, nobs.b,
-                        p.m = 0.1, iter.max = 5000, tol = 1e-5, p.gamma.k.m = NULL, p.gamma.k.u = NULL, varnames = NULL) {
+                        p.m = 0.1, iter.max = 5000, tol = 1e-5, p.gamma.j.m = NULL, p.gamma.j.u = NULL, varnames = NULL) {
 
 ## OPTIONS  
 ## patterns <- tc; nobs.a <- nrow(dfA); nobs.a <- nrow(dfB); p.m <- 0.1; iter.max = 5000; 
@@ -84,7 +84,6 @@ emlinklog <- function(patterns, nobs.a, nobs.b,
   ## Overall Prob of finding a Match
   p.u <- 1 - p.m
   
-  library('gtools')
   ## Field specific probability of observing gamma.k conditional on M
     if (is.null(p.gamma.k.m)) {
         p.gamma.k.m <- list()
@@ -176,7 +175,6 @@ emlinklog <- function(patterns, nobs.a, nobs.b,
     factors <- model.matrix(~ ., pat)
     
     ## get theta.m and theta.u
-    library('MASS')
     c <- 1e-06
     matches <- glm(count ~ ., data = data.frame(count = ((zeta.j * n.j) + c), factors),
                         family = "quasipoisson")

@@ -59,6 +59,8 @@
 #' @param return.all Whether to return the most likely match for each observation in dfA and dfB. Overrides user setting of \code{threshold.match} by setting
 #' \code{threshold.match} to 0.0001, and automatically dedupes all matches. Default is FALSE.
 #' @param return.df Whether to return the entire dataframe of dfA and dfB instead of just the indices. Default is FALSE.
+#' @param cond.indep estimates for the parameters of interest are obtained from the Fellegi-Sunter model under conditional independence. Default is TRUE. 
+#' If set to FALSE parameters estimates are obtained from a model that allows for dependencies across linkage fields.
 #' @param verbose Whether to print elapsed time for each step. Default is FALSE.
 #'
 #' @return \code{fastLink} returns a list of class 'fastLink' containing the following components if calculating matches:
