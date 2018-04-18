@@ -11,6 +11,8 @@
 #' @param nobs.a Number of observations in dataset A
 #' @param nobs.b Number of observations in dataset B
 #' @param p.m probability of finding a match. Default is 0.1
+#' @param p.gamma.j.m probability that conditional of being in the matched set we observed a specific agreement pattern.
+#' @param p.gamma.j.u probability that conditional of being in the non-matched set we observed a specific agreement pattern.
 #' @param iter.max Max number of iterations. Default is 5000
 #' @param tol Convergence tolerance. Default is 1e-05
 #' @param varnames The vector of variable names used for matching. Automatically provided if using \code{fastLink()} wrapper. Used for

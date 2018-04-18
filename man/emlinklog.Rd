@@ -4,7 +4,7 @@
 \alias{emlinklog}
 \title{emlinklog}
 \usage{
-emlinklog(patterns, nobs.a, nobs.b, p.m, iter.max,
+emlinklog(patterns, nobs.a, nobs.b, p.m, p.gamma.j.m, p.gamma.j.u, iter.max,
 tol, varnames)
 }
 \arguments{
@@ -16,6 +16,10 @@ pattern. This object is produced by the function: tableCounts.}
 \item{nobs.b}{Number of observations in dataset B}
 
 \item{p.m}{probability of finding a match. Default is 0.1}
+
+\item{p.gamma.j.m}{The probability of observing a particular agreement pattern conditional on being in the set of matches.}
+
+\item{p.gamma.j.u}{The probability of observing a particular agreement pattern conditional on being in the set of non-matches.}
 
 \item{iter.max}{Max number of iterations. Default is 5000}
 
