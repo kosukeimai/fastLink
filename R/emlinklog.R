@@ -94,7 +94,7 @@ emlinklog <- function(patterns, nobs.a, nobs.b,
         for (i in 1:nfeatures) {
         	l.m <- length(unique(na.omit(gamma.j.k[, i])))
         	c.m <- seq(from = 1, to = 50 * l.m, by = 50)
-            p.gamma.k.m[[i]] <- sort(rdirichlet(1, c.m), decreasing = FALSE)
+          p.gamma.k.m[[i]] <- sort(rdirichlet(1, c.m), decreasing = FALSE)
         }
     }
 
