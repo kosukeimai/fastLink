@@ -250,14 +250,14 @@ fastLink <- function(dfA, dfB, varnames,
         ## Warn if no variation (except for gender blocking)
         if(!gender.field[i]){
             if(sum(is.na(dfA[,varnames[i]])) == nrow(dfA) | length(unique(dfA[,varnames[i]])) == 1){
-                stop(paste("You have no variation in dataset A for", varnames[i], "or all observations are missing."))
+                cat(paste("WARNING: You have no variation in dataset A for", varnames[i], "or all observations are missing."))
             }
             if(sum(is.na(dfB[,varnames[i]])) == nrow(dfB) | length(unique(dfB[,varnames[i]])) == 1){
-                stop(paste("You have no variation in dataset B for", varnames[i], "or all observations are missing."))
+                cat(paste("WARNING: You have no variation in dataset B for", varnames[i], "or all observations are missing."))
             }
         }
         if(sum(dfA[,varnames[i]] %in% dfB[,varnames[i]]) == 0){
-            cat(paste0("You have no exact matches for ", varnames[i], "."))
+            cat(paste0("WARNING: You have no exact matches for ", varnames[i], "."))
         }
         ## Get patterns
         if(stringdist.match[i]){
