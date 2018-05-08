@@ -158,7 +158,7 @@ tableCounts <- function(gammalist, nobs.a, nobs.b, n.cores = NULL) {
     na.data.new[na.data.new == 4] <- NA
     data.new <- cbind(na.data.new, data.new.1[, nc])
     colnames(data.new)[nc] <- "counts"
-    data.new <- data.new[data.new$counts > 0, ]
+    data.new <- data.new[data.new[, nc] > 0, ]
     class(data.new) <- c("fastLink", "tableCounts")
     return(data.new)
     
