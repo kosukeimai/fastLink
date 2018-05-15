@@ -11,8 +11,8 @@ cut.a.num, cut.p.num,
 priors.obj, w.lambda, w.pi,
 address.field, gender.field, estimate.only, em.obj,
 dedupe.matches, linprog.dedupe,
-reweight.names, firstname.field,
-n.cores, tol.em, threshold.match, return.all, return.df, cond.indep, verbose)
+reweight.names, firstname.field, cond.indep,
+n.cores, tol.em, threshold.match, return.all, return.df, verbose)
 }
 \arguments{
 \item{dfA}{Dataset A - to be matched to Dataset B}
@@ -76,6 +76,9 @@ estimated on a smaller sample, and the user wants to apply them to the full data
 
 \item{firstname.field}{The name of the field indicating first name. Must be provided if reweight.names = TRUE.}
 
+\item{cond.indep}{Estimates for the parameters of interest are obtained from the Fellegi-Sunter model under conditional independence. Default is TRUE. 
+If set to FALSE parameters estimates are obtained from a model that allows for dependencies across linkage fields.}
+
 \item{n.cores}{Number of cores to parallelize over. Default is NULL.}
 
 \item{tol.em}{Convergence tolerance for the EM Algorithm. Default is 1e-04.}
@@ -88,9 +91,6 @@ while threshold.match = c(.85, .95) will return all pairs with posterior probabi
 \code{threshold.match} to 0.0001, and automatically dedupes all matches. Default is FALSE.}
 
 \item{return.df}{Whether to return the entire dataframe of dfA and dfB instead of just the indices. Default is FALSE.}
-
-\item{cond.indep}{estimates for the parameters of interest are obtained from the Fellegi-Sunter model under conditional independence. Default is TRUE. 
-If set to FALSE parameters estimates are obtained from a model that allows for dependencies across linkage fields.}
 
 \item{verbose}{Whether to print elapsed time for each step. Default is FALSE.}
 }

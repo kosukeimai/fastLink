@@ -1,13 +1,12 @@
-#' Get confusion table for fastLink objects after blocking via clusterMatch()
+#' aggconfusion
 #'
-#' Calculate confusion table after running fastLink().
+#' Aggregate confusion tables from separate runs of fastLink() (UNDER DEVELOPMENT)
 #'
-#' @usage confusion(object, threshold)
+#' @usage aggconfusion(object)
 #'
-#' @param object A 'fastLink' object. Can only be run if 'return.all = TRUE' in 'fastLink().'
-#' @param threshold The matching threshold above which a pair is a true match. Default is .85
+#' @param object A list of confusion tables. 
 #'
-#' @return 'confusion()' returns two tables - one calculating the confusion table, and another
+#' @return 'aggconfusion()' returns two tables - one calculating the confusion table, and another
 #' calculating a series of additional summary statistics.
 #'
 #' @author Ted Enamorado <ted.enamorado@gmail.com> and Ben Fifield <benfifield@gmail.com>

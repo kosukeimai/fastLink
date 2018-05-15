@@ -4,7 +4,8 @@
 \alias{emlinklog}
 \title{emlinklog}
 \usage{
-emlinklog(patterns, nobs.a, nobs.b, p.m, iter.max, tol, p.gamma.j.m, p.gamma.j.u, varnames)
+emlinklog(patterns, nobs.a, nobs.b, p.m, p.gamma.j.m, p.gamma.j.u,
+iter.max, tol, varnames)
 }
 \arguments{
 \item{patterns}{table that holds the counts for each unique agreement
@@ -16,9 +17,9 @@ pattern. This object is produced by the function: tableCounts.}
 
 \item{p.m}{probability of finding a match. Default is 0.1}
 
-\item{p.gamma.j.m}{The probability of observing a particular agreement pattern conditional on being in the set of matches.}
+\item{p.gamma.j.m}{probability that conditional of being in the matched set we observed a specific agreement pattern.}
 
-\item{p.gamma.j.u}{The probability of observing a particular agreement pattern conditional on being in the set of non-matches.}
+\item{p.gamma.j.u}{probability that conditional of being in the non-matched set we observed a specific agreement pattern.}
 
 \item{iter.max}{Max number of iterations. Default is 5000}
 
@@ -28,7 +29,7 @@ pattern. This object is produced by the function: tableCounts.}
 clean visualization of EM results in summary functions.}
 }
 \value{
-\code{emlinkMARmov} returns a list with the following components:
+\code{emlinklog} returns a list with the following components:
 \item{zeta.j}{The posterior match probabilities for each unique pattern.}
 \item{p.m}{The probability of finding a match.}
 \item{p.u}{The probability of finding a non-match.}
@@ -40,8 +41,8 @@ clean visualization of EM results in summary functions.}
 \item{nobs.b}{The number of observations in dataset B.}
 }
 \description{
-Expectation-Maximization algorithm for Record Linkage
-allowing for dependecies across linakge fields.
+Expectation-Maximization algorithm for Record Linkage 
+allowing for dependencies across linkage fields
 }
 \examples{
 \dontrun{
@@ -60,5 +61,5 @@ em.log <- emlinklog(tc, nobs.a = nrow(dfA), nobs.b = nrow(dfB))
 
 }
 \author{
-Ted Enamorado <ted.enamorado@gmail.com> and Kosuke Imai
+Ted Enamorado <ted.enamorado@gmail.com> and Benjamin Fifield
 }
