@@ -26,7 +26,7 @@
 #' @param partial.match A vector of variable names indicating whether to include
 #' a partial matching category for the string distances. Must be a subset of 'varnames'
 #' and 'stringdist.match'.
-#' @param cut.a Lower bound for full string-distance match, ranging between 0 and 1. Default is 0.92
+#' @param cut.a Lower bound for full string-distance match, ranging between 0 and 1. Default is 0.94
 #' @param cut.p Lower bound for partial string-distance match, ranging between 0 and 1. Default is 0.88
 #' @param jw.weight Parameter that describes the importance of the first characters of a string (only needed if stringdist.method = "jw"). Default is .10
 #' @param cut.a.num Lower bound for full numeric match. Default is 1
@@ -59,7 +59,7 @@
 #' user wants to declare a match. For instance, threshold.match = .85 will return all pairs with posterior probability greater than .85 as matches,
 #' while threshold.match = c(.85, .95) will return all pairs with posterior probability between .85 and .95 as matches.
 #' @param return.all Whether to return the most likely match for each observation in dfA and dfB. Overrides user setting of \code{threshold.match} by setting
-#' \code{threshold.match} to 0.0001, and automatically dedupes all matches. Default is FALSE.
+#' \code{threshold.match} to 0.0001, and automatically dedupes all matches. Default is TRUE.
 #' @param return.df Whether to return the entire dataframe of dfA and dfB instead of just the indices. Default is FALSE.
 #' @param verbose Whether to print elapsed time for each step. Default is FALSE.
 #'
@@ -90,7 +90,7 @@ fastLink <- function(dfA, dfB, varnames,
                      stringdist.method = "jw",
                      numeric.match = NULL, 
                      partial.match = NULL,
-                     cut.a = 0.92, cut.p = 0.88,
+                     cut.a = 0.94, cut.p = 0.88,
                      jw.weight = .10,
                      cut.a.num = 1, cut.p.num = 2.5,
                      priors.obj = NULL,
@@ -99,7 +99,7 @@ fastLink <- function(dfA, dfB, varnames,
                      dedupe.matches = TRUE, linprog.dedupe = FALSE,
                      reweight.names = FALSE, firstname.field = NULL, cond.indep = TRUE,
                      n.cores = NULL, tol.em = 1e-04, threshold.match = 0.85,
-                     return.all = FALSE, return.df = FALSE, verbose = FALSE){
+                     return.all = TRUE, return.df = FALSE, verbose = FALSE){
 
     cat("\n")
     cat(c(paste(rep("=", 20), sep = "", collapse = ""), "\n"))
@@ -187,8 +187,7 @@ fastLink <- function(dfA, dfB, varnames,
     if(return.all){
         threshold.match <- 0.001
         if(!dedupe.matches){
-            cat("You have specified that all matches be returned but have not deduped the matches. Setting 'dedupe.matches' to TRUE.\n")
-            dedupe.matches <- TRUE
+            cat("You have specified that all matches be returned but are not deduping the matches. The resulting object may be very large.\n")
         }
     }else{
         cat("If you set return.all to FALSE, you will not be able to calculate a confusion table as a summary statistic.\n")
@@ -200,6 +199,14 @@ fastLink <- function(dfA, dfB, varnames,
         w.pi <- NULL
         address.field <- NULL
         gender.field <- NULL
+    }
+
+    ## Check class of numeric indicators
+    classA <- lapply(dfA[,varnames], class)
+    classB <- lapply(dfB[,varnames], class)
+    if(any(unlist(classA)[names(classA) %in% numeric.match] != "numeric") |
+       any(unlist(classB)[names(classB) %in% numeric.match] != "numeric")){
+        stop("You have specified that a variable be compared using numeric matching, but that variable is not of class 'numeric'. Please check your variable classes.")
     }
 
     ## Create boolean indicators

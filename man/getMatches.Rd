@@ -4,7 +4,7 @@
 \alias{getMatches}
 \title{getMatches}
 \usage{
-getMatches(dfA, dfB, fl.out)
+getMatches(dfA, dfB, fl.out, threshold.match, combine.dfs)
 }
 \arguments{
 \item{dfA}{Dataset A - matched to Dataset B by \code{fastLink()}.}
@@ -12,6 +12,12 @@ getMatches(dfA, dfB, fl.out)
 \item{dfB}{Dataset B - matches to Dataset A by \code{fastLink()}.}
 
 \item{fl.out}{Either the output from \code{fastLink()} or \code{matchesLink()}.}
+
+\item{threshold.match}{A number between 0 and 1 indicating the lower bound that the
+user wants to declare a match. For instance, threshold.match = .85 will return all pairs with posterior probability greater than .85 as matches.
+Default is 0.85.}
+
+\item{combine.dfs}{Whether to combine the two data frames being merged into a single data frame. If FALSE, two data frames are returned in a list. Default is TRUE.}
 }
 \value{
 \code{getMatches()} returns a list of two data frames:

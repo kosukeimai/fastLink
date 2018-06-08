@@ -31,14 +31,14 @@ confusion <- function(object, threshold = .85) {
         stop("You can only run 'confusion()' if 'return.all = TRUE' in 'fastLink()'.")
     }
 
-	## TM
+    ## TM
     D <- sum(object$posterior * ifelse(object$posterior >= threshold, 1, 0))
-	## FP
+    ## FP
     B <- sum(ifelse(object$posterior >= threshold, 1, 0)) - D
-	## TNM
-	  A.1 <- sum((1 - object$posterior) * ifelse(object$posterior < threshold, 1, 0))
+    ## TNM
+    A.1 <- sum((1 - object$posterior) * ifelse(object$posterior < threshold, 1, 0))
     A <- A.1 + (min(object$nobs.a, object$nobs.b) - D - B - A.1) * (1 - 0.001)
-	## FN
+    ## FN
     C <- (min(object$nobs.a, object$nobs.b) - D - B) - A
     
     t1 <- round(rbind(c(D, B), c(C, A)), 2)
@@ -64,7 +64,7 @@ confusion <- function(object, threshold = .85) {
                       "Negative Predicted Value (%)",
                       "False Positive Rate (%)",
                       "False Negative Rate (%)",
-                      "Correctly Clasified (%)",
+                      "Correctly Classified (%)",
                       "F1 Score (%)")
     colnames(t2) <- "results"
     results <- list()				 

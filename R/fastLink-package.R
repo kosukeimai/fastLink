@@ -8,8 +8,8 @@
 #' the Fellegi-Sunter model, using the Expectation-Maximization Algorithm. In addition,
 #' tools for conducting and summarizing data merges are included. 
 #' 
-#' \tabular{ll}{ Package: \tab fastLink\cr Type: \tab Package\cr Version: \tab 0.2.1-\cr
-#' Date: \tab 2017-10-03\cr License: \tab GPL (>= 3)\cr }
+#' \tabular{ll}{ Package: \tab fastLink\cr Type: \tab Package\cr Version: \tab 0.4.1-\cr
+#' Date: \tab 2018-05-16\cr License: \tab GPL (>= 3)\cr }
 #'
 #' @name fastLink-package
 #' @useDynLib fastLink, .registration = TRUE

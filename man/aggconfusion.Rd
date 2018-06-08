@@ -14,7 +14,7 @@ aggconfusion(object)
 calculating a series of additional summary statistics.
 }
 \description{
-Aggregate confusion tables from separate runs of fastLink()
+Aggregate confusion tables from separate runs of fastLink() (UNDER DEVELOPMENT)
 }
 \author{
 Ted Enamorado <ted.enamorado@gmail.com> and Ben Fifield <benfifield@gmail.com>
