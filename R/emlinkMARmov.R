@@ -157,7 +157,7 @@ emlinkMARmov <- function(patterns, nobs.a, nobs.b,
     }
     if(!is.null(gender.field)){
         if(is.null(prior.lambda)){
-            stop("If matching on gender, you must specify a prior for lambda.") 
+            stop("If exact-matching on gender, you must specify a prior for lambda.") 
         }
         prior.gen <- 1 - 1e-05
         w.gen <- 1 - 1e-05

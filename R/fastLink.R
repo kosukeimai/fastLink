@@ -455,7 +455,7 @@ fastLink <- function(dfA, dfB, varnames,
             out[["posterior"]] <- zeta
         }
         if(reweight.names & length(matches$inds.a) > 0){
-            out[["zeta.name"]] <- rwn.out
+            out[["posterior"]] <- rwn.out
         }
         out[["nobs.a"]] <- nr_a
         out[["nobs.b"]] <- nr_b
