@@ -28,7 +28,7 @@
 ## in parallel
 ## ------------------------
 gammaNUMCK2par <- function(matAp, matBp, n.cores = NULL, cut.a = 1) {
-
+  
     if(any(class(matAp) %in% c("tbl_df", "data.table"))){
         matAp <- as.data.frame(matAp)[,1]
     }
@@ -53,8 +53,8 @@ gammaNUMCK2par <- function(matAp, matBp, n.cores = NULL, cut.a = 1) {
     matrix.1 <- as.matrix(as.numeric(matAp))
     matrix.2 <- as.matrix(as.numeric(matBp))
 
-    matrix.1[is.na(matrix.1)] <- 9999
-    matrix.2[is.na(matrix.2)] <- 9998
+    matrix.1[is.na(matrix.1)] <- round(max(matrix.1), 0) + cut.a + 1
+    matrix.2[is.na(matrix.2)] <- round(max(matrix.1), 0) + cut.a
 
     u.values.1 <- unique(matrix.1)
     u.values.2 <- unique(matrix.2)
@@ -140,8 +140,9 @@ gammaNUMCK2par <- function(matAp, matBp, n.cores = NULL, cut.a = 1) {
     }
     
     na.list <- list()
-    na.list[[1]] <- which(matrix.1 == "9999")
-    na.list[[2]] <- which(matrix.2 == "9998")
+    end.points <- c((round(max(matrix.1), 0) + cut.a), (round(max(matrix.1), 0) + cut.a + 1))
+    na.list[[1]] <- which(matrix.1 == end.poinst[2])
+    na.list[[2]] <- which(matrix.2 == end.poinst[1])
 
     out <- list()
     out[["matches2"]] <- final.list2
