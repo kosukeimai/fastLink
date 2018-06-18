@@ -48,9 +48,11 @@ gammaNUMCKpar <- function(matAp, matBp, n.cores = NULL, cut.a = 1, cut.p = 2) {
     matrix.1 <- as.matrix(as.numeric(matAp))
     matrix.2 <- as.matrix(as.numeric(matBp))
 
-    matrix.1[is.na(matrix.1)] <- 9999
-    matrix.2[is.na(matrix.2)] <- 9998
-
+    max <- max(max(matrix.1, na.rm = T), max(matrix.2, na.rm = T))   
+    end.points <- c((round((max), 0) + 1), (round(max + cut.p, 0) + 3))
+    matrix.1[is.na(matrix.1)] <- end.points[2]
+    matrix.2[is.na(matrix.2)] <- end.points[1]
+    
     u.values.1 <- unique(matrix.1)
     u.values.2 <- unique(matrix.2)
 
@@ -151,8 +153,8 @@ gammaNUMCKpar <- function(matAp, matBp, n.cores = NULL, cut.a = 1, cut.p = 2) {
     }
     
     na.list <- list()
-    na.list[[1]] <- which(matrix.1 == "9999")
-    na.list[[2]] <- which(matrix.2 == "9998")
+    na.list[[1]] <- which(matrix.1 == end.points[2])
+    na.list[[2]] <- which(matrix.2 == end.points[1])
     
     out <- list()
     out[["matches2"]] <- final.list2

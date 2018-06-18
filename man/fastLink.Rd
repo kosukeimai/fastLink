@@ -35,7 +35,7 @@ Must be a subset of 'varnames' and must not be present in 'stringdist.match'.}
 a partial matching category for the string distances. Must be a subset of 'varnames'
 and 'stringdist.match'.}
 
-\item{cut.a}{Lower bound for full string-distance match, ranging between 0 and 1. Default is 0.92}
+\item{cut.a}{Lower bound for full string-distance match, ranging between 0 and 1. Default is 0.94}
 
 \item{cut.p}{Lower bound for partial string-distance match, ranging between 0 and 1. Default is 0.88}
 
@@ -88,7 +88,7 @@ user wants to declare a match. For instance, threshold.match = .85 will return a
 while threshold.match = c(.85, .95) will return all pairs with posterior probability between .85 and .95 as matches.}
 
 \item{return.all}{Whether to return the most likely match for each observation in dfA and dfB. Overrides user setting of \code{threshold.match} by setting
-\code{threshold.match} to 0.0001, and automatically dedupes all matches. Default is FALSE.}
+\code{threshold.match} to 0.0001, and automatically dedupes all matches. Default is TRUE.}
 
 \item{return.df}{Whether to return the entire dataframe of dfA and dfB instead of just the indices. Default is FALSE.}
 

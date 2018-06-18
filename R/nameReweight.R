@@ -54,7 +54,11 @@ nameReweight <- function(dfA, dfB, EM, gammalist, matchesLink,
     EM.names <- as.matrix(EM[EM$zeta.j >= 1e-9 & EM[,firstname.field] == 2,])
     EM.names2 <- EM.names[, c(1:ncol(resultsEM$patterns.w))]
     resultsEM2 <- resultsEM
-    resultsEM2$patterns.w <- EM.names2
+    if(ncol(as.matrix(EM.names2)) == 1){
+        resultsEM2$patterns.w <- t(as.matrix(EM.names2))
+    }else{
+        resultsEM2$patterns.w <- as.matrix(EM.names2)
+    }
     resultsEM2$zeta.j <- as.matrix(EM$zeta.j[EM$zeta.j > 1e-9 & EM[,firstname.field] == 2,])
     match.ut <- min(resultsEM2$patterns.w[, "weights"]) - 0.01
 
