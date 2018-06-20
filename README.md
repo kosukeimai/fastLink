@@ -13,9 +13,13 @@ Technical reports:
 
 [User’s Guide and Codebook for the ANES 2016 Time Series Voter Validation Supplemental Data](http://www.electionstudies.org/studypages/anes_timeseries_2016/anes_timeseries_2016voteval_userguidecodebook.pdf)
 
+[User’s Guide and Codebook for the CCES 2016 Voter Validation Supplemental Data](https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/2NNA4L)
+
 Data:
 
 [ANES 2016 Time Series Voter Validation Supplemental Data](http://www.electionstudies.org/studypages/download/datacenter_all_NoData.php)
+
+[CCES 2016 Voter Validation Supplemental Data](https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/2NNA4L)
 
 Table of Contents
 =========================
