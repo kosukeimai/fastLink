@@ -1133,7 +1133,7 @@ data("RLdata500", package = "RecordLinkage")
 
 To keep track of observations, we will create two ids:
 
-- `id`: we create an id to keep track of each observation in `RLdata500`. 
+- `id`: we create an id to keep track of each observation in `RLdata500`
 
 - `true_id`: is the true id that identifies the 450 unique observations in `RLdata500`
 
@@ -1147,7 +1147,7 @@ RLdata500$id <- 1:nrow(RLdata500)
 
 As before, we use `fastLink` (the wrapper function) to do the merge. Please not that we will set the option `dedupe.matches = FALSE` as we do not want a one-to-one match. If we were to impose a one-to-one match, we will end up with every observation being matched against itself and no duplicates would be found.
 
-```
+```r
 ## Using fastLink for fiding duplicates within a datasetL
 rl_matches <- fastLink(
   dfA                = RLdata500,  
@@ -1175,8 +1175,7 @@ sum(trueID1 == trueID2)
 ```
 We were able to match 598 out of the 600 possible matches. There are 600 possible matches because we have 500 observations + 50 * 2 duplicates. We multiply the duplicates times 2, because if observation `i` in dataset A is a duplicate of observation `j` in dataset B, we also have that observation `j` in dataset A is a duplicate of observation `i` in dataset B. 
 
-Imagine that your goal is to construct an ID to uniquely identify observations in your dataset i.e., if observations `i` and `j` in dataset A are duplicates, then they should have the same ID.
-
+Imagine that your goal is to construct an ID to uniquely identify observations in your dataset i.e., if observations `i` and `j` in dataset A are duplicates, then they should have the same ID. This is an example on how to get such an ID:
 ```r
 ## Getting a UNIQUE ID
 ## Because in this exercise we have a symmetrical problem e.g.,
