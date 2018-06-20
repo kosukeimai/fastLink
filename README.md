@@ -20,7 +20,8 @@ Data:
 Table of Contents
 =========================
 
-- Installation Instructions
+- [Installation Instructions](#content1)
+
 - Examples:
   * The `fastLink` Wrapper function
   * clustering observartions to produce blocks
