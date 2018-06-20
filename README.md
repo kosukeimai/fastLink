@@ -23,17 +23,23 @@ Table of Contents
 - [Installation Instructions](#content1)
 
 - Examples:
-  * The `fastLink` Wrapper function
-  * clustering observartions to produce blocks
-  * running the algorith step-by-step
-  * using auxiliary information to inform `fastLink`
-  * random sampling with `fastLink`
-  * fiding duplicates within a dataset via `fastLink`
+
+  * [the `fastLink` wrapper](#content2)
+  
+  * [clustering observartions to produce blocks](#content3)
+  
+  * [running the algorith step-by-step](#content4)
+  
+  * [using auxiliary information to inform `fastLink`](#content5)
+  
+  * [random sampling with `fastLink`](#content6)
+  
+  * [fiding duplicates within a dataset via `fastLink`](#content7)
+
+<div id='content1'/>
 
 Installation Instructions
 ----------------------------
-
-<div id='content1'/>
 
 `fastLink` is available on CRAN and can be installed using:
 
@@ -53,6 +59,8 @@ Then, load `devtools` and use the function `install_github()` to install `fastLi
 library(devtools)
 install_github("kosukeimai/fastLink",dependencies=TRUE)
 ```
+
+<div id='content2'/>
 
 Simple usage example
 --------------------
@@ -614,6 +622,8 @@ where each column gives the match count, match rate, false discovery rate (FDR) 
 
 -   `digits`: Number of digits to include in the summary object. Default is 3.
 
+<div id='content3'/>
+
 ### Preprocessing Matches via Clustering
 
 In order to reduce the number of pairwise comparisons that need to be conducted, researchers will often cluster similar observations from dataset A and dataset B together so that comparisons are only made between these maximally similar groups. Here, we implement a form of this clustering that uses word embedding, a common preprocessing method for textual data, to form maximally similar groups.
@@ -659,6 +669,8 @@ The output of `clusterMatch()` includes the following entries:
 -   `dims.pca`: The number of dimensions from the PCA step included in the K-means algorithm (if word embedding clustering is used).
 
 If using word embedding clustering, the clustering proceeds in three steps. First, a word embedding matrix is created out of the provided data. For instance, a word embedding of the name `ben` would be a vector of length 26, where each entry in the vector represents a different letter. That matrix takes the value 0 for most entries, except for entry 2 (B), 5 (E), and 14 (N), which take the count of 1 (representing the number of times that letter appears in the string). Second, principal components analysis is run on the word embedding matrix. Last, a subset of dimensions from the PCA step are selected according to the amount of variance explained by the dimensions, and then the K-means algorithm is run on that subset of dimensions in order to form the clusters.
+
+<div id='content4'/>
 
 ### Running the algorithm step-by-step
 
@@ -790,6 +802,8 @@ summary(em.out)
     ## 2  Match Rate 14.286% 14.286% 14.286% 12.286%
     ## 3         FDR      0%      0%      0%        
     ## 4         FNR      0%      0%      0%
+
+<div id='content5'/>
 
 Using Auxiliary Information to Inform `fastLink`
 ------------------------------------------------
@@ -986,6 +1000,8 @@ summary(agg.out)
     ## 11             Within-State      0%      0%      0%        
     ## 12             Across-State      0%      0%      0%
 
+<div id='content6'/>
+
 Random Sampling with `fastLink`
 -------------------------------
 
@@ -1134,6 +1150,7 @@ where `emlinkRS()` takes an EM object and applies the parameter estimates to all
 
 -   `nobs.b`: The number of rows in dataset B
 
+<div id='content7'/>
 
 Fiding Duplicates within a Dataset via `fastLink`
 --------------------------------------------------
