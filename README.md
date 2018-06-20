@@ -1118,3 +1118,64 @@ where `emlinkRS()` takes an EM object and applies the parameter estimates to all
 -   `nobs.a`: The number of rows in dataset A
 
 -   `nobs.b`: The number of rows in dataset B
+
+
+Fiding Duplicates within a Dataset via `fastLink`
+--------------------------------------------------
+
+The code below represents an example on how to find duplicates withing a dataset via `fastLink`
+
+``` r
+library('fastLink')
+
+## RLdata500 from RecordLinkage:
+## this dataset has 500 observations 
+## 50 observations are duplicates
+data("RLdata500", package = "RecordLinkage")
+
+## Because we are matching RLdata500 against
+## itself note that there are 500 + 50 * 2  = 600
+## observations that should be matched
+
+## In this case we know the truth, we will use this to 
+## check performance:
+RLdata500$true_id <- identity.RLdata500 
+
+## We create an ID for each observation (rownumber)
+RLdata500$id <- 1:nrow(RLdata500)
+
+## Using fastLink for fiding duplicates within a datasetL
+rl_matches <- fastLink(
+  dfA                = RLdata500,  
+  dfB                = RLdata500,
+  varnames           = c("fname_c1", "lname_c1", "by", "bm", "bd"),
+  stringdist.match   = c("fname_c1", "lname_c1"),
+  dedupe.matches = FALSE, 
+  return.all = FALSE
+)
+
+id1 <- RLdata500$id[rl_matches$matches$inds.a]
+id2 <- RLdata500$id[rl_matches$matches$inds.b]
+
+trueID1 <- RLdata500$true_id[rl_matches$matches$inds.a]
+trueID2 <- RLdata500$true_id[rl_matches$matches$inds.b]
+
+## You can check that we find 598 out of the 600
+## matches. In other words we miss one duplicated
+## observation.
+sum(trueID1 == trueID2)
+
+## Getting a UNIQUE ID
+## Because in this exercise we have a symmetrical problem e.g.,
+## if observation 1 in A matches 2 in B, observation 1 in B matches 2 in A,
+## we will remove pairs on the lower diagonal of the sample space
+keep <- id1 > id2
+
+## link between original ID and the duplicated ID
+id.duplicated <- id1[keep]
+id.original <- id2[keep]
+
+## We create a new id and replace the ID for the duplicates
+RLdata500$id_new <- RLdata500$id
+RLdata500$id_new[RLdata500$id_new %in% id.original] <- id.duplicated
+```
