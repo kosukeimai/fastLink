@@ -1173,7 +1173,7 @@ trueID2 <- RLdata500$true_id[rl_matches$matches$inds.b]
 sum(trueID1 == trueID2)
 ## 598
 ```
-We were able to match 598 out of the 600 possible matches. There are 600 possible matches because we have 500 observations + 50 * 2 duplicates. We multiply the duplicates times 2, because if observation `i` in dataset A is a duplicate of observation `j` in dataset B, we also have that observation `j` in dataset A is a duplicate of observation `i` in dataset B. 
+We were able to match 598 out of the 600 possible matches. There are 600 possible matches because we have 500 observations + 50 * 2 duplicates. We multiply the duplicates times 2, because in a de-duplication exercise if observation `i` in dataset A is a duplicate of observation `j` in dataset B, we also have that observation `j` in dataset A is a duplicate of observation `i` in dataset B. 
 
 Imagine that your goal is to construct an ID to uniquely identify observations in your dataset i.e., if observations `i` and `j` in dataset A are duplicates, then they should have the same ID. This is an example on how to get such an ID:
 ```r
