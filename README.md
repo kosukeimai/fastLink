@@ -17,6 +17,18 @@ Data:
 
 [ANES 2016 Time Series Voter Validation Supplemental Data](http://www.electionstudies.org/studypages/download/datacenter_all_NoData.php)
 
+Table of Contents
+-------------------------
+
+- Installation Instructions
+- Examples
+  * The `fastLink` Wrapper function
+  * clustering observartions to produce blocks
+  * running the algorith step-by-step
+  * using auxiliary information to inform `fastLink`
+  * random sampling with `fastLink`
+  * fiding duplicates within a dataset via `fastLink`
+
 Installation Instructions
 -------------------------
 
