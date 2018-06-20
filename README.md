@@ -31,8 +31,7 @@ Table of Contents
   * fiding duplicates within a dataset via `fastLink`
 
 <div id='#content1'/>
-Installation Instructions
--------------------------
+## Installation Instructions
 
 `fastLink` is available on CRAN and can be installed using:
 
