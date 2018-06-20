@@ -30,6 +30,7 @@ Table of Contents
   * random sampling with `fastLink`
   * fiding duplicates within a dataset via `fastLink`
 
+<div id='#content1'/>
 Installation Instructions
 -------------------------
 
