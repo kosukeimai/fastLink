@@ -30,9 +30,10 @@ Table of Contents
   * random sampling with `fastLink`
   * fiding duplicates within a dataset via `fastLink`
 
-<div id='content1'/>
 Installation Instructions
 ----------------------------
+
+<div id='content1'/>
 
 `fastLink` is available on CRAN and can be installed using:
 
