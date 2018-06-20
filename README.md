@@ -1123,27 +1123,31 @@ where `emlinkRS()` takes an EM object and applies the parameter estimates to all
 Fiding Duplicates within a Dataset via `fastLink`
 --------------------------------------------------
 
-The code below represents an example on how to find duplicates withing a dataset via `fastLink`
+The following lines of code represent an example on how to find duplicates withing a dataset via `fastLink`. 
 
+As a first step, we will load a dataset that has 500 observations and among them 50 are duplicates.
 ``` r
 library('fastLink')
-
-## RLdata500 from RecordLinkage:
-## this dataset has 500 observations 
-## 50 observations are duplicates
 data("RLdata500", package = "RecordLinkage")
+```
 
-## Because we are matching RLdata500 against
-## itself note that there are 500 + 50 * 2  = 600
-## observations that should be matched
+To keep track of observations, we will create two ids:
 
-## In this case we know the truth, we will use this to 
-## check performance:
+- `id`: we create an id to keep track of each observation in `RLdata500`. 
+
+- `true_id`: is the true id that identifies the 450 unique observations in `RLdata500`
+
+``` r
+## In this example we know the thruth. How well do we do? This ID will tell us.
 RLdata500$true_id <- identity.RLdata500 
 
 ## We create an ID for each observation (rownumber)
 RLdata500$id <- 1:nrow(RLdata500)
+```
 
+As before, we use `fastLink` (the wrapper function) to do the merge. Please not that we will set the option `dedupe.matches = FALSE` as we do not want a one-to-one match. If we were to impose a one-to-one match, we will end up with every observation being matched against itself and no duplicates would be found.
+
+```
 ## Using fastLink for fiding duplicates within a datasetL
 rl_matches <- fastLink(
   dfA                = RLdata500,  
@@ -1153,18 +1157,27 @@ rl_matches <- fastLink(
   dedupe.matches = FALSE, 
   return.all = FALSE
 )
+```
 
+Let's extract the ids of the observations we have matched:
+```r
 id1 <- RLdata500$id[rl_matches$matches$inds.a]
 id2 <- RLdata500$id[rl_matches$matches$inds.b]
+```
 
+We can also check how well we did in terms of the thruth:
+```r
 trueID1 <- RLdata500$true_id[rl_matches$matches$inds.a]
 trueID2 <- RLdata500$true_id[rl_matches$matches$inds.b]
 
-## You can check that we find 598 out of the 600
-## matches. In other words we miss one duplicated
-## observation.
 sum(trueID1 == trueID2)
+## 598
+```
+We were able to match 598 out of the 600 possible matches. There are 600 possible matches because we have 500 observations + 50 * 2 duplicates. We multiply the duplicates times 2, because if observation `i` in dataset A is a duplicate of observation `j` in dataset B, we also have that observation `j` in dataset A is a duplicate of observation `i` in dataset B. 
 
+Imagine that your goal is to construct an ID to uniquely identify observations in your dataset i.e., if observations `i` and `j` in dataset A are duplicates, then they should have the same ID.
+
+```r
 ## Getting a UNIQUE ID
 ## Because in this exercise we have a symmetrical problem e.g.,
 ## if observation 1 in A matches 2 in B, observation 1 in B matches 2 in A,
