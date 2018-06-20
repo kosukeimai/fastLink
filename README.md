@@ -3,7 +3,9 @@ fastLink: Fast Probabilistic Record Linkage [![Build Status](https://travis-ci.o
 
 Authors: [Ted Enamorado](https://www.tedenamorado.com/), [Ben Fifield](https://www.benfifield.com/), [Kosuke Imai](https://imai.princeton.edu/)
 
-For a detailed description of the method see: [Using a Probabilistic Model to Assist Merging of Large-scale Administrative Records](http://imai.princeton.edu/research/files/linkage.pdf)
+For a detailed description of the method see: 
+
+ - [Using a Probabilistic Model to Assist Merging of Large-scale Administrative Records](http://imai.princeton.edu/research/files/linkage.pdf)
 
 Applications of the method:
 
