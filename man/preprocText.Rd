@@ -5,7 +5,7 @@
 \title{preprocText}
 \usage{
 preprocText(text, convert_text, tolower, soundex,
-usps_address, convert_text_to)
+usps_address, remove_whitespace, remove_punctuation, convert_text_to)
 }
 \arguments{
 \item{text}{A vector of text data to convert.}
@@ -22,6 +22,11 @@ Default is FALSE.}
 
 \item{usps_address}{Whether to use USPS address standardization rules to clean address fields.
 Default is FALSE.}
+
+\item{remove_whitespace}{Whether to remove leading and trailing whitespace, and to convert multiple
+spaces to a single space. Default is TRUE.}
+
+\item{remove_punctuation}{Whether to remove punctuation from a string. Default is TRUE.}
 
 \item{convert_text_to}{Which encoding to use when converting text. Default is 'Latin-ASCII'.
 Full list of encodings in the \code{stri_trans_list()} function in the \code{stringi} package.}
