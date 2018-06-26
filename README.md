@@ -3,22 +3,49 @@ fastLink: Fast Probabilistic Record Linkage [![Build Status](https://travis-ci.o
 
 Authors: [Ted Enamorado](https://www.tedenamorado.com/), [Ben Fifield](https://www.benfifield.com/), [Kosuke Imai](https://imai.princeton.edu/)
 
-For a detailed description of the method see: [Using a Probabilistic Model to Assist Merging of Large-scale Administrative Records](http://imai.princeton.edu/research/files/linkage.pdf)
+For a detailed description of the method see: 
+
+ - [Using a Probabilistic Model to Assist Merging of Large-scale Administrative Records](http://imai.princeton.edu/research/files/linkage.pdf)
 
 Applications of the method:
 
-[Validating Self-reported Turnout by Linking Public Opinion Surveys with Administrative Records](http://imai.princeton.edu/research/files/turnout.pdf)
+ - [Validating Self-reported Turnout by Linking Public Opinion Surveys with Administrative Records](http://imai.princeton.edu/research/files/turnout.pdf)
 
 Technical reports:
 
-[User’s Guide and Codebook for the ANES 2016 Time Series Voter Validation Supplemental Data](http://www.electionstudies.org/studypages/anes_timeseries_2016/anes_timeseries_2016voteval_userguidecodebook.pdf)
+ - [User’s Guide and Codebook for the ANES 2016 Time Series Voter Validation Supplemental Data](http://www.electionstudies.org/studypages/anes_timeseries_2016/anes_timeseries_2016voteval_userguidecodebook.pdf)
+
+ - [User’s Guide and Codebook for the CCES 2016 Voter Validation Supplemental Data](https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/2NNA4L)
 
 Data:
 
-[ANES 2016 Time Series Voter Validation Supplemental Data](http://www.electionstudies.org/studypages/download/datacenter_all_NoData.php)
+ - [ANES 2016 Time Series Voter Validation Supplemental Data](http://www.electionstudies.org/studypages/download/datacenter_all_NoData.php)
+
+ - [CCES 2016 Voter Validation Supplemental Data](https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/2NNA4L)
+
+Table of Contents
+=========================
+
+- [Installation Instructions](#content1)
+
+- Examples:
+
+  * [the `fastLink` wrapper](#content2)
+  
+  * [clustering observartions to produce blocks](#content3)
+  
+  * [running the algorith step-by-step](#content4)
+  
+  * [using auxiliary information to inform `fastLink`](#content5)
+  
+  * [random sampling with `fastLink`](#content6)
+  
+  * [fiding duplicates within a dataset via `fastLink`](#content7)
+
+<div id='content1'/>
 
 Installation Instructions
--------------------------
+----------------------------
 
 `fastLink` is available on CRAN and can be installed using:
 
@@ -38,6 +65,8 @@ Then, load `devtools` and use the function `install_github()` to install `fastLi
 library(devtools)
 install_github("kosukeimai/fastLink",dependencies=TRUE)
 ```
+
+<div id='content2'/>
 
 Simple usage example
 --------------------
@@ -599,6 +628,8 @@ where each column gives the match count, match rate, false discovery rate (FDR) 
 
 -   `digits`: Number of digits to include in the summary object. Default is 3.
 
+<div id='content3'/>
+
 ### Preprocessing Matches via Clustering
 
 In order to reduce the number of pairwise comparisons that need to be conducted, researchers will often cluster similar observations from dataset A and dataset B together so that comparisons are only made between these maximally similar groups. Here, we implement a form of this clustering that uses word embedding, a common preprocessing method for textual data, to form maximally similar groups.
@@ -644,6 +675,8 @@ The output of `clusterMatch()` includes the following entries:
 -   `dims.pca`: The number of dimensions from the PCA step included in the K-means algorithm (if word embedding clustering is used).
 
 If using word embedding clustering, the clustering proceeds in three steps. First, a word embedding matrix is created out of the provided data. For instance, a word embedding of the name `ben` would be a vector of length 26, where each entry in the vector represents a different letter. That matrix takes the value 0 for most entries, except for entry 2 (B), 5 (E), and 14 (N), which take the count of 1 (representing the number of times that letter appears in the string). Second, principal components analysis is run on the word embedding matrix. Last, a subset of dimensions from the PCA step are selected according to the amount of variance explained by the dimensions, and then the K-means algorithm is run on that subset of dimensions in order to form the clusters.
+
+<div id='content4'/>
 
 ### Running the algorithm step-by-step
 
@@ -775,6 +808,8 @@ summary(em.out)
     ## 2  Match Rate 14.286% 14.286% 14.286% 12.286%
     ## 3         FDR      0%      0%      0%        
     ## 4         FNR      0%      0%      0%
+
+<div id='content5'/>
 
 Using Auxiliary Information to Inform `fastLink`
 ------------------------------------------------
@@ -971,6 +1006,8 @@ summary(agg.out)
     ## 11             Within-State      0%      0%      0%        
     ## 12             Across-State      0%      0%      0%
 
+<div id='content6'/>
+
 Random Sampling with `fastLink`
 -------------------------------
 
@@ -1118,3 +1155,77 @@ where `emlinkRS()` takes an EM object and applies the parameter estimates to all
 -   `nobs.a`: The number of rows in dataset A
 
 -   `nobs.b`: The number of rows in dataset B
+
+<div id='content7'/>
+
+Fiding Duplicates within a Dataset via `fastLink`
+--------------------------------------------------
+
+The following lines of code represent an example on how to find duplicates withing a dataset via `fastLink`. 
+
+As a first step, we will load a dataset that has 500 observations and among them 50 are duplicates.
+``` r
+library('fastLink')
+data("RLdata500", package = "RecordLinkage")
+```
+
+To keep track of observations, we will create two ids:
+
+- `id`: we create an id to keep track of each observation in `RLdata500`
+
+- `true_id`: is the true id that identifies the 450 unique observations in `RLdata500`
+
+``` r
+## In this example we know the thruth. How well do we do? This ID will tell us.
+RLdata500$true_id <- identity.RLdata500 
+
+## We create an ID for each observation (rownumber)
+RLdata500$id <- 1:nrow(RLdata500)
+```
+
+As before, we use `fastLink` (the wrapper function) to do the merge. Please not that we will set the option `dedupe.matches = FALSE` as we do not want a one-to-one match. If we were to impose a one-to-one match, we will end up with every observation being matched against itself and no duplicates would be found.
+
+```r
+## Using fastLink for fiding duplicates within a datasetL
+rl_matches <- fastLink(
+  dfA                = RLdata500,  
+  dfB                = RLdata500,
+  varnames           = c("fname_c1", "lname_c1", "by", "bm", "bd"),
+  stringdist.match   = c("fname_c1", "lname_c1"),
+  dedupe.matches = FALSE, 
+  return.all = FALSE
+)
+```
+
+Let's extract the ids of the observations we have matched:
+```r
+id1 <- RLdata500$id[rl_matches$matches$inds.a]
+id2 <- RLdata500$id[rl_matches$matches$inds.b]
+```
+
+We can also check how well we did in terms of the thruth:
+```r
+trueID1 <- RLdata500$true_id[rl_matches$matches$inds.a]
+trueID2 <- RLdata500$true_id[rl_matches$matches$inds.b]
+
+sum(trueID1 == trueID2)
+## 598
+```
+We were able to match 598 out of the 600 possible matches. There are 600 possible matches because we have 500 observations + 50 * 2 duplicates. Note that in a de-duplication exercise if observation `i` in dataset A is a duplicate of observation `j` in dataset B, we also have that observation `j` in dataset A is a duplicate of observation `i` in dataset B - that is why we multiply the number of duplicates by 2. 
+
+Finally, imagine that your goal is to construct an ID to uniquely identify observations in your dataset i.e., if observations `i` and `j` in dataset A are duplicates, then they should have the same ID. This is an example on how to get such an ID:
+```r
+## Getting a UNIQUE ID
+## Because in this exercise we have a symmetrical problem e.g.,
+## if observation 1 in A matches 2 in B, observation 1 in B matches 2 in A,
+## we will remove pairs on the lower diagonal of the sample space
+keep <- id1 > id2
+
+## link between original ID and the duplicated ID
+id.duplicated <- id1[keep]
+id.original <- id2[keep]
+
+## We create a new id and replace the ID for the duplicates
+RLdata500$id_new <- RLdata500$id
+RLdata500$id_new[RLdata500$id_new %in% id.original] <- id.duplicated
+```
