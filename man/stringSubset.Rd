@@ -23,8 +23,7 @@ If an observation has no possible matches above this threshold, it is discarded 
 \item{n.cores}{Number of cores to parallelize over. Default is NULL.}
 }
 \value{
-A list of length two, where the both entries are a vector of dummies corresponding to dataset A (entry 1) and dataset B (entry 2). A value of 1 indicates that
-the observation should be used in the match, while an entry of 0 should not be included.
+A list of length two, where the both entries are a vector of indices to be included in the match from dataset A (entry 1) and dataset B (entry 2).
 }
 \description{
 Removes as candidate matches any observations with no close matches on

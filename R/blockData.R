@@ -14,8 +14,7 @@
 #' @param jw.weight Parameter that describes the importance of the first characters of a string (only needed if stringdist.method = "jw"). Default is .10.
 #' @param n.cores Number of cores to parallelize over. Default is NULL.
 #'
-#' @return A list of length two, where the both entries are a vector of dummies corresponding to dataset A (entry 1) and dataset B (entry 2). A value of 1 indicates that
-#' the observation should be used in the match, while an entry of 0 should not be included.
+#' @return A list of length two, where the both entries are a vector of indices to be included in the match from dataset A (entry 1) and dataset B (entry 2). 
 #'
 #' @examples
 #' \dontrun{
@@ -54,11 +53,9 @@ stringSubset <- function(vecA, vecB,
     gamma.sub <- do.call(Map, c(c, gamma.out[[1]]))
 
     ## Get the voter file ids
-    ids.A <- rep(0, length(vecA))
-    ids.B <- rep(0, length(vecB))
-    ids.A[unique(gamma.sub[[1]])] <- 1
-    ids.B[unique(gamma.sub[[2]])] <- 1
-    out <- list(dfA.block = ids.A, dfB.block = ids.B)
+    ids.A <- unique(gamma.sub[[1]])
+    ids.B <- unique(gamma.sub[[2]])
+    out <- list(dfA.inds = ids.A[order(ids.A)], dfB.inds = ids.B[order(ids.B)])
     class(out) <- "fastLink.block"
     
     return(out)
