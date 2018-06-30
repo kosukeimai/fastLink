@@ -5,9 +5,7 @@
 \title{blockData}
 \usage{
 blockData(dfA, dfB, varnames, window.block, window.size,
-kmeans.block, nclusters, iter.max,
-stringdist.subset, similarity.threshold, stringdist.method, jw.weight,
-n.cores)
+kmeans.block, nclusters, iter.max, n.cores)
 }
 \arguments{
 \item{dfA}{Dataset A - to be matched to Dataset B}
@@ -30,18 +28,6 @@ blocked using k-means blocking. Must be present in varnames.}
 number of clusters where the average cluster size is 100,000 observations.}
 
 \item{iter.max}{Maximum number of iterations for the k-means algorithm to run. Default is 5000}
-
-\item{stringdist.subset}{A single variable name present in dfA and dfB to run string-distance
-subsetting on, so that any observations that is not close to any other observation on the metric
-will be excluded from all blocks.}
-
-\item{similarity.threshold}{Lower bound on string-distance measure for being considered a possible match.
-If an observation has no possible matches above this threshold, it is discarded from the match. Default is 0.8.}
-
-\item{stringdist.method}{The method to use for calculating string-distance similarity. Possible values are
-'jaro' (Jaro Distance), 'jw' (Jaro-Winkler), and 'lv' (Levenshtein). Default is 'jw'.}
-
-\item{jw.weight}{Parameter that describes the importance of the first characters of a string (only needed if stringdist.method = "jw"). Default is .10.}
 
 \item{n.cores}{Number of cores to parallelize over. Default is NULL.}
 }
