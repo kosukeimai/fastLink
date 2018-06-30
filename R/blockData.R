@@ -102,144 +102,155 @@ blockData <- function(dfA, dfB, varnames, window.block = NULL,
                       nclusters = max(round(min(nrow(dfA), nrow(dfB)) / 100000, 0), 1),                      
                       iter.max = 5000,
                       n.cores = NULL){
-  
-  ## ---------------------------
-  ## Clean data and check inputs
-  ## ---------------------------
-  if(any(class(dfA) %in% c("tbl_df", "data.table"))){
-    dfA <- as.data.frame(dfA)
-  }
-  if(any(class(dfB) %in% c("tbl_df", "data.table"))){
-    dfB <- as.data.frame(dfB)
-  }
-  if(any(!(varnames %in% names(dfA)))){
-    stop("Some variables in varnames are not present in dfA.")
-  }
-  if(any(!(varnames %in% names(dfB)))){
-    stop("Some variables in varnames are not present in dfB.")
-  }
-  if(any(!(window.block %in% varnames))){
-    stop("You have provided a variable name for window.block that is not in 'varnames'.")
-  }
-  if(any(!(kmeans.block %in% varnames))){
-    stop("You have provided a variable name for kmeans.block that is not in 'varnames'.")
-  }
-  classA <- lapply(dfA[,varnames], class)
-  classB <- lapply(dfB[,varnames], class)
-  if(any(unlist(classA)[names(classA) %in% window.block] != "numeric") |
-     any(unlist(classB)[names(classB) %in% window.block] != "numeric")){
-    stop("You have specified that a variable be blocked using window blocking, but that variable is not of class 'numeric'. Please check your variable classes.")
-  }
-  if(any(unlist(classA)[names(classA) %in% kmeans.block] == "numeric") |
-     any(unlist(classB)[names(classB) %in% kmeans.block] == "numeric")){
-    stop("You have specified that a variable be blocked using k-means blocking, but that variable is of class 'numeric'. Please check your variable classes.")
-  }
-  if(is.null(n.cores)){
-    n.cores <- detectCores() - 1
-  }
-  
-  ## ----------
-  ## Block data
-  ## ----------
-  gammalist <- vector(mode = "list", length = length(varnames))
-  for(i in 1:length(varnames)){
-    if(varnames[i] %in% window.block){
-      gammalist[[i]] <- gammaNUMCK2par(dfA[,varnames[i]], dfB[,varnames[i]], n.cores = n.cores, cut.a = window.size)
-    }else if(varnames[i] %in% kmeans.block){
-      gammalist[[i]] <- kmeansBlock(dfA[,varnames[i]], dfB[,varnames[i]],
-                                    nclusters = nclusters,
-                                    iter.max = iter.max,
-                                    n.cores = n.cores)
-    }else{
-      gammalist[[i]] <- gammaKpar(dfA[,varnames[i]], dfB[,varnames[i]], gender = FALSE, n.cores = n.cores)
+
+    cat("\n")
+    cat(c(paste(rep("=", 20), sep = "", collapse = ""), "\n"))
+    cat("blockData(): Blocking Methods for Record Linkage\n")
+    cat(c(paste(rep("=", 20), sep = "", collapse = ""), "\n\n"))
+    
+    ## ---------------------------
+    ## Clean data and check inputs
+    ## ---------------------------
+    if(any(class(dfA) %in% c("tbl_df", "data.table"))){
+        dfA <- as.data.frame(dfA)
     }
-  }
-  
-  ## --------------
-  ## Combine blocks
-  ## --------------
-  combineblocks_out <- combineBlocks(gammalist)
-  indlist_a <- apply(combineblocks_out$dfA.block, 2, function(x){which(x == 1)})
-  indlist_a <- indlist_a[lapply(indlist_a, length) > 0]
-  indlist_b <- apply(combineblocks_out$dfB.block, 2, function(x){which(x == 1)})
-  indlist_b <- indlist_b[lapply(indlist_b, length) > 0]
-  
-  ## Clean up
-  blocklist_out <- vector(mode = "list", length = length(indlist_a))
-  for(i in 1:length(blocklist_out)){
-    blocklist_out[[i]] <- list(dfA.inds = indlist_a[[i]], dfB.inds = indlist_b[[i]])
-  }
-  names(blocklist_out) <- paste0("block.", 1:length(blocklist_out))
-  class(blocklist_out) <- "fastLink.block"
-  return(blocklist_out)
-  
+    if(any(class(dfB) %in% c("tbl_df", "data.table"))){
+        dfB <- as.data.frame(dfB)
+    }
+    if(any(!(varnames %in% names(dfA)))){
+        stop("Some variables in varnames are not present in dfA.")
+    }
+    if(any(!(varnames %in% names(dfB)))){
+        stop("Some variables in varnames are not present in dfB.")
+    }
+    if(any(!(window.block %in% varnames))){
+        stop("You have provided a variable name for window.block that is not in 'varnames'.")
+    }
+    if(any(!(kmeans.block %in% varnames))){
+        stop("You have provided a variable name for kmeans.block that is not in 'varnames'.")
+    }
+    classA <- lapply(dfA[,varnames], class)
+    classB <- lapply(dfB[,varnames], class)
+    if(any(unlist(classA)[names(classA) %in% window.block] != "numeric") |
+       any(unlist(classB)[names(classB) %in% window.block] != "numeric")){
+        stop("You have specified that a variable be blocked using window blocking, but that variable is not of class 'numeric'. Please check your variable classes.")
+    }
+    if(any(unlist(classA)[names(classA) %in% kmeans.block] == "numeric") |
+       any(unlist(classB)[names(classB) %in% kmeans.block] == "numeric")){
+        stop("You have specified that a variable be blocked using k-means blocking, but that variable is of class 'numeric'. Please check your variable classes.")
+    }
+    if(is.null(n.cores)){
+        n.cores <- detectCores() - 1
+    }
+    
+    
+    ## ----------
+    ## Block data
+    ## ----------
+    cat("Blocking variables.\n")
+    gammalist <- vector(mode = "list", length = length(varnames))
+    for(i in 1:length(varnames)){
+        blocktype <- ifelse(varnames[i] %in% window.block, "window", ifelse(varnames[i] %in% kmeans.block, "k-means", "exact"))
+        cat("    Blocking variable", varnames[i], "using", blocktype, "blocking.\n")
+        if(varnames[i] %in% window.block){
+            gammalist[[i]] <- gammaNUMCK2par(dfA[,varnames[i]], dfB[,varnames[i]], n.cores = n.cores, cut.a = window.size)
+        }else if(varnames[i] %in% kmeans.block){
+            gammalist[[i]] <- kmeansBlock(dfA[,varnames[i]], dfB[,varnames[i]],
+                                          nclusters = nclusters,
+                                          iter.max = iter.max,
+                                          n.cores = n.cores)
+        }else{
+            gammalist[[i]] <- gammaKpar(dfA[,varnames[i]], dfB[,varnames[i]], gender = FALSE, n.cores = n.cores)
+        }
+    }
+    cat("\n")
+    
+    ## --------------
+    ## Combine blocks
+    ## --------------
+    cat("Combining blocked variables for final blocking assignments.\n\n")
+    combineblocks_out <- combineBlocks(gammalist)
+    indlist_a <- apply(combineblocks_out$dfA.block, 2, function(x){which(x == 1)})
+    indlist_a <- indlist_a[lapply(indlist_a, length) > 0]
+    indlist_b <- apply(combineblocks_out$dfB.block, 2, function(x){which(x == 1)})
+    indlist_b <- indlist_b[lapply(indlist_b, length) > 0]
+    
+    ## Clean up
+    blocklist_out <- vector(mode = "list", length = length(indlist_a))
+    for(i in 1:length(blocklist_out)){
+        blocklist_out[[i]] <- list(dfA.inds = indlist_a[[i]], dfB.inds = indlist_b[[i]])
+    }
+    names(blocklist_out) <- paste0("block.", 1:length(blocklist_out))
+    class(blocklist_out) <- "fastLink.block"
+    return(blocklist_out)
+    
 }
 
 combineBlocks <- function(blocklist){
-  
-  blkgrps <- NULL
-  
-  ## Unpack
-  str <- ""
-  for(i in 1:length(blocklist)){
-    str <- paste0(str, "block.", i, "=1:", length(blocklist[[i]][[1]]), ",")
-  }
-  str <- paste0("blkgrps <- expand.grid(", str, "stringsAsFactors = FALSE)")
-  eval(parse(text = str))
-  
-  ## Get indices for each block
-  indsA_out <- vector(mode = "list", length = nrow(blkgrps))
-  indsB_out <- vector(mode = "list", length = nrow(blkgrps))
-  for(i in 1:nrow(blkgrps)){
     
-    indsA <- vector(mode = "list", length = ncol(blkgrps))
-    indsB <- vector(mode = "list", length = ncol(blkgrps))
-    for(j in 1:ncol(blkgrps)){
-      indsA[[j]] <- blocklist[[j]][[1]][[blkgrps[i,j]]][[1]]
-      indsB[[j]] <- blocklist[[j]][[1]][[blkgrps[i,j]]][[2]]
+    blkgrps <- NULL
+    
+    ## Unpack
+    str <- ""
+    for(i in 1:length(blocklist)){
+        str <- paste0(str, "block.", i, "=1:", length(blocklist[[i]][[1]]), ",")
     }
-    indsA_intersect <- Reduce(intersect, indsA)
-    indsB_intersect <- Reduce(intersect, indsB)
-    if(length(indsA_intersect) > 0 & length(indsB_intersect) > 0){
-      indsA_out[[i]] <- cbind(indsA_intersect, i)
-      indsB_out[[i]] <- cbind(indsB_intersect, i)
+    str <- paste0("blkgrps <- expand.grid(", str, "stringsAsFactors = FALSE)")
+    eval(parse(text = str))
+    
+    ## Get indices for each block
+    indsA_out <- vector(mode = "list", length = nrow(blkgrps))
+    indsB_out <- vector(mode = "list", length = nrow(blkgrps))
+    for(i in 1:nrow(blkgrps)){
+        
+        indsA <- vector(mode = "list", length = ncol(blkgrps))
+        indsB <- vector(mode = "list", length = ncol(blkgrps))
+        for(j in 1:ncol(blkgrps)){
+            indsA[[j]] <- blocklist[[j]][[1]][[blkgrps[i,j]]][[1]]
+            indsB[[j]] <- blocklist[[j]][[1]][[blkgrps[i,j]]][[2]]
+        }
+        indsA_intersect <- Reduce(intersect, indsA)
+        indsB_intersect <- Reduce(intersect, indsB)
+        if(length(indsA_intersect) > 0 & length(indsB_intersect) > 0){
+            indsA_out[[i]] <- cbind(indsA_intersect, i)
+            indsB_out[[i]] <- cbind(indsB_intersect, i)
+        }
+        
     }
     
-  }
-  
-  ## Combine indices and create sparse matrix outputs
-  indsA_out <- do.call(rbind, indsA_out)
-  indsB_out <- do.call(rbind, indsB_out)
-  matA_out <- sparseMatrix(i = indsA_out[,1], j = indsA_out[,2])
-  matB_out <- sparseMatrix(i = indsB_out[,1], j = indsB_out[,2])
-  
-  out <- list(dfA.block = matA_out, dfB.block = matB_out)
-  class(out) <- "fastLink.block"
-  return(out)
-  
+    ## Combine indices and create sparse matrix outputs
+    indsA_out <- do.call(rbind, indsA_out)
+    indsB_out <- do.call(rbind, indsB_out)
+    matA_out <- sparseMatrix(i = indsA_out[,1], j = indsA_out[,2])
+    matB_out <- sparseMatrix(i = indsB_out[,1], j = indsB_out[,2])
+    
+    out <- list(dfA.block = matA_out, dfB.block = matB_out)
+    class(out) <- "fastLink.block"
+    return(out)
+    
 }
 
 kmeansBlock <- function(vecA, vecB, nclusters, iter.max, n.cores){
-  
-  if(class(vecA) == "factor"){
-    vecA <- as.character(vecA)
-  }
-  if(class(vecB) == "factor"){
-    vecB <- as.character(vecB)
-  }
-  
-  ## Clean and combine
-  vec <- c(vecA, vecB)
-  setid <- c(rep("A", length(vecA)), rep("B", length(vecB)))
-  dims <- as.numeric(as.factor(vec))
-  
-  ## Run kmeans
-  km.out <- kmeans(na.omit(dims), centers = nclusters, iter.max = iter.max)
-  cluster <- rep(NA, length(vec))
-  cluster[which(!is.na(vec))] <- km.out$cluster
-  
-  ## Run gammaKpar
-  out <- gammaKpar(cluster[setid == "A"], cluster[setid == "B"], gender = FALSE, n.cores = n.cores)
-  return(out)
-  
+    
+    if(class(vecA) == "factor"){
+        vecA <- as.character(vecA)
+    }
+    if(class(vecB) == "factor"){
+        vecB <- as.character(vecB)
+    }
+    
+    ## Clean and combine
+    vec <- c(vecA, vecB)
+    setid <- c(rep("A", length(vecA)), rep("B", length(vecB)))
+    dims <- as.numeric(as.factor(vec))
+    
+    ## Run kmeans
+    km.out <- kmeans(na.omit(dims), centers = nclusters, iter.max = iter.max)
+    cluster <- rep(NA, length(vec))
+    cluster[which(!is.na(vec))] <- km.out$cluster
+    
+    ## Run gammaKpar
+    out <- gammaKpar(cluster[setid == "A"], cluster[setid == "B"], gender = FALSE, n.cores = n.cores)
+    return(out)
+    
 }
