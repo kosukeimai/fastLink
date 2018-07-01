@@ -132,10 +132,6 @@ blockData <- function(dfA, dfB, varnames, window.block = NULL,
        any(unlist(classB)[names(classB) %in% window.block] != "numeric")){
         stop("You have specified that a variable be blocked using window blocking, but that variable is not of class 'numeric'. Please check your variable classes.")
     }
-    if(any(unlist(classA)[names(classA) %in% kmeans.block] == "numeric") |
-       any(unlist(classB)[names(classB) %in% kmeans.block] == "numeric")){
-        stop("You have specified that a variable be blocked using k-means blocking, but that variable is of class 'numeric'. Please check your variable classes.")
-    }
     if(is.null(n.cores)){
         n.cores <- detectCores() - 1
     }
