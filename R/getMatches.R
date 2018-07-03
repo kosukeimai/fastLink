@@ -1,7 +1,8 @@
 #' getMatches
 #'
 #' Subset two data frames to the matches returned by \code{fastLink()}
-#' or \code{matchesLink()}.
+#' or \code{matchesLink()}. Can also return a single deduped data frame
+#' if dfA and dfB are identical and fl.out is of class 'fastLink.dedupe'.
 #'
 #' @usage getMatches(dfA, dfB, fl.out, threshold.match, combine.dfs)
 #' @param dfA Dataset A - matched to Dataset B by \code{fastLink()}.
@@ -36,8 +37,15 @@ getMatches <- function(dfA, dfB, fl.out, threshold.match = 0.85, combine.dfs = T
         dfB <- as.data.frame(dfB)
     }
 
+    if(inherits(fl.out, "fastLink.dedupe") & !identical(dfA, dfB)){
+        stop("You have provided a fastLink object from deduping a single data frame, but dfA and dfB are not identical. Please check your inputs.")
+    }
+    if(identical(dfA, dfB) & !inherits(fl.out, "fastLink.dedupe")){
+        stop("dfA and dfB are identical, but fl.out is not of class 'fastLink.dedupe.' Please check your inputs.")
+    }
+
     ## Depending on class
-    if("matchesLink" %in% class(fl.out)){
+    if(inherits(fl.out, "matchesLink")){
         dfA.match <- dfA[fl.out$inds.a,]
         dfB.match <- dfB[fl.out$inds.b,]
         if(combine.dfs){
@@ -51,6 +59,28 @@ getMatches <- function(dfA, dfB, fl.out, threshold.match = 0.85, combine.dfs = T
         }else{
             out <- list(dfA.match = dfA.match, dfB.match = dfB.match)
         }
+    }else if(inherits(fl.out, "fastLink.dedupe")){
+
+        ## Get ID
+        id_tmp <- 1:nrow(dfA)
+
+        ## Subset
+        idA <- id_tmp[fl.out$matches$inds.a]
+        idB <- id_tmp[fl.out$matches$inds.b]
+
+        ## Remove pairs on the lower diagonal of the sample space
+        keep <- idA > idB
+
+        ## link between original ID and the duplicated ID
+        id.duplicated <- idA[keep]
+        id.original <- idB[keep]
+
+        ## Create new ID
+        dfA$dedupe.ids <- id_tmp
+        dfA$dedupe.ids[dfA$dedupe.ids %in% id.original] <- id.duplicated
+
+        out <- dfA
+        
     }else{
         dfA.match <- dfA[fl.out$matches$inds.a,]
         dfB.match <- dfB[fl.out$matches$inds.b,]

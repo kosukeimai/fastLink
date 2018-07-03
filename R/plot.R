@@ -17,9 +17,9 @@
 plot.fastLink <- function(x, posterior.range = c(.85, 1), ...){
     
     ## Extract EM object
-    if("fastLink.EM" %in% class(x)){
+    if(inherits(x, "fastLink.EM")){
         em <- x
-    }else if(length(class(x)) == 1 & "fastLink" %in% class(x)){
+    }else{
         em <- x$EM
     }
 
