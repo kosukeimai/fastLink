@@ -29,7 +29,7 @@
 #' @export
 #' @importFrom parallel detectCores makeCluster stopCluster mclapply
 #' @importFrom doParallel registerDoParallel
-#' @importFrom foreach "%dopar%" foreach
+#' @importFrom foreach "%dopar%" "%do%" foreach
 ## ------------------------
 ## To count unique patterns:
 ## tableCounts is the
@@ -80,18 +80,21 @@ tableCounts <- function(gammalist, nobs.a, nobs.b, n.cores = NULL) {
 
     ## Run main function
     if(Sys.info()[['sysname']] == 'Darwin') {
-    	cl <- makeCluster(nc)
-    	registerDoParallel(cl)
+        if (nc == 1) '%oper%' <- foreach::'%do%'
+        else { 
+            '%oper%' <- foreach::'%dopar%'
+            cl <- makeCluster(nc)
+            registerDoParallel(cl)
+            on.exit(stopCluster(cl))
+        }
 
-        gammas <- foreach(i = 1:nrow(ind)) %dopar% {
+        gammas <- foreach(i = 1:nrow(ind)) %oper% {
             m_func_par(temp = temp, ptemp = ptemp, natemp = natemp,
                        limit1 = limit.1, limit2 = limit.2,
                        nlim1 = n.lim.1, nlim2 = n.lim.2,
                        ind = as.matrix(t(ind[i, ])), listid = rep(1, 2),
                        matchesLink = FALSE, threads = 1)
       	}
-
-      	stopCluster(cl)
         
 	gammas_mat <- list()
 	for(i in 1:length(gammas)){
