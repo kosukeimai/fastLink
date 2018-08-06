@@ -26,7 +26,8 @@ Default is 0.85.}
 }
 \description{
 Subset two data frames to the matches returned by \code{fastLink()}
-or \code{matchesLink()}.
+or \code{matchesLink()}. Can also return a single deduped data frame
+if dfA and dfB are identical and fl.out is of class 'fastLink.dedupe'.
 }
 \examples{
 \dontrun{

@@ -100,17 +100,20 @@ gammaNUMCK2par <- function(matAp, matBp, n.cores = NULL, cut.a = 1) {
 
     do <- expand.grid(1:n.slices2, 1:n.slices1)
 
-    nc <- n.cores2
-    cl <- makeCluster(nc)
-    registerDoParallel(cl)
+    if (n.cores2 == 1) '%oper%' <- foreach::'%do%'
+    else { 
+        '%oper%' <- foreach::'%dopar%'
+        cl <- makeCluster(n.cores2)
+        registerDoParallel(cl)
+        on.exit(stopCluster(cl))
+    }
 
-    temp.f <- foreach(i = 1:nrow(do), .packages = c("Rcpp", "Matrix")) %dopar% {
+    temp.f <- foreach(i = 1:nrow(do), .packages = c("Rcpp", "Matrix")) %oper% {
         r1 <- do[i, 1]
         r2 <- do[i, 2]
         difference(temp.1[[r1]], temp.2[[r2]], cut.a)
     }
 
-    stopCluster(cl)
     gc()
 
     reshape2 <- function(s) { s[[1]] }
@@ -125,15 +128,19 @@ gammaNUMCK2par <- function(matAp, matBp, n.cores = NULL, cut.a = 1) {
     matches.2 <- lapply(seq_len(nrow(n.values.2)), function(i) n.values.2[i, ])
 
     if(Sys.info()[['sysname']] == 'Windows') {
-        nc <- n.cores
-        cl <- makeCluster(nc)
-        registerDoParallel(cl)
+        if (n.cores == 1) '%oper%' <- foreach::'%do%'
+        else { 
+            '%oper%' <- foreach::'%dopar%'
+            cl <- makeCluster(n.cores)
+            registerDoParallel(cl)
+            on.exit(stopCluster(cl))
+        }
 
-        final.list2 <- foreach(i = 1:length(matches.2)) %dopar% {
+        final.list2 <- foreach(i = 1:length(matches.2)) %oper% {
             ht1 <- which(matrix.1 == matches.2[[i]][[1]]); ht2 <- which(matrix.2 == matches.2[[i]][[2]])
             list(ht1, ht2)
       	}
-        stopCluster(cl)
+
     } else {
         no_cores <- n.cores
         final.list2 <- mclapply(matches.2, function(s){
