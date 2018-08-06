@@ -209,6 +209,15 @@ fastLink <- function(dfA, dfB, varnames,
         stop("You have specified that a variable be compared using numeric matching, but that variable is not of class 'numeric'. Please check your variable classes.")
     }
 
+    ## Check if data frames are identical
+    dedupe.df <- FALSE
+    if(identical(dfA, dfB)){
+        cat("dfA and dfB are identical, assuming deduplication of a single data set.\nSetting return.all to FALSE.\n\n")
+        dedupe.matches <- FALSE
+        return.all <- FALSE
+        dedupe.df <- TRUE
+    }
+
     ## Create boolean indicators
     sm.bool <- which(varnames %in% stringdist.match)
     stringdist.match <- rep(FALSE, length(varnames))
@@ -463,6 +472,9 @@ fastLink <- function(dfA, dfB, varnames,
             class(out) <- c("fastLink", "confusionTable")
         }else{
             class(out) <- "fastLink"
+        }
+        if(dedupe.df){
+            class(out) <- c(class(out), "fastLink.dedupe")
         }
     }else{
         out <- resultsEM
