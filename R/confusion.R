@@ -4,7 +4,7 @@
 #'
 #' @usage confusion(object, threshold)
 #'
-#' @param object A 'fastLink' object. Can only be run if 'return.all = TRUE' in 'fastLink().'
+#' @param object A 'fastLink' object or list of fastLink objects. Can only be run if 'return.all = TRUE' in 'fastLink().'
 #' @param threshold The matching threshold above which a pair is a true match. Default is .85
 #'
 #' @return 'confusion()' returns two tables - one calculating the confusion table, and another
@@ -27,19 +27,36 @@
 #' @export
 confusion <- function(object, threshold = .85) {
 
-    if(!("confusionTable" %in% class(object))){
+    ## Check classes
+    if(inherits(object, "list")){
+        classcheck_list <- unlist(lapply(object, function(x){inherits(x, "confusionTable")}))
+        if(sum(classcheck_list) < length(classcheck_list)){
+            stop("You can only run 'confusion()' if every fastLink object was run with 'return.all = TRUE' in 'fastLink()'.")
+        }
+    }else if(!inherits(object, "confusionTable")){
         stop("You can only run 'confusion()' if 'return.all = TRUE' in 'fastLink()'.")
     }
 
+    ## Format things
+    if(inherits(object, "list")){
+        nobs.a <- sum(unlist(lapply(object, "[[", "nobs.a")))
+        nobs.b <- sum(unlist(lapply(object, "[[", "nobs.b")))
+        posterior <- unlist(lapply(object, "[[", "posterior"))
+    }else{
+        nobs.a <- object$nobs.a
+        nobs.b <- object$nobs.b
+        posterior <- object$posterior
+    }
+
     ## TM
-    D <- sum(object$posterior * ifelse(object$posterior >= threshold, 1, 0))
+    D <- sum(posterior * ifelse(posterior >= threshold, 1, 0))
     ## FP
-    B <- sum(ifelse(object$posterior >= threshold, 1, 0)) - D
+    B <- sum(ifelse(posterior >= threshold, 1, 0)) - D
     ## TNM
-    A.1 <- sum((1 - object$posterior) * ifelse(object$posterior < threshold, 1, 0))
-    A <- A.1 + (min(object$nobs.a, object$nobs.b) - D - B - A.1) * (1 - 0.001)
+    A.1 <- sum((1 - posterior) * ifelse(posterior < threshold, 1, 0))
+    A <- A.1 + (min(nobs.a, nobs.b) - D - B - A.1) * (1 - 0.001)
     ## FN
-    C <- (min(object$nobs.a, object$nobs.b) - D - B) - A
+    C <- (min(nobs.a, nobs.b) - D - B) - A
     
     t1 <- round(rbind(c(D, B), c(C, A)), 2)
     colnames(t1) <- c("'True' Matches", "'True' Non-Matches")

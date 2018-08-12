@@ -7,7 +7,7 @@
 confusion(object, threshold)
 }
 \arguments{
-\item{object}{A 'fastLink' object. Can only be run if 'return.all = TRUE' in 'fastLink().'}
+\item{object}{A 'fastLink' object or list of fastLink objects. Can only be run if 'return.all = TRUE' in 'fastLink().'}
 
 \item{threshold}{The matching threshold above which a pair is a true match. Default is .85}
 }
