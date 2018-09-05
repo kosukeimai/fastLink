@@ -162,17 +162,22 @@ gammaCK2par <- function(matAp, matBp, n.cores = NULL, cut.a = 0.92, method = "jw
             registerDoParallel(cl)
             on.exit(stopCluster(cl))
         }
-
-        final.list2 <- foreach(i = 1:length(matches.2)) %oper% {
+        if(length(matches.2) > 0) {
+            final.list2 <- foreach(i = 1:length(matches.2)) %oper% {
             ht1 <- which(matrix.1 == matches.2[[i]][[1]]); ht2 <- which(matrix.2 == matches.2[[i]][[2]])
             list(ht1, ht2)
-      	}
-        
+      	  }
+        }    
     } else {
         no_cores <- n.cores
-        final.list2 <- mclapply(matches.2, function(s){
+            final.list2 <- mclapply(matches.2, function(s){
             ht1 <- which(matrix.1 == s[1]); ht2 <- which(matrix.2 == s[2]);
             list(ht1, ht2) }, mc.cores = getOption("mc.cores", no_cores))
+    }
+
+    if(length(matches.2) == 0){ 
+      final.list2 <- list()
+      warning("There are no identical (or nearly identical) matches. We suggest either changing the value of cut.p") 
     }
     
     na.list <- list()

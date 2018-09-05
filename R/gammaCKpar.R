@@ -173,24 +173,23 @@ gammaCKpar <- function(matAp, matBp, n.cores = NULL, cut.a = 0.92, cut.p = 0.88,
             cl <- makeCluster(n.cores)
             registerDoParallel(cl)
         }
-
-    	final.list2 <- foreach(i = 1:length(matches.2)) %oper% {
+        if(length(matches.2) > 0) {
+            final.list2 <- foreach(i = 1:length(matches.2)) %oper% {
             ht1 <- which(matrix.1 == matches.2[[i]][[1]]); ht2 <- which(matrix.2 == matches.2[[i]][[2]])
             list(ht1, ht2)
-      	}
-
+            }
+        }
         if(length(matches.1) > 0) {
-            final.list1 <- foreach(i = 1:length(matches.1)) %oper% {
+                final.list1 <- foreach(i = 1:length(matches.1)) %oper% {
                 ht1 <- which(matrix.1 == matches.1[[i]][[1]]); ht2 <- which(matrix.2 == matches.1[[i]][[2]])
                 list(ht1, ht2)
             }
         }
-        
         if(n.cores > 1){
             stopCluster(cl)
         }
     } else {
-        no_cores <- n.cores
+      no_cores <- n.cores
     	final.list2 <- mclapply(matches.2, function(s){
             ht1 <- which(matrix.1 == s[1]); ht2 <- which(matrix.2 == s[2]);
             list(ht1, ht2) }, mc.cores = getOption("mc.cores", no_cores))
@@ -198,6 +197,11 @@ gammaCKpar <- function(matAp, matBp, n.cores = NULL, cut.a = 0.92, cut.p = 0.88,
     	final.list1 <- mclapply(matches.1, function(s){
             ht1 <- which(matrix.1 == s[1]); ht2 <- which(matrix.2 == s[2]);
             list(ht1, ht2) }, mc.cores = getOption("mc.cores", no_cores))
+    }
+
+    if(length(matches.2) == 0){ 
+      final.list2 <- list()
+      warning("There are no identical (or nearly identical) matches. We suggest either changing the value of cut.p") 
     }
     
     if(length(matches.1) == 0){ 
