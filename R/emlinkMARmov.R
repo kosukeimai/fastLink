@@ -81,6 +81,11 @@ emlinkMARmov <- function(patterns, nobs.a, nobs.b,
     ##   The p.m, p.gamma.k.m, p.gamma.k.u, p.gamma.k.m, p.gamma.k.m, p.gamma.k.m, that
     ##   maximize the observed data log-likelihood of the agreement patterns
 
+    ## Edge case
+    if(is.null(nrow(patterns))){
+        patterns <- as.data.frame(t(as.matrix(patterns)))
+    }
+    
     ## Number of fields
     nfeatures <- ncol(patterns) - 1
 
@@ -421,6 +426,11 @@ emlinkRS <- function(patterns.out, em.out, nobs.a, nobs.b){
         stop("Your `em.out` object is not a valid emlinkMARmov object.")
     }
     options(digits = 16)
+
+    ## Edge case
+    if(is.null(nrow(patterns.out))){
+        patterns.out <- as.data.frame(t(as.matrix(patterns.out)))
+    }
     nfeatures <- ncol(patterns.out) - 1
     gamma.j.k <- as.matrix(patterns.out[, 1:nfeatures])
     N <- nrow(gamma.j.k)

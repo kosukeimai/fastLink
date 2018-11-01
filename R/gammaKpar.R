@@ -48,17 +48,17 @@ gammaKpar <- function(matAp, matBp, gender = FALSE, n.cores = NULL) {
 
     if(!gender){
         if(sum(is.na(matAp)) == length(matAp) | length(unique(matAp)) == 1){
-            cat("WARNING: You have no variation in this variable, or all observations are missing in dataset A.")
+            cat("WARNING: You have no variation in this variable, or all observations are missing in dataset A.\n")
         }
         if(sum(is.na(matBp)) == length(matBp) | length(unique(matBp)) == 1){
-            cat("WARNING: You have no variation in this variable, or all observations are missing in dataset B.")
+            cat("WARNING: You have no variation in this variable, or all observations are missing in dataset B.\n")
         }
     }else{
         if(sum(is.na(matAp)) == length(matAp)){
-            cat("WARNING: You have no variation in this variable, or all observations are missing in dataset A.")
+            cat("WARNING: You have no variation in this variable, or all observations are missing in dataset A.\n")
         }
         if(sum(is.na(matBp)) == length(matBp)){
-            cat("WARNING: You have no variation in this variable, or all observations are missing in dataset B.")
+            cat("WARNING: You have no variation in this variable, or all observations are missing in dataset B.\n")
         }
     }
 

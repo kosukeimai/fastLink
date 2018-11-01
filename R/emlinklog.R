@@ -70,7 +70,11 @@ emlinklog <- function(patterns, nobs.a, nobs.b,
     ## Returns:
     ##   The p.m, p.gamma.k.m, p.gamma.k.u, p.gamma.k.m, p.gamma.k.m, p.gamma.k.m, that
     ##   maximize the observed data log-likelihood of the agreement patterns
-    
+
+    ## Edge case
+    if(is.null(nrow(patterns))){
+        patterns <- as.data.frame(t(as.matrix(patterns)))
+    }
     
     ## Number of fields
     nfeatures <- ncol(patterns) - 1
