@@ -125,6 +125,15 @@ dfA.match <- dfA[matches.out$matches$inds.a,]
 dfB.match <- dfB[matches.out$matches$inds.b,]
 ```
 
+or using the `getMatches()` function:
+
+```{r}
+matched_dfs <- getMatches(
+  dfA = dfA, dfB = dfB, 
+  fl.out = matches.out, threshold.match = 0.85
+)
+```
+
 We can also examine the EM object:
 ```{r}
 matches.out$EM
@@ -167,182 +176,73 @@ where each column gives the match count, match rate, false discovery rate (FDR) 
 
 - `digits`: Number of digits to include in the summary object. Default is 3.
 
-### Preprocessing Matches via Clustering
-In order to reduce the number of pairwise comparisons that need to be conducted, researchers will often cluster similar observations from dataset A and dataset B together so that comparisons are only made between these maximally similar groups. Here, we implement a form of this clustering that uses word embedding, a common preprocessing method for textual data, to form maximally similar groups.
+### Preprocessing Matches via Blocking
+In order to reduce the number of pairwise comparisons that need to be conducted, researchers will often block similar observations from dataset A and dataset B together so that comparisons are only made between these maximally similar groups. Here, we implement a form of this clustering that uses word embedding, a common preprocessing method for textual data, to form maximally similar groups.
 
-First, we provide some guidance on how to choose the variables to cluster on. We recommend specifically that researchers cluster on first name only - matching on address fields will fail to group people who move into the same group, while matching on last name will fail to cluster women who changed their last name after marriage. Date fields will often change due to administrative errors, and while there may be administrative errors in first name, the word embedding can accomodate those errors while clustering similar spellings in the same group.
+In \fastLink, the function `blockData()` can block two data sets using a single variable or combinations of variables using several different blocking techniques. The basic functionality is similar to that of `fastLink()`, where the analyst inputs two data sets and a vector of variable names that they want to block on. A simple example follows, where we are blocking the two sample data sets by gender:
 
-The `clusterMatch()` function runs the clustering procedure from start to finish:
+```{r, echo = FALSE}
+fl_out <- fastLink(dfA, dfB,
+                   varnames = c("firstname", "middlename", "lastname",
+                                "housenum", "streetname", "city", "birthyear"))
+
+gender_match <- sample(c("M", "F"), nrow(fl_out$matches), replace = TRUE)
+
+gender_a <- rep(NA, nrow(dfA))
+gender_a[fl_out$matches$inds.a] <- gender_match
+
+gender_b <- rep(NA, nrow(dfB))
+gender_b[fl_out$matches$inds.b] <- gender_match
+
+gender_a[is.na(gender_a)] <- sample(c("M", "F"), sum(is.na(gender_a)), replace = TRUE)
+gender_b[is.na(gender_b)] <- sample(c("M", "F"), sum(is.na(gender_b)), replace = TRUE)
+
+dfA$gender <- gender_a
+dfB$gender <- gender_b
+```
 ```{r}
-cluster.out <- clusterMatch(vecA = dfA$firstname, vecB = dfB$firstname, nclusters = 3)
+blockgender_out <- blockData(dfA, dfB, varnames = "gender")
+names(blockgender_out)
 ```
 
-- `vecA`: The variable to cluster on in dataset A.
+In its simplest usage, \texttt{blockData()} takes two data sets and a single variable name for the \texttt{varnames} argument, and it returns the indices of the member observations for each block. Data sets can then be subsetted as follows and the match can then be run within each block separately:
 
-- `vecB`: The variable to cluster on in dataset B.
-
-- `nclusters`: The number of clusters to create. 
-
-Other arguments that can be provided include:
-
-- `word.embed`: Whether to use word embedding clustering, which is explained in more detail below. If `FALSE`, then alphabetical clustering is used. Default is FALSE.
-
-- `max.n`: The maximum size of a dataset in a cluster. `nclusters` is then chosen to reflect this maximum n size. If `nclusters` is filled, then `max.n` should be left as NULL, and vice versa.
-
-- `min.var`: The amount of variance the least informative dimension of the PCA should contribute in order to be included in the K-means step. Only relevant for word embedding clustering. The default value is .2 (out of 1).
-
-- `weighted.kmeans`: Whether to weight the dimensions of the PCA used in the K-means algorithm by the amount of variance explained by each feature. Only relevant for word embedding clustering. Default is `TRUE`.
-
-- `iter.max`: The maximum number of iterations the K-means algorithm should attempt to run. The default value is 5000.
-
-The output of `clusterMatch()` includes the following entries:
-
-- `clusterA`: Cluster assignments for dataset A.
-
-- `clusterB`: Cluster assignments for dataset B.
-
-- `n.clusters`: The number of clusters created.
-
-- `kmeans`: The output from the K-means algorithm.
-
-- `pca`: The output from the PCA step (if word embedding clustering is used).
-
-- `dims.pca`: The number of dimensions from the PCA step included in the K-means algorithm (if word embedding clustering is used).
-
-If using word embedding clustering, the clustering proceeds in three steps. First, a word embedding matrix is created out of the provided data. For instance, a word embedding of the name `ben` would be a vector of length 26, where each entry in the vector represents a different letter. That matrix takes the value 0 for most entries, except for entry 2 (B), 5 (E), and 14 (N), which take the count of 1 (representing the number of times that letter appears in the string). Second, principal components analysis is run on the word embedding matrix. Last, a subset of dimensions from the PCA step are selected according to the amount of variance explained by the dimensions, and then the K-means algorithm is run on that subset of dimensions in order to form the clusters.
-
-### Running the algorithm step-by-step
-The algorithm can also be run step-by-step for more flexibility. We outline how to do this in the following section, which replicates the example in the wrapper above.
-
-#### 1) Agreement calculation variable-by-variable
-The first step for running the `fastLink` algorithm is to determine
-which observations agree, partially agree, disagree, and are missing
-on which variables. All functions provide the indices of the NA's. There are three separate
-`gammapar` functions to calculate this agreement variable-by-variable:
-
-- `gammaKpar()`: Binary agree-disagree on non-string variables.
-
-- `gammaCKpar()`: Agree-partial agree-disagree on string variables (using Jaro-Winkler distance to measure agreement).
-
-- `gammaCK2par()`: Binary agree-disagree on string variables (using
-Jaro-Winkler distance to measure agreement).
-
-For instance, if we wanted to include partial string matches on `firstname`, `lastname`, and `streetname`, but only do exact string matches on `city` and `middlename` (with exact non-string matches on `birthyear` and `housenum`), we would run:
 ```{r}
-g_firstname <- gammaCKpar(dfA$firstname, dfB$firstname)
-g_middlename <- gammaCK2par(dfA$middlename, dfB$middlename)
-g_lastname <- gammaCKpar(dfA$lastname, dfB$lastname)
-g_housenum <- gammaKpar(dfA$housenum, dfB$housenum)
-g_streetname <- gammaCKpar(dfA$streetname, dfB$streetname)
-g_city <- gammaCK2par(dfA$city, dfB$city)
-g_birthyear <- gammaKpar(dfA$birthyear, dfB$birthyear)
-```
-All functions include an `n.cores` argument where you can prespecify
-the number of registered cores to be used. If you do not specify
-this, the function will automatically detect the number of available
-cores and wil parallelize over those. In addition, for `gammaCKpar()`
-and `gammaCK2par()`, the user can specify the lower bound for an
-agreement using `cut.a`. For both functions, the default is 0.92. For
-`gammaCKpar()`, the user can also specify the lower bound for a
-partial agreement using `cut.p` - here, the default is 0.88.
+## Subset dfA into blocks
+dfA_block1 <- dfA[blockgender_out$block.1$dfA.inds,]
+dfA_block2 <- dfA[blockgender_out$block.2$dfA.inds,]
 
-#### 2) Counting unique agreement patterns
-Once we have run the gamma calculations, we then use the
-`tableCounts()` function to count the number of unique matching
-patterns in our data. This is the only input necessary for the EM
-algorithm. We run `tableCounts()` as follows:
-```{r}
-gammalist <- list(g_firstname, g_middlename, g_lastname, g_housenum, g_streetname, g_city, g_birthyear)
-tc <- tableCounts(gammalist, nobs.a = nrow(dfA), nobs.b = nrow(dfB))
-```
-As with the functions above, `tableCounts()` also includes an `n.cores`
-argument. If left unspecified, the function will automatically
-determine the number of available cores for parallelization.
+## Subset dfB into blocks
+dfB_block1 <- dfB[blockgender_out$block.1$dfB.inds,]
+dfB_block2 <- dfB[blockgender_out$block.2$dfB.inds,]
 
-#### 3) Running the EM algorithm
-We next run the EM algorithm to calculate the Fellegi-Sunter
-weights. The only required input to this function is the output from
-`tableCounts()`, as follows:
-```{r}
-## Run EM algorithm
-em.out <- emlinkMARmov(tc, nobs.a = nrow(dfA), nobs.b = nrow(dfB))
+## Run fastLink on each
+fl_out_block1 <- fastLink(
+  dfA_block1, dfB_block1,
+  varnames = c("firstname", "lastname", "housenum",
+               "streetname", "city", "birthyear")
+)
+fl_out_block2 <- fastLink(
+  dfA_block2, dfB_block2,
+  varnames = c("firstname", "lastname", "housenum",
+               "streetname", "city", "birthyear")
+)
 ```
 
-As with the other functions above, `emlinkMARmov()` accepts an `n.cores`
-argument. Other optional arguments include:
+`blockData()` also implements other methods of blocking other than exact blocking. Analysts commonly use {\it window blocking} for numeric variables, where a given observation in dataset A will be compared to all observations in dataset B where the value of the blocking variable is within $\pm K$ of the value of the same variable in dataset A. The value of $K$ is the size of the window --- for instance, if we wanted to compare observations where birth year is within $\pm 1$ year, the window size is 1. Below, we block `dfA` and `dfB` on gender and birth year, using exact blocking on gender and window blocking with a window size of 1 on birth year:
 
-- `p.m`: Starting values for the probability of being in the matched
-set
-
-- `p.gamma.k.m`: Starting values for the probability that conditional
-on being in the matched set, we observed a specific agreement value
-for field k. A vector with length equal to the number of linkage
-fields
-
-- `p.gamma.k.u`: Starting values for the probability that conditional
-on being in the unmatched set, we observed a specific agreement value
-for field k. A vector with length equal to the number of linkage
-fields
-
-- `tol`: Convergence tolerance for the EM algorithm
-
-- `iter.max`: Maximum number of iterations for the EM algorithm
-
-and additional arguments that allow the user to specify priors calculated from auxiliary information. We will discuss these further at the end of this vignette.
-
-#### 4) Finding the matches
-Once we've run the EM algorithm and selected our lower bound for
-accepting a match, we then run `matchesLink()` to get the paired
-indices of `dfA` and `dfB` that match. We run the function as follows:
 ```{r}
-matches.out <- matchesLink(gammalist, nobs.a = nrow(dfA), nobs.b = nrow(dfB),
-                           em = em.out, thresh = .95)
-```
-Here, `thresh` indicates the range of posterior probabilities that we want to declare a match --- in our case, we've chosen to accept as a match any pair with a 95% or higher posterior matching probability. If we specify `thresh = c(.85, .95)`, for instance, the function will return all pairs with a posterior matching probability between 85% and 95%.
-
-As with the other functions above, `matchesLink()` accepts an `n.cores`
-argument. This returns a matrix where each row is a match with the relevant indices of
-`dfA` (column 1) and `dfB` (column 2).
-
-The datasets can then be subsetted down to the matches as follows:
-```{r}
-dfA.match <- dfA[matches.out$inds.a,]
-dfB.match <- dfB[matches.out$inds.b,]
+## Exact block on gender, window block (+/- 1 year) on birth year
+blockdata_out <- blockData(dfA, dfB, varnames = c("gender", "birthyear"),
+                           window.block = "birthyear", window.size = 1)
 ```
 
-#### 5) Deduping the Matches
-After returning the matched pairs, we can dedupe them using the `dedupeMatches()` function to ensure that each observation in dataset A is matched to at most a single observation in dataset B, and vice versa. The deduplication also corrects the EM object so that it displays the proper counts of patterns. We run the function as follows:
+`blockData()` also allows users to block variables using k-means clustering, so that similar values of string and numeric variables are blocked together. When applying k-means blocking to string variables such as name, the algorithm orders observations so that alphabetically close names are grouped together in a block. In the following example, we block `dfA` and `dfB` on gender and first name, again using exact blocking on gender and k-means blocking on first name while specifying 2 clusters for the k-means algorithm:
+
 ```{r}
-dm.out <- dedupeMatches(dfA.match, dfB.match, EM = em.out, matchesLink = matches.out,
-                        varnames = c("firstname", "middlename", "lastname", "housenum", 
-                                     "streetname", "city", "birthyear"),
-                        stringdist.match = c(TRUE, FALSE, TRUE, FALSE, TRUE, TRUE, FALSE),
-                        partial.match = c(TRUE, FALSE, TRUE, FALSE, TRUE, FALSE, FALSE))
-```
-which returns a list with the following elements:
-
-- `matchesA`: A deduped version of dataset A (post-matching)
-
-- `matchesB`: A deduped version of dataset B (post-matching)
-
-- `EM`: The EM object with the counts corrected to reflect deduping.
-
-- `matchesLink`: Deduped indices of the matched pairs from dataset A and dataset B.
-
-- `max.zeta`: The posterior matching probability for each matched pair.
-
-Other arguments to `dedupeMatches()` include:
-
-- `linprog`: Whether to use Winkler's linear assignment solution to the deduping problem. Recommended, but can be slow on larger data sets. If set to `FALSE`, then the deduping is conducted by iteratively selecting the matched pair for a given observation with the largest posterior match probability. Default is `TRUE`.
-
-- `cut.a`: Lower bound for full string-distance match, ranging between 0 and 1. Default is 0.92.
-
-- `cut.p`: Lower bound for partial string-distance match, ranging between 0 and 1. Default is 0.88.
-
-Lastly, we can summarize the match as done earlier by feeding the output from `emlinkMARmov()` (or the `EM` entry returned by `dedupeMatches()`) into the `summary()` function:
-```{r}
-## Non-deduped dataframe
-summary(em.out)
+## Exact block on gender, k-means block on first name with 2 clusters
+blockdata_out <- blockData(dfA, dfB, varnames = c("gender", "firstname"),
+                           kmeans.block = "firstname", nclusters = 2)
 ```
 
 ## Using Auxiliary Information to Inform `fastLink`
@@ -400,36 +300,19 @@ matches.out.aux <- fastLink(
 ```
 where `priors.obj` is an input for the the optimal prior parameters. This can be calculated by `calcMoversPriors()`, or can be provided by the user as a list with two entries named `lambda.prior` and `pi.prior`. `w.lambda` and `w.pi` are user-specified weights between 0 and 1 indicating the weighting between the MLE estimate and the prior, where a weight of 0 indicates no weight being placed on the prior. `address_field` is a vector of booleans of the same length as `varnames`, where `TRUE` indicates an address-related field used for matching. 
 
-### Incorporating Auxiliary Information when Running the Algorithm Step-by-Step
-If we are running the algorithm step-by-step, we can incorporate the prior information into the EM algorithm as follows:
-```{r}
-em.out.aux <- emlinkMARmov(tc, nobs.a = nrow(dfA), nobs.b = nrow(dfB),
-                           prior.lambda = priors.out$lambda.prior, w.lambda = .5,
-                           prior.pi = priors.out$pi.prior, w.pi = .5,
-                           address.field = c(FALSE, FALSE, FALSE, FALSE, TRUE, FALSE, FALSE))
-```
-All other steps are the same. The newly specified arguments include the prior estimates of the parameters (`prior.lambda`, `prior.pi`), the weightings of the prior and MLE estimate (`w.lambda`, `w.pi`), and the vector of boolean indicators where `TRUE` indicates an address field (`address.field`). 
-
 ## Aggregating Multiple Matches Together
-Often, we run several different matches for a single data set - for instance, when blocking by gender or by some other criterion to reduce the number of pairwise comparisons. Here, we walk through how to aggregate those multiple matches into a single summary. First, we use the `clusterMatch()` function to partition the two datasets into two maximally similar groups:
+Often, we run several different matches for a single data set - for instance, when blocking by gender or by some other criterion to reduce the number of pairwise comparisons. Here, we walk through how to aggregate those multiple matches into a single summary. Here, we run `fastLink()` on the subsets of data defined by blocking on gender in the previous section:
 ```{r}
-cl.out <- clusterMatch(dfA$firstname, dfB$firstname, nclusters = 2)
-dfA$cluster <- cl.out$clusterA
-dfB$cluster <- cl.out$clusterB
-```
-and then run `fastLink()` on both subsets:
-```{r}
+## Run fastLink on each
 link.1 <- fastLink(
-  dfA = subset(dfA, cluster == 1), dfB = subset(dfB, cluster == 1), 
-  varnames = c("firstname", "middlename", "lastname", "housenum", "streetname", "city", "birthyear"),
-  stringdist.match = c("firstname", "middlename", "lastname", "streetname", "city"),
-  partial.match = c("firstname", "lastname", "streetname")
+  dfA_block1, dfB_block1,
+  varnames = c("firstname", "lastname", "housenum",
+               "streetname", "city", "birthyear")
 )
 link.2 <- fastLink(
-  dfA = subset(dfA, cluster == 2), dfB = subset(dfB, cluster == 2), 
-  varnames = c("firstname", "middlename", "lastname", "housenum", "streetname", "city", "birthyear"),
-  stringdist.match = c("firstname", "middlename", "lastname", "streetname", "city"),
-  partial.match = c("firstname", "lastname", "streetname")
+  dfA_block2, dfB_block2,
+  varnames = c("firstname", "lastname", "housenum",
+               "streetname", "city", "birthyear")
 )
 ```
 To aggregate the two matches into a single summary, we use the `aggregateEM()` function as follows:
@@ -485,56 +368,26 @@ summary(fs.out)
 
 In the first run of `fastLink()`, we specify `estimate.only = TRUE`, which runs the algorithm only through the EM estimation step and returns the EM object. In the second run of `fastLink()`, we provide the EM object from the first stage as an argument to `em.obj`. Then, using the parameter values calculated in the previous EM stage, we estimate posterior probabilities of belonging to the matched set for all matching patterns in the full dataset that were not present in the random sample. 
 
-This functionality can also be run step-by-step as follows:
+## Finding Duplicates within a Dataset via `fastLink`
+The following lines of code represent an example on how to find duplicates withing a dataset via `fastLink`. As before, we use `fastLink()` (the wrapper function) to do the merge. `fastLink()` will automatically detect that two datasets are identical, and will use the probabilistic match algorithm to indicate duplicated entries in the `dedupe.ids` covariate in the returned data frame.
+
 ```{r}
-## --------------
-## 30% sample run
-## --------------
-## Calculate gammas 
-g_firstname <- gammaCKpar(dfA.s$firstname, dfB.s$firstname)
-g_middlename <- gammaCK2par(dfA.s$middlename, dfB.s$middlename)
-g_lastname <- gammaCKpar(dfA.s$lastname, dfB.s$lastname)
-g_housenum <- gammaKpar(dfA.s$housenum, dfB.s$housenum)
-g_streetname <- gammaCKpar(dfA.s$streetname, dfB.s$streetname)
-g_city <- gammaCK2par(dfA.s$city, dfB.s$city)
-g_birthyear <- gammaKpar(dfA.s$birthyear, dfB.s$birthyear)
+## Add duplicates
+dfA <- rbind(dfA, dfA[sample(1:nrow(dfA), 10, replace = FALSE),])
 
-## Get counts
-gammalist <- list(g_firstname, g_middlename, g_lastname, g_housenum, g_streetname, g_city, g_birthyear)
-tc <- tableCounts(gammalist, nobs.a = nrow(dfA.s), nobs.b = nrow(dfB.s))
+## Run fastLink
+fl_out_dedupe <- fastLink(
+  dfA = dfA, dfB = dfA,
+  varnames = c("firstname", "lastname", "housenum",
+               "streetname", "city", "birthyear")
+)
 
-## Run EM algorithm
-em.out.rs <- emlinkMARmov(tc, nobs.a = nrow(dfA), nobs.b = nrow(dfB))
+## Run getMatches
+dfA_dedupe <- getMatches(dfA = dfA, dfB = dfA, fl.out = fl_out_dedupe)
 
-## ------------------------
-## Calculate on full sample
-## ------------------------
-## Calculate gammas 
-g_firstname <- gammaCKpar(dfA$firstname, dfB$firstname)
-g_middlename <- gammaCK2par(dfA$middlename, dfB$middlename)
-g_lastname <- gammaCKpar(dfA$lastname, dfB$lastname)
-g_housenum <- gammaKpar(dfA$housenum, dfB$housenum)
-g_streetname <- gammaCKpar(dfA$streetname, dfB$streetname)
-g_city <- gammaCK2par(dfA$city, dfB$city)
-g_birthyear <- gammaKpar(dfA$birthyear, dfB$birthyear)
+## Look at the IDs of the duplicates
+names(table(dfA_dedupe$dedupe.ids)[table(dfA_dedupe$dedupe.ids) > 1])
 
-## Get counts
-gammalist <- list(g_firstname, g_middlename, g_lastname, g_housenum, g_streetname, g_city, g_birthyear)
-tc <- tableCounts(gammalist, nobs.a = nrow(dfA), nobs.b = nrow(dfB))
-
-## Apply random sample EM object to full dataset
-em.obj.full <- emlinkRS(patterns.out = tc, em.out = em.out.rs, nobs.a = nrow(dfA), nobs.b = nrow(dfB))
-summary(em.obj.full)
-
-## Get matches
-matches.out <- matchesLink(gammalist, nobs.a = nrow(dfA), nobs.b = nrow(dfB), em = em.obj.full, thresh = .95)
+## Show duplicated observation
+dfA_dedupe[dfA_dedupe$dedupe.ids == 501,]
 ```
-where `emlinkRS()` takes an EM object and applies the parameter estimates to all new matching patterns. The arguments are:
-
-- `patterns.out`: The output from `tableCounts()`, with counts of the occurence of each matching pattern.
-
-- `em.out`: The output from `emlinkMARmov()`
-
-- `nobs.a`: The number of rows in dataset A
-
-- `nobs.b`: The number of rows in dataset B
