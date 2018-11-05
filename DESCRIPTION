@@ -6,14 +6,15 @@ Date: 2018-11-01
 Authors@R: c(
   person("Ted", "Enamorado", email = "fastlinkr@gmail.com", role = c("aut", "cre")),
   person("Ben", "Fifield", email = "fastlinkr@gmail.com", role = c("aut")),
-  person("Kosuke", "Imai", email = "kimai@Princeton.edu", role = c("aut"))
+  person("Kosuke", "Imai", email = "imai@harvard.edu", role = c("aut"))
   )
 Description: Implements a Fellegi-Sunter probabilistic record linkage model that allows for missing data
-    and the inclusion of auxiliary information. This includes functionalities to conduct a merge of two datasets under the Fellegi-Sunter model
-    using the Expectation-Maximization algorithm. In addition, tools for preparing, adjusting, and summarizing
-    data merges are included. The package implements methods described in Enamorado, Fifield,
-    and Imai (2017) ''Using a Probabilistic Model to Assist Merging of Large-scale Administrative
-    Records'', available at <http://imai.princeton.edu/research/linkage.html>.
+    and the inclusion of auxiliary information. This includes functionalities to conduct a merge of two 
+    datasets under the Fellegi-Sunter model using the Expectation-Maximization algorithm. In addition, 
+    tools for preparing, adjusting, and summarizing data merges are included. The package implements methods 
+    described in Enamorado, Fifield, and Imai (2017) ''Using a Probabilistic Model to Assist Merging of 
+    Large-scale Administrative Records'', forthcoming in American Political Science Review and is available 
+    at <http://imai.fas.harvard.edu/research/linkage.html>.
 License: GPL(>= 3)
 Imports:
     Matrix,
