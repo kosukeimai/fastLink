@@ -252,7 +252,7 @@ fl_out_block2 <- fastLink(
 )
 ```
 
-`blockData()` also implements other methods of blocking other than exact blocking. Analysts commonly use {\it window blocking} for numeric variables, where a given observation in dataset A will be compared to all observations in dataset B where the value of the blocking variable is within $\pm K$ of the value of the same variable in dataset A. The value of $K$ is the size of the window --- for instance, if we wanted to compare observations where birth year is within $\pm 1$ year, the window size is 1. Below, we block `dfA` and `dfB` on gender and birth year, using exact blocking on gender and window blocking with a window size of 1 on birth year:
+`blockData()` also implements other methods of blocking other than exact blocking. Analysts commonly use *window blocking* for numeric variables, where a given observation in dataset A will be compared to all observations in dataset B where the value of the blocking variable is within $\pm K$ of the value of the same variable in dataset A. The value of $K$ is the size of the window --- for instance, if we wanted to compare observations where birth year is within $\pm 1$ year, the window size is 1. Below, we block `dfA` and `dfB` on gender and birth year, using exact blocking on gender and window blocking with a window size of 1 on birth year:
 
 ```{r}
 ## Exact block on gender, window block (+/- 1 year) on birth year
