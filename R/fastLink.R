@@ -3,7 +3,7 @@
 #' Run the fastLink algorithm to probabilistically match
 #' two datasets.
 #'
-#' @usage fastLink(dfA, dfB, varnames, stringdist.match,
+#' @usage fastLink(dfA, dfB, formula, varnames, stringdist.match,
 #' stringdist.method, numeric.match, partial.match,
 #' cut.a, cut.p, jw.weight,
 #' cut.a.num, cut.p.num,
@@ -15,8 +15,9 @@
 #'
 #' @param dfA Dataset A - to be matched to Dataset B
 #' @param dfB Dataset B - to be matched to Dataset A
+#' @param formula An object of class ‘"formula"’: a symbolic description of the match to be run.
 #' @param varnames A vector of variable names to use for matching.
-#' Must be present in both dfA and dfB
+#' Must be present in both dfA and dfB. Muse either provide an argument for 'varnames' or for 'formula'.
 #' @param stringdist.match A vector of variable names indicating
 #' which variables should use string distance matching. Must be a subset of
 #' 'varnames' and must not be present in 'numeric.match'.
@@ -81,11 +82,11 @@
 #' @examples
 #' \dontrun{
 #' fl.out <- fastLink(dfA, dfB,
-#' varnames = c("firstname", "lastname", "streetname", "birthyear"),
+#' formula = ~ firstname + lastname + streetname + birthyear,
 #' n.cores = 1)
 #' }
 #' @export
-fastLink <- function(dfA, dfB, varnames,
+fastLink <- function(dfA, dfB, formula = NULL, varnames = NULL,
                      stringdist.match = NULL, 
                      stringdist.method = "jw",
                      numeric.match = NULL, 
@@ -109,6 +110,19 @@ fastLink <- function(dfA, dfB, varnames,
     ## --------------------------------------
     ## Process inputs and stop if not correct
     ## --------------------------------------
+    if(is.null(formula) & is.null(varnames)){
+        stop("Please provide either a formula with the matching variables, or a vector of variable names with the matching variables.")
+    }
+    if(!is.null(formula) & (!is.null(numeric.match) | !is.null(stringdist.match) | !is.null(partial.match))){
+        stop("Please only use the 'numeric.match', 'stringdist.match', and 'partial.match' functions when specifying 'varnames' instead of 'formula'.")
+    }
+    if(!is.null(formula)){
+        parse.out <- parse.formula(formula)
+        varnames <- parse.out$varnames
+        stringdist.match <- parse.out$stringdist.match
+        numeric.match <- parse.out$numeric.match
+        partial.match <- parse.out$partial.match
+    }
     if(any(class(dfA) %in% c("tbl_df", "data.table"))){
         dfA <- as.data.frame(dfA)
     }
