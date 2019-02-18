@@ -5,8 +5,8 @@
 \title{getPatterns}
 \usage{
 getPatterns(matchesA, matchesB, varnames, stringdist.match, numeric.match,
-  partial.match, stringdist.method = "jw", cut.a = 0.92, cut.p = 0.88,
-  jw.weight = 0.1, cut.a.num = 1, cut.p.num = 2.5)
+  partial.match, stringdist.method = "jw", cut.a = 0.92,
+  cut.p = 0.88, jw.weight = 0.1, cut.a.num = 1, cut.p.num = 2.5)
 }
 \arguments{
 \item{matchesA}{A dataframe of the matched observations in
