@@ -39,5 +39,6 @@ LinkingTo: RcppArmadillo, Rcpp, RcppEigen
 Encoding: UTF-8
 LazyData: true
 BugReports: https://github.com/kosukeimai/fastLink/issues
-RoxygenNote: 6.0.1
-Suggests: testthat
+RoxygenNote: 6.1.1
+Suggests: testthat, knitr
+VignetteBuilder: knitr
