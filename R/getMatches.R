@@ -1,3 +1,5 @@
+globalVariables(c('V2', 'V3', '.'))
+
 #' getMatches
 #'
 #' Subset two data frames to the matches returned by \code{fastLink()}
@@ -62,24 +64,33 @@ getMatches <- function(dfA, dfB, fl.out, threshold.match = 0.85, combine.dfs = T
     }else if(inherits(fl.out, "fastLink.dedupe")){
 
         ## Get ID
-        id_tmp <- 1:nrow(dfA)
+        id_tmp <- data.frame(id = 1:nrow(dfA))
 
-        ## Subset
-        idA <- id_tmp[fl.out$matches$inds.a]
-        idB <- id_tmp[fl.out$matches$inds.b]
+        ## Get matches
+        matches <- data.table(
+            cbind(
+                fl.out$matches$inds.b[fl.out$posterior >= threshold.match],
+                fl.out$matches$inds.a[fl.out$posterior >= threshold.match]
+            )
+        )
 
-        ## Remove pairs on the lower diagonal of the sample space
-        keep <- idA > idB
+        pasteT <- function(x) {
+            x = sort(x) # 1,2,3 is the same as 3,2,1
+            x = paste(x, collapse = ",") 
+            x
+        }
 
-        ## link between original ID and the duplicated ID
-        id.duplicated <- idA[keep]
-        id.original <- idB[keep]
+        ## Dedupe
+        matches[, V3 := pasteT(V2), by = "V1"]    
+        ans <- matches[, .(id_2 = unique(V3)), by = "V1"]
+        ans$id_2 <- as.numeric(as.factor(ans$id_2))
+        colnames(ans) <- c("id", "id_2")
 
-        ## Create new ID
-        dfA$dedupe.ids <- id_tmp
-        dfA$dedupe.ids[dfA$dedupe.ids %in% id.original] <- id.duplicated
-
+        ## Merge and output new df
+        out_df <- merge(id_tmp, ans, by = "id")
+        dfA$dedupe.ids <- out_df$id_2
         out <- dfA
+        
         
     }else{
         dfA.match <- dfA[fl.out$matches$inds.a,]
