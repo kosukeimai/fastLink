@@ -163,6 +163,26 @@ gammaCKpar <- function(matAp, matBp, n.cores = NULL, cut.a = 0.92, cut.p = 0.88,
     n.values.2 <- as.matrix(cbind(u.values.1[indexes.2[, 1]], u.values.2[indexes.2[, 2]]))
     n.values.1 <- as.matrix(cbind(u.values.1[indexes.1[, 1]], u.values.2[indexes.1[, 2]]))
 
+    if(sum(n.values.2 == "1234MF") > 0) {
+      t1 <- which(n.values.2 == "1234MF", arr.ind = T)[1]
+      n.values.2 <- n.values.2[-t1, ]; rm(t1)
+    }
+
+    if(sum(n.values.2 == "9876ES") > 0) {
+      t1 <- which(n.values.2 == "9876ES", arr.ind = T)[1]
+      n.values.2 <- n.values.2[-t1, ]; rm(t1)
+    }
+    
+    if(sum(n.values.1 == "1234MF") > 0) {
+      t1 <- which(n.values.1 == "1234MF", arr.ind = T)[1]
+      n.values.1 <- n.values.1[-t1, ]; rm(t1)
+    }
+    
+    if(sum(n.values.1 == "9876ES") > 0) {
+      t1 <- which(n.values.1 == "9876ES", arr.ind = T)[1]
+      n.values.1 <- n.values.1[-t1, ]; rm(t1)
+    }
+
     matches.2 <- lapply(seq_len(nrow(n.values.2)), function(i) n.values.2[i, ])
     matches.1 <- lapply(seq_len(nrow(n.values.1)), function(i) n.values.1[i, ])
 

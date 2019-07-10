@@ -152,6 +152,17 @@ gammaCK2par <- function(matAp, matBp, n.cores = NULL, cut.a = 0.92, method = "jw
     ht2 <- new.env(hash=TRUE)
 
     n.values.2 <- as.matrix(cbind(u.values.1[indexes.2[, 1]], u.values.2[indexes.2[, 2]]))
+    
+    if(sum(n.values.2 == "1234MF") > 0) {
+      t1 <- which(n.values.2 == "1234MF", arr.ind = T)[1]
+      n.values.2 <- n.values.2[-t1, ]; rm(t1)
+    }
+    
+    if(sum(n.values.2 == "9876ES") > 0) {
+      t1 <- which(n.values.2 == "9876ES", arr.ind = T)[1]
+      n.values.2 <- n.values.2[-t1, ]; rm(t1)
+    }
+    
     matches.2 <- lapply(seq_len(nrow(n.values.2)), function(i) n.values.2[i, ])
 
     if(Sys.info()[['sysname']] == 'Windows') {
