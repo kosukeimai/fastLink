@@ -65,8 +65,8 @@ gammaKpar <- function(matAp, matBp, gender = FALSE, n.cores = NULL) {
     matrix.1 <- as.matrix(as.character(matAp))
     matrix.2 <- as.matrix(as.character(matBp))
 
-    matrix.1[is.na(matrix.1)] <- "9999"
-    matrix.2[is.na(matrix.2)] <- "9998"
+    matrix.1[is.na(matrix.1)] <- "1234MF"
+    matrix.2[is.na(matrix.2)] <- "9876ES"
 
     u.values.1 <- unique(matrix.1)
     u.values.2 <- unique(matrix.2)
@@ -98,8 +98,8 @@ gammaKpar <- function(matAp, matBp, gender = FALSE, n.cores = NULL) {
     }
     
     na.list <- list()
-    na.list[[1]] <- which(matrix.1 == "9999")
-    na.list[[2]] <- which(matrix.2 == "9998")
+    na.list[[1]] <- which(matrix.1 == "1234MF")
+    na.list[[2]] <- which(matrix.2 == "9876ES")
 
     out <- list()
     out[["matches2"]] <- final.list
