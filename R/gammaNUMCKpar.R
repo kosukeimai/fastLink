@@ -135,6 +135,7 @@ gammaNUMCKpar <- function(matAp, matBp, n.cores = NULL, cut.a = 1, cut.p = 2) {
             '%oper%' <- foreach::'%dopar%'
             cl <- makeCluster(n.cores)
             registerDoParallel(cl)
+            on.exit(stopCluster(cl))            
         }
         
         final.list2 <- foreach(i = 1:length(matches.2)) %oper% {
@@ -146,9 +147,9 @@ gammaNUMCKpar <- function(matAp, matBp, n.cores = NULL, cut.a = 1, cut.p = 2) {
             ht1 <- which(matrix.1 == matches.1[[i]][[1]]); ht2 <- which(matrix.2 == matches.1[[i]][[2]])
             list(ht1, ht2)
         }
-        if(n.cores > 1){
-            stopCluster(cl)
-        }
+##        if(n.cores > 1){
+##            stopCluster(cl)
+##        }
     } else {
         no_cores <- n.cores
         final.list2 <- mclapply(matches.2, function(s){
