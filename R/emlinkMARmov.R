@@ -312,10 +312,10 @@ emlinkMARmov <- function(patterns, nobs.a, nobs.b,
         }
     }
 
+    weights <- log(p.gamma.j.m) - log(p.gamma.j.u)
+    
     p.gamma.j.m <- p.gamma.j.m/sum(p.gamma.j.m)
     p.gamma.j.u <- p.gamma.j.u/sum(p.gamma.j.u)
-
-    weights <- log(p.gamma.j.m) - log(p.gamma.j.u)
 
     data.w <- cbind(patterns, weights, p.gamma.j.m, p.gamma.j.u)
     nc <- ncol(data.w)
@@ -478,11 +478,12 @@ emlinkRS <- function(patterns.out, em.out, nobs.a, nobs.b){
                                                    log(p.u))
     zeta.j <- exp(log.prod - log.sum)
 
+    weights <- log(p.gamma.j.m) - log(p.gamma.j.u)
+    
     ## Renormalize
     p.gamma.j.m <- p.gamma.j.m/sum(p.gamma.j.m)
     p.gamma.j.u <- p.gamma.j.u/sum(p.gamma.j.u)
     
-    weights <- log(p.gamma.j.m) - log(p.gamma.j.u)
     data.w <- cbind(patterns.out, weights, p.gamma.j.m, p.gamma.j.u)
     nc <- ncol(data.w)
     colnames(data.w)[nc - 3] <- "counts"
