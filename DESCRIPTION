@@ -1,8 +1,8 @@
 Package: fastLink
 Type: Package
 Title: Fast Probabilistic Record Linkage with Missing Data
-Version: 0.5.1
-Date: 2019-02-18
+Version: 0.6.0
+Date: 2020-04-25
 Authors@R: c(
   person("Ted", "Enamorado", email = "fastlinkr@gmail.com", role = c("aut", "cre")),
   person("Ben", "Fifield", email = "fastlinkr@gmail.com", role = c("aut")),
@@ -39,5 +39,5 @@ LinkingTo: RcppArmadillo, Rcpp, RcppEigen
 Encoding: UTF-8
 LazyData: true
 BugReports: https://github.com/kosukeimai/fastLink/issues
-RoxygenNote: 6.1.1
+RoxygenNote: 7.0.2
 Suggests: testthat

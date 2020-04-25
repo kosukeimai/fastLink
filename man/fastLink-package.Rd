@@ -14,8 +14,8 @@ the Fellegi-Sunter model, using the Expectation-Maximization Algorithm. In addit
 tools for conducting and summarizing data merges are included.
 }
 \details{
-\tabular{ll}{ Package: \tab fastLink\cr Type: \tab Package\cr Version: \tab 0.5.1-\cr
-Date: \tab 2019-02-18\cr License: \tab GPL (>= 3)\cr }
+\tabular{ll}{ Package: \tab fastLink\cr Type: \tab Package\cr Version: \tab 0.6.0-\cr
+Date: \tab 2020-04-25\cr License: \tab GPL (>= 3)\cr }
 }
 \references{
 Enamorado, Ted, Ben Fifield and Kosuke Imai. (2018) "Using a Probabilistic Model to Assist Merging of
