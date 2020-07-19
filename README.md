@@ -1,7 +1,7 @@
 fastLink: Fast Probabilistic Record Linkage 
 ===========================================================================================================================================================================================================================================================================================================================================================
 
-[![CRAN Version](http://www.r-pkg.org/badges/version/fastLink)](https://CRAN.R-project.org/package=fastLink) [![Build Status](https://travis-ci.org/kosukeimai/fastLink.svg?branch=master)](https://travis-ci.org/kosukeimai/fastLink) ![CRAN downloads](http://cranlogs.r-pkg.org/badges/grand-total/fastLink)
+[![CRAN Version](https://www.r-pkg.org/badges/version-last-release/fastLink)](https://CRAN.R-project.org/package=fastLink) [![Build Status](https://travis-ci.org/kosukeimai/fastLink.svg?branch=master)](https://travis-ci.org/kosukeimai/fastLink) ![CRAN downloads](http://cranlogs.r-pkg.org/badges/grand-total/fastLink)
 
 Authors:
 
