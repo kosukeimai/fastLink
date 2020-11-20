@@ -1,6 +1,8 @@
 fastLink: Fast Probabilistic Record Linkage 
 ===========================================================================================================================================================================================================================================================================================================================================================
 
+Suggested citation: Enamorado, Ted, Benjamin Fifield, and Kosuke Imai. 2017. fastLink: Fast Probabilistic Record Linkage with Missing Data. Version 0.6.
+
 [![CRAN Version](https://www.r-pkg.org/badges/version-last-release/fastLink)](https://CRAN.R-project.org/package=fastLink) [![Build Status](https://travis-ci.org/kosukeimai/fastLink.svg?branch=master)](https://travis-ci.org/kosukeimai/fastLink) ![CRAN downloads](http://cranlogs.r-pkg.org/badges/grand-total/fastLink)
 
 Authors:
