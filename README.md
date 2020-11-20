@@ -8,7 +8,9 @@ Authors:
 -   [Ben Fifield](https://www.benfifield.com/)
 -   [Kosuke Imai](https://imai.fas.harvard.edu/)
 
-Suggested citation: Enamorado, Ted, Benjamin Fifield, and Kosuke Imai. 2017. fastLink: Fast Probabilistic Record Linkage with Missing Data. Version 0.6.
+Suggested citation: 
+
+Enamorado, Ted, Benjamin Fifield, and Kosuke Imai. 2017. fastLink: Fast Probabilistic Record Linkage with Missing Data. Version 0.6.
 
 For a detailed description of the method see:
 
