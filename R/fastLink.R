@@ -99,7 +99,7 @@ fastLink <- function(dfA, dfB, varnames,
                      dedupe.matches = TRUE, linprog.dedupe = FALSE,
                      reweight.names = FALSE, firstname.field = NULL, cond.indep = TRUE,
                      n.cores = NULL, tol.em = 1e-04, threshold.match = 0.85,
-                     return.all = TRUE, return.df = FALSE, verbose = FALSE){
+                     return.all = FALSE, return.df = FALSE, verbose = FALSE){
 
     cat("\n")
     cat(c(paste(rep("=", 20), sep = "", collapse = ""), "\n"))

@@ -14,16 +14,16 @@ the Fellegi-Sunter model, using the Expectation-Maximization Algorithm. In addit
 tools for conducting and summarizing data merges are included.
 }
 \details{
-\tabular{ll}{ Package: \tab fastLink\cr Type: \tab Package\cr Version: \tab 0.5.1-\cr
-Date: \tab 2019-02-18\cr License: \tab GPL (>= 3)\cr }
+\tabular{ll}{ Package: \tab fastLink\cr Type: \tab Package\cr Version: \tab 0.6.0-\cr
+Date: \tab 2020-04-25\cr License: \tab GPL (>= 3)\cr }
 }
 \references{
-Enamorado, Ted, Ben Fifield and Kosuke Imai. (2018) "Using a Probabilistic Model to Assist Merging of
-Large-scale Administrative Records." Forthcoming, American Political Science Review. Available at \url{http://imai.princeton.edu/research/linkage.html}.
+Enamorado, Ted, Ben Fifield and Kosuke Imai. (2019) "Using a Probabilistic Model to Assist Merging of
+Large-scale Administrative Records." American Political Science Review. Vol. 113, No. 2. Available at \url{https://imai.fas.harvard.edu/research/files/linkage.pdf}.
 }
 \author{
-Ted Enamorado \email{fastlinkr@gmail.com}, Ben Fifield \email{fastlinkr@gmail.com}, and Kosuke Imai \email{kimai@princeton.edu}
+Ted Enamorado \email{ted.enamorado@gmail.com}, Ben Fifield \email{benfifield@gmail.com}, and Kosuke Imai \email{imai@harvard.edu}
 
-Maintainer: Ted Enamorado \email{fastlinkr@gmail.com}
+Maintainer: Ted Enamorado \email{ted.enamorado@gmail.com}
 }
 \keyword{package}

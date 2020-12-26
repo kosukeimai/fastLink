@@ -39,3 +39,9 @@ and another containing the indices indicating the block members in dataset B.
 Contains functionalities for blocking two data sets on one or more variables prior to
 conducting a merge.
 }
+\examples{
+\dontrun{
+block_out <- blockData(dfA, dfB, varnames = c("city", "birthyear"))
+}
+
+}

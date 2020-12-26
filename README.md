@@ -1,5 +1,6 @@
-fastLink: Fast Probabilistic Record Linkage [![Build Status](https://travis-ci.org/kosukeimai/fastLink.svg?branch=master)](https://travis-ci.org/kosukeimai/fastLink) [![CRAN Version](http://www.r-pkg.org/badges/version/fastLink)](https://CRAN.R-project.org/package=fastLink) ![CRAN downloads](http://cranlogs.r-pkg.org/badges/grand-total/fastLink)
+fastLink: Fast Probabilistic Record Linkage 
 ===========================================================================================================================================================================================================================================================================================================================================================
+[![CRAN Version](https://www.r-pkg.org/badges/version-last-release/fastLink)](https://CRAN.R-project.org/package=fastLink) [![Build Status](https://travis-ci.org/kosukeimai/fastLink.svg?branch=master)](https://travis-ci.org/kosukeimai/fastLink) ![CRAN downloads](http://cranlogs.r-pkg.org/badges/grand-total/fastLink)
 
 Authors:
 
@@ -7,13 +8,17 @@ Authors:
 -   [Ben Fifield](https://www.benfifield.com/)
 -   [Kosuke Imai](https://imai.fas.harvard.edu/)
 
+Suggested citation: 
+
+Enamorado, Ted, Benjamin Fifield, and Kosuke Imai. 2017. fastLink: Fast Probabilistic Record Linkage with Missing Data. Version 0.6.
+
 For a detailed description of the method see:
 
--   [Using a Probabilistic Model to Assist Merging of Large-scale Administrative Records](http://imai.fas.harvard.edu/research/files/linkage.pdf)
+-   [Using a Probabilistic Model to Assist Merging of Large-scale Administrative Records](http://imai.fas.harvard.edu/research/files/linkage.pdf) *American Political Science Review*
 
 Applications of the method:
 
--   [Validating Self-reported Turnout by Linking Public Opinion Surveys with Administrative Records](http://imai.fas.harvard.edu/research/files/turnout.pdf)
+-   [Validating Self-reported Turnout by Linking Public Opinion Surveys with Administrative Records](http://imai.fas.harvard.edu/research/files/turnout.pdf) *Public Opinion Quarterly*
 
 Technical reports:
 

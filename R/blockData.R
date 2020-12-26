@@ -87,7 +87,7 @@ stringSubset <- function(vecA, vecB,
 #' @return A list with an entry for each block. Each list entry contains two vectors --- one with the indices indicating the block members in dataset A,
 #' and another containing the indices indicating the block members in dataset B.
 #'
-#' @usage
+#' @examples
 #' \dontrun{
 #' block_out <- blockData(dfA, dfB, varnames = c("city", "birthyear"))
 #' }

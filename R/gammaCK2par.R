@@ -66,8 +66,8 @@ gammaCK2par <- function(matAp, matBp, n.cores = NULL, cut.a = 0.92, method = "jw
     matrix.1 <- as.matrix(as.character(matAp))
     matrix.2 <- as.matrix(as.character(matBp))
 
-    matrix.1[is.na(matrix.1)] <- "9999"
-    matrix.2[is.na(matrix.2)] <- "9998"
+    matrix.1[is.na(matrix.1)] <- "1234MF"
+    matrix.2[is.na(matrix.2)] <- "9876ES"
 
     u.values.1 <- unique(matrix.1)
     u.values.2 <- unique(matrix.2)
@@ -152,6 +152,17 @@ gammaCK2par <- function(matAp, matBp, n.cores = NULL, cut.a = 0.92, method = "jw
     ht2 <- new.env(hash=TRUE)
 
     n.values.2 <- as.matrix(cbind(u.values.1[indexes.2[, 1]], u.values.2[indexes.2[, 2]]))
+    
+    if(sum(n.values.2 == "1234MF") > 0) {
+      t1 <- which(n.values.2 == "1234MF", arr.ind = T)[1]
+      n.values.2 <- n.values.2[-t1, ]; rm(t1)
+    }
+    
+    if(sum(n.values.2 == "9876ES") > 0) {
+      t1 <- which(n.values.2 == "9876ES", arr.ind = T)[1]
+      n.values.2 <- n.values.2[-t1, ]; rm(t1)
+    }
+    
     matches.2 <- lapply(seq_len(nrow(n.values.2)), function(i) n.values.2[i, ])
 
     if(Sys.info()[['sysname']] == 'Windows') {
@@ -181,8 +192,8 @@ gammaCK2par <- function(matAp, matBp, n.cores = NULL, cut.a = 0.92, method = "jw
     }
     
     na.list <- list()
-    na.list[[1]] <- which(matrix.1 == "9999")
-    na.list[[2]] <- which(matrix.2 == "9998")
+    na.list[[1]] <- which(matrix.1 == "1234MF")
+    na.list[[2]] <- which(matrix.2 == "9876ES")
 
     out <- list()
     out[["matches2"]] <- final.list2
