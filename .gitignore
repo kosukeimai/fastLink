@@ -1,5 +1,8 @@
 # Created by https://www.gitignore.io/api/r,osx,c++
 
+plots/
+vignette_cache/
+
 ### C++ ###
 # Prerequisites
 *.d

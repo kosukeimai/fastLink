@@ -1,3 +1,5 @@
+plots/
+vignette_cache/
 README.md
 README.Rmd
 \.git
