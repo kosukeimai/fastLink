@@ -1,11 +1,13 @@
 ---
 title: "fastLink: R Package for Fast Probabilistic Record Linkage"
-output: rmarkdown::html_vignette
+output: 
+  rmarkdown::html_vignette:
+    number_sections: true
 bibliography: linkref.bib
 link-citations: yes
 header-includes:
+   - \usepackage{tikz}
    - \newcommand\bbeta{\bm{\beta}}
-   - \newcommand\bpi{\bm{\pi}}
    - \newcommand\bdelta{\bm{\delta}}
    - \newcommand\bgamma{\bm{\gamma}}
    - \newcommand\balpha{\bm{\alpha}}
@@ -52,6 +54,7 @@ header-includes:
    - \newcommand\logit{{\rm logit}}
    - \renewcommand\r{\right}
    - \renewcommand\l{\left}
+   - \newcommand\bpi{\bm{\pi}}
 vignette: >
   %\VignetteIndexEntry{fastLink: R Package for Fast Probabilistic Record Linkage}
   %\VignetteEngine{knitr::rmarkdown}
@@ -86,7 +89,7 @@ library(fastLink)
 
 Modern social science research often relies on innovative combinations of survey, administrative, and textual data
 sources in order to advance new claims and knowledge about the world. Merging can be a trivial task if there 
-exists a unique identifier that unambiguously identifies records, in which case the \texttt{merge()} function in \R\ 
+exists a unique identifier that unambiguously identifies records, in which case the <tt>merge()</tt> function in \R\ 
 can seamlessly and quickly conduct a 1-to-1, 1-to-many, or many-to-1 merge on the unique identifier. Unfortunately,
 in practice, this unique identifier is rarely available. Applied researchers have previously relied on 
 deterministic algorithms, which suffer from an inability to flexibly handle missing data and measurement error, or
@@ -94,7 +97,7 @@ proprietary merging algorithms, which prevent the merging process from being inc
 the replication process. Furthermore, none of the deterministic or proprietary algorithms allow the researcher
 to quantify the uncertainty inherent in the merging process.
 
-In this paper, we introduce a new \R\ package, \fastLink\ (@enam:fifi:imai:19) for conducting data merges. 
+In this vignette, we walk through the \R\ package \fastLink\ (@enam:fifi:imai:19) for conducting data merges. 
 The \fastLink\ package includes: (1) a fast implementation of the canonical Fellegi-Sunter (@Fellegi1969) probabilistic record linkage (PRL) model (2) a series of utilities for flexibly clustering, preparing, adjusting, and 
 summarizing data merges (3) extensions that relax the core assumptions of the Fellegi-Sunter model, and methods to incorporate auxiliary information about 
 migration to inform merges of data sets across time and space and (4) easy parallelization and automatic hashing
@@ -112,7 +115,7 @@ install.packages("fastLink")
 where users may be prompted to select a CRAN mirror from which the package will be
 downloaded. This step needs to be done only once (unless one wishes to update \fastLink\ to a new version).
 
-In the next section, we provide an overview of the \fastLink\ package, including the computational implementation and a summary of our improvements on the Fellegi-Sunter model to incorporate aggregate migration information. We then describe how to conduct a basic data merge (Section \@ref(sec:merge)) using \fastLink \ along with methods for analyzing the results of the merge, methods for incorporating auxiliary information to inform the merge and post-processing of merged datasets (Section~\@ref(sec:postproc)), and functionalities  included for pre-processing and clustering data in preparation for a merge (Section \@ref(sec:preproc)). 
+In the next section, we provide an overview of the \fastLink\ package, including the computational implementation and a summary of our improvements on the Fellegi-Sunter model to incorporate aggregate migration information. We then describe how to conduct a basic data merge (Section \@ref(sec:merge)) using \fastLink \ along with methods for analyzing the results of the merge, methods for incorporating auxiliary information to inform the merge and post-processing of merged datasets (Section \@ref(sec:postproc)), and functionalities  included for pre-processing and clustering data in preparation for a merge (Section \@ref(sec:preproc)). 
 
 # Overview of the \fastLink\ Algorithm{#sec:overview}
 
@@ -294,44 +297,11 @@ Still the problem with constructing $\gamma_k$ is that the number of
 comparisons we have to make is often large. In our proposed
 implementation we exploit the following characteristics of typical
 record linkage problems in social sciences:
-\begin{itemize}
--  The number of unique values observed in each linkage field is
-  often less than the number of observations in each dataset. For
-  example, consider a variable such as first name. Naively, one may
-  compare the first name of each observation in dataset $\mathcal{A}$
-  with that of every observation in $\mathcal{B}$. In practice,
-  however, we can reduce the number of comparisons by considering only
-  unique first name that appears in each data set.  The same trick can
-  be used for all linkage fields by focusing on the comparison of the
-  unique values of each variable.
 
--  For each comparison between two unique first names
-  ($name_{1, \mathcal{A}}$ and $name_{1, \mathcal{B}}$), for example,
-  we only keep the indices of the original datasets and store them
-  using what is often referred as a reverse data structure in the
-  literature [@pchri:12]. In such an arrangement, a pair of names
-  ($name_{1, \mathcal{A}}$, $name_{1, \mathcal{B}}$) becomes a key
-  with two lists, one containing the indices from dataset
-  $\mathcal{A}$ that have a first name equal to
-  $name_{1, \mathcal{A}}$, and another list that does the same for
-  $name_{1, \mathcal{B}}$ in dataset $\mathcal{B}$.
-
--  Comparisons involving a missing value need not be made. Instead,
-  we only need to store the indices of the observations in
-  $\mathcal{A}$ and $\mathcal{B}$ that contain missing information for
-  field $k$.
-
--  Since the agreement levels are mutually exclusive, we use the
-  lowest agreement level as the base category. Once a set of threshold
-  values has been defined, then a pair of names can only be
-  categorized in one of the $L_k$ agreement levels. The indices for
-  the the pairs of values that can be categorized as disagreements (or
-  nearly disagreements) do not need to be stored.  For most variables,
-  disagreement is the category that encompasses the largest number of
-  pairs.  Thus, our reverse data structure lists become quite sparse.
-  This sparsity can be exploited by the use of sparse matrix, yielding
-  a substantially memory efficient implementation.
-\end{itemize}
+* The number of unique values observed in each linkage field is often less than the number of observations in each dataset. For example, consider a variable such as first name. Naively, one may compare the first name of each observation in dataset $\mathcal{A}$ with that of every observation in $\mathcal{B}$. In practice, however, we can reduce the number of comparisons by considering only unique first name that appears in each data set.  The same trick can be used for all linkage fields by focusing on the comparison of the unique values of each variable.
+* For each comparison between two unique first names ($name_{1, \mathcal{A}}$ and $name_{1, \mathcal{B}}$), for example, we only keep the indices of the original datasets and store them using what is often referred as a reverse data structure in the literature [@pchri:12]. In such an arrangement, a pair of names ($name_{1, \mathcal{A}}$, $name_{1, \mathcal{B}}$) becomes a key with two lists, one containing the indices from dataset $\mathcal{A}$ that have a first name equal to $name_{1, \mathcal{A}}$, and another list that does the same for $name_{1, \mathcal{B}}$ in dataset $\mathcal{B}$.
+* Comparisons involving a missing value need not be made. Instead, we only need to store the indices of the observations in $\mathcal{A}$ and $\mathcal{B}$ that contain missing information for field $k$.
+* Since the agreement levels are mutually exclusive, we use the lowest agreement level as the base category. Once a set of threshold values has been defined, then a pair of names can only be categorized in one of the $L_k$ agreement levels. The indices for the the pairs of values that can be categorized as disagreements (or nearly disagreements) do not need to be stored.  For most variables, disagreement is the category that encompasses the largest number of pairs.  Thus, our reverse data structure lists become quite sparse. This sparsity can be exploited by the use of sparse matrix, yielding a substantially memory efficient implementation.
 
 Together, these improvements make \fastLink\ more efficient in runtime 
 and memory management than other existing open-source implementations
@@ -368,51 +338,46 @@ can compute the posterior match probabilities for every agreement
 pattern found in the entire data sets in parallel.  In this way, we
 are able to scale the model to massive data sets.
 
-# Conducting Data Merges using fastLink{#sec:merge}
+# Conducting Data Merges using fastLink{\#sec:merge}
 
 The \fastLink\ package consists of several main functions as well as various methods for
-summarizing output from these functions (e.g., \texttt{plot()} and \texttt{confusion()}).
+summarizing output from these functions (e.g., <tt>plot()</tt> and <tt>confusion()</tt>).
 Figure~\@ref(fg:schematic) illustrates the core structure of the \fastLink\ package.
 
-%% ------------------------------
-%% Begin Tikz figure of flowchart
-%% ------------------------------
-
-%% Draw
 \begin{figure}
 \resizebox{6in}{!}{
   \begin{tikzpicture}[auto, node distance = 2.25cm]
 
-  %% Definitions
+  <!-- Definitions -->
   \tikzstyle{group} = [rectangle, text centered, rounded corners, minimum height=4em]
   \tikzstyle{block} = [rectangle, fill=gray!20, minimum width=9.5em, text centered, rounded corners, minimum height=4em, align=center]
   \tikzstyle{line} = [draw, line width = 2pt, -latex']
   \tikzstyle{thinline} = [draw, -latex']
 
-  %% Place nodes (Preprocessing)
+  <!-- Place nodes (Preprocessing) --> 
   \node [group] (preproc) {\bf Preprocessing};
   \node [block, below of = preproc] (calcMP) {Estimate Movers Priors:\\ \tt calcMoversPriors()};
   \node [block, below of = calcMP] (ppText) {Text Preprocessing:\\ \tt preprocText()};
   \node [block, below of = ppText] (blockD) {Block Data:\\ \tt blockData()};
   \node [block, below of = blockD] (stringSub) {String Subsetting:\\ \tt stringSubset()};
-  %% Place nodes (Matching)
+  <!-- Place nodes (Matching) --> 
   \node [group, right of = preproc, node distance = 7cm] (match) {\bf Matching};
   \node [block, below of = match] (gammas) {Count Matches by Variable:\\ {\tt gammaCKpar()}, {\tt gammaKpar()}, {\tt gammaNUMpar()}};
   \node [block, below of = gammas] (tableCounts) {Count Unique Matching Patterns:\\ \tt tableCounts()};
   \node [block, below of = tableCounts] (emlinkMAR) {Run EM Algorithm:\\ \tt emlinkMARmov()\\ \tt emlinklog()};
   \node [block, below of = tableCounts, right of = emlinkMAR] (emlinkRS) {Impute from EM:\\ \tt emlinkRS()};
   \node [block, below of = emlinkRS, left of = emlinkRS] (matchesLink) {Get Indices of Matches:\\ \tt matchesLink()};
-  %% Place nodes (Post-processing)
+  <!-- Place nodes (Post-processing) -->
   \node [group, right of = match, node distance = 6.75cm] (pproc) {\bf Post-Processing};
   \node [block, below of = pproc] (ddm) {Dedupe Matches:\\ \tt dedupeMatches()};
   \node [block, below of = ddm] (nrw) {Reweight by First Name:\\ \tt nameReweight()};
   \node [block, below of = nrw] (gP) {Probability of Match:\\ \tt getPosterior()};
-  %% Place nodes (summarizing)
+  <!-- Place nodes (summarizing) --> 
   \node [group, node distance = 5.25cm, right of = pproc] (summ) {\bf Summarize Results};
   \node [block, below of = summ] (cf) {Calculate Confusion Table:\\ \tt confusion()};
   \node [block, below of = cf] (pf) {Plot Matching Patterns:\\ \tt plot()};
   \node [block, below of = pf] (ie) {Clean EM for Inspection:\\ \tt inspectEM()};
-  %% Place arrows
+  <!-- Place arrows --> % 
   \path [line] (preproc) -- (match);
   \path [line] (match) -- (pproc);
   \path [->, line width = 2pt] (match) edge [bend left=30] (summ);
@@ -422,7 +387,7 @@ Figure~\@ref(fg:schematic) illustrates the core structure of the \fastLink\ pack
   \path [thinline] (emlinkMAR) -- (matchesLink);
   \path [thinline] (emlinkMAR) -- (emlinkRS);
   \path [thinline] (emlinkRS) -- (matchesLink);
-  %% Bounding box for fastLink wrapper
+  <!-- Bounding box for fastLink wrapper --> 
   \node[draw, dashed, fit = (match) (gammas) (tableCounts) (matchesLink) (emlinkMAR) (emlinkRS) (pproc) (ddm) (nrw) (gP)] {};
   \node [block, below of = matchesLink] (fastLink) {Runs Full Algorithm:\\ \tt fastLink()};
   \node [block, right of = fastLink, node distance = 6.25cm] (gM) {Get Dataframe of Matches:\\ \tt getMatches()};
@@ -432,11 +397,8 @@ Figure~\@ref(fg:schematic) illustrates the core structure of the \fastLink\ pack
 \caption{Core structure of the \fastLink\ package as of version `r packageVersion("fastLink")`.}
 {#fg:schematic}
 \end{figure}
-%% ----------------------------
-%% End Tikz figure of flowchart
-%% ----------------------------
 
-The core of the algorithm can be run using the \texttt{fastLink()} wrapper, which we will describe in
+The core of the algorithm can be run using the <tt>fastLink()</tt> wrapper, which we will describe in
 more detail below. This includes utilities to count unique patterns, run the EM algorithm, and adjust the
 estimated matching probabilities by deduping and through auxiliary information such as name frequency. Each
 of these steps can also be run separately through the functions listed in the utilities. \fastLink\ also includes
@@ -445,10 +407,10 @@ and inspecting data merges.
 
 ## A Small-Scale Example{#subsec:wrapper}
 
-The \texttt{fastLink()} function takes two data sets and a simple description of the merging fields, and returns
-the results of the data merge which can then be passed to the \texttt{plot()} and \texttt{confusion()} functions for inspection and summarization. We
+The <tt>fastLink()</tt> function takes two data sets and a simple description of the merging fields, and returns
+the results of the data merge which can then be passed to the <tt>plot()</tt> and <tt>confusion()</tt> functions for inspection and summarization. We
 illustrate the use of the function using a small-scale example, which is included in the \fastLink\ package.
-The two data sets, \texttt{dfA} and \texttt{dfB}, are samples from the California voter file which are then shuffled within-field
+The two data sets, <tt>dfA</tt> and <tt>dfB</tt>, are samples from the California voter file which are then shuffled within-field
 to preserve anonyminity. There are 50 true matches across the two data sets, and a brief description of the
 fields in the two data sets can be found by running
 ```{r help_dfs, eval = FALSE, echo = TRUE, tidy = FALSE, results = "hide", fig.pos = "t!"}
@@ -456,7 +418,7 @@ fields in the two data sets can be found by running
 ?dfB
 ```
 
-Here, we run a simple match using \texttt{fastLink()} to merge \texttt{dfA} and \texttt{dfB}:
+Here, we run a simple match using <tt>fastLink()</tt> to merge <tt>dfA</tt> and <tt>dfB</tt>:
 
 ```{r basic_match, echo = FALSE, tidy = FALSE, results = "hide", fig.pos = "t!"}
 set.seed(2018)
@@ -474,56 +436,58 @@ fl_out <- fastLink(
 )
 ```
 
-The first two arguments in \texttt{fastLink()} are where the user specifies the two data sets to link. The only other required argument is `varnames`, where the user specifies the variables shared between the two data sets that should be used to match on. Without any other arguments, \texttt{fastLink()} will compare each specified variable using a simple match/non-match criterion, where any pair on a variable that does not exactly match will be declared a non-match.
-The output object \texttt{fl\_out} contains the following objects:
+The first two arguments in <tt>fastLink()</tt> are where the user specifies the two data sets to link. The only other required argument is `varnames`, where the user specifies the variables shared between the two data sets that should be used to match on. Without any other arguments, <tt>fastLink()</tt> will compare each specified variable using a simple match/non-match criterion, where any pair on a variable that does not exactly match will be declared a non-match.
+The output object <tt>fl\_out</tt> contains the following objects:
 
 ```{r view_names, echo = TRUE, tidy = FALSE, results = "hide", fig.pos = "t!"}
 names(fl_out)
 ```
 
-\begin{itemize}
--  \texttt{matches}: A matrix with two columns and a row for each matched pair above the specified threshold. The first column, \texttt{inds.a}, gives the row numbers of the successfully matched observations in datset A, while the second column \texttt{inds.b} gives the row numbers of successfully matched observations in dataset B. The user can recover subsetted data frames by specifying \texttt{return.df = TRUE} in \texttt{fastLink()}, or by using the function \texttt{getMatches()}.
--  \texttt{EM}: Parameter estimates from the Expectation-Maximization algorithm, which are used to calculate the confusion table and visualize the quality of different matching patterns.
--  \texttt{patterns}: The matching patterns for each match variable, sorted to correspond to the pairs in \texttt{matches}. Here, 2 indicates an exact match, 0 indicates a non-match, 1 indicates a partial match, and \texttt{NA} indicates a case where one or both of the observations had a missing value.
--  \texttt{posterior}: The posterior matching probability for each matched pair, sorted to correspond to the pairs in \texttt{matches}.
--  \texttt{nobs.a}, \texttt{nobs.b}: The number of observations in dataset A and dataset B, respectively.
-\end{itemize}
+* <tt>matches</tt>: A matrix with two columns and a row for each matched pair above the specified threshold. The first column, <tt>inds.a</tt>, gives the row numbers of the successfully matched observations in datset A, while the second column <tt>inds.b</tt> gives the row numbers of successfully matched observations in dataset B. The user can recover subsetted data frames by specifying <tt>return.df = TRUE</tt> in <tt>fastLink()</tt>, or by using the function <tt>getMatches()</tt>.
+* <tt>EM</tt>: Parameter estimates from the Expectation-Maximization algorithm, which are used to calculate the confusion table and visualize the quality of different matching patterns.
+* <tt>patterns</tt>: The matching patterns for each match variable, sorted to correspond to the pairs in <tt>matches</tt>. Here, 2 indicates an exact match, 0 indicates a non-match, 1 indicates a partial match, and <tt>NA</tt> indicates a case where one or both of the observations had a missing value.
+* <tt>posterior</tt>: The posterior matching probability for each matched pair, sorted to correspond to the pairs in <tt>matches</tt>.
+* <tt>nobs.a</tt>, <tt>nobs.b</tt>: The number of observations in dataset A and dataset B, respectively.
 
-As mentioned above, the user can recover a data frame of the successfully matched observations using the \texttt{getMatches()} function. The resulting data frame contains the union of all unique column names between the two merged data frames, as well as the match patterns and the posterior matching probability, as shown below:
+As mentioned above, the user can recover a data frame of the successfully matched observations using the <tt>getMatches()</tt> function. The resulting data frame contains the union of all unique column names between the two merged data frames, as well as the match patterns and the posterior matching probability, as shown below:
 
 ```{r get_matches, echo = TRUE, tidy = FALSE, results = "hide", fig.pos = "t!"}
 matched_dfs <- getMatches(dfA = dfA, dfB = dfB, 
                           fl.out = fl_out, threshold.match = 0.85)
 ```
 
-The first two arguments to \texttt{getMatches()} are the data frames that we matched in the call to \texttt{fastLink()} above, while the third argument (\texttt{fl.out}) is the resulting \texttt{fastLink} object containing the EM results, the matched indices, the posterior matching probabilities for each pair of observations, and the full set of match patterns for all pairs. Finally, we specify the threshold above which we declare a pair a match using the \texttt{threshold.match} argument --- this is the $\xi_{ij}$ parameter introduced in Equation~\@ref(eq:postmatch), which is the posterior probability of being in the matched set conditional on the observed data. Here, if the estimated value of $\xi_{ij}$ is above 0.85 for a given pair, we declare the pair a true match and return it as part of the final matched data frame.
+The first two arguments to <tt>getMatches()</tt> are the data frames that we matched in the call to <tt>fastLink()</tt> above, while the third argument (<tt>fl.out</tt>) is the resulting <tt>fastLink</tt> object containing the EM results, the matched indices, the posterior matching probabilities for each pair of observations, and the full set of match patterns for all pairs. Finally, we specify the threshold above which we declare a pair a match using the <tt>threshold.match</tt> argument --- this is the $\xi_{ij}$ parameter introduced in Equation~\@ref(eq:postmatch), which is the posterior probability of being in the matched set conditional on the observed data. Here, if the estimated value of $\xi_{ij}$ is above 0.85 for a given pair, we declare the pair a true match and return it as part of the final matched data frame.
 
-We can also summarize the merge using the \texttt{confusion()} function.
+We can also summarize the merge using the <tt>confusion()</tt> function.
 
 ```{r confusion_table, results = "markup", echo = TRUE, tidy = FALSE, fig.pos = "t!"}
 confusion(fl_out, threshold = 0.85)
 ```
 
-\texttt{confusion()} outputs a series of summary statistics about the quality of the data merge, using the parameters estimated by the EM algorithm. The confusion table estimates the number of true matches, true non-matches, and mis-classified matches and non-matches using the posterior matching probability $\xi_{ij}$. For example, to estimate the false positive rate and false negative rate using a posterior match threshold of 0.85, the function calculates \begin{eqnarray*}
+<tt>confusion()</tt> outputs a series of summary statistics about the quality of the data merge, using the parameters estimated by the EM algorithm. The confusion table estimates the number of true matches, true non-matches, and mis-classified matches and non-matches using the posterior matching probability $\xi_{ij}$. For example, to estimate the false positive rate and false negative rate using a posterior match threshold of 0.85, the function calculates 
+$$
+\begin{eqnarray*}
 \text{False Positive Rate: } \Pr(M_{ij} = 0 \mid \xi_{ij} \geq 0.85) &=& \frac{\sum_{i=1}^{N_\cA}\sum_{j = 1}^{N_\cB}\bone\{\xi_{ij} \geq 0.85\}(1 - \xi_{ij})}{\sum_{i = 1}^{N_\cA}\sum_{j = 1}^{N_\cB}\bone\{\xi_{ij} \geq 0.85\}}\\
 \text{False Negative Rate: } \Pr(M_{ij} = 1 \mid \xi_{ij} < 0.85) &=& \frac{\sum_{i=1}^{N_\cA}\sum_{j = 1}^{N_\cB}\xi_{ij}\bone\{\xi_{ij} < 0.85\}}{\lambda N_\cA N_\cB}
-\end{eqnarray*} The function returns a number of other summary metrics about the quality of the match, including sensitivity, specificity, the F1 score, and the percent of observations correctly classified as matches and non-matches.
+\end{eqnarray*} 
+$$
+The function returns a number of other summary metrics about the quality of the match, including sensitivity, specificity, the F1 score, and the percent of observations correctly classified as matches and non-matches.
 
-Finally, we can visualize the matching patterns using the \texttt{plot()} function, as follows:
+Finally, we can visualize the matching patterns using the <tt>plot()</tt> function, as follows:
 
 ```{r plot_results, results = 'markup', fig.height = 6, fig.width = 6, echo = TRUE, tidy = FALSE, fig.pos = "t!", fig.cap = "Plot of matching patterns using posterior match probabilities from \\fastLink. The x-axis indicates different covariates used for the match, each row on the y-axis is a different matching pattern ordered by posterior match probability, and the colors indicate different matching categories."}
 plot(fl_out, posterior.range = c(0.85, 1))
 ```
 
-The function simply takes the output of \texttt{fastLink()} and visualizes the matching patterns within the specified posterior matching probability range. The top row shows the matching patterns for the observations with the highest posterior matching probability, and that those observations are exact matches on all six variables we have included in the match. The second row shows the pattern with the second-highest posterior match probability --- pairs with this matching pattern exact-match on all variables except for \texttt{birthyear}, where one or both observations are missing information there. The visualization also shows partial matches for string-distance and numeric-distance match patterns, which we will cover in more detail in the next section, as well as variables where patterns do not match.
+The function simply takes the output of <tt>fastLink()</tt> and visualizes the matching patterns within the specified posterior matching probability range. The top row shows the matching patterns for the observations with the highest posterior matching probability, and that those observations are exact matches on all six variables we have included in the match. The second row shows the pattern with the second-highest posterior match probability --- pairs with this matching pattern exact-match on all variables except for <tt>birthyear</tt>, where one or both observations are missing information there. The visualization also shows partial matches for string-distance and numeric-distance match patterns, which we will cover in more detail in the next section, as well as variables where patterns do not match.
 
 ## Alternative Methods of Constructing Matching Patterns{#subsec:matchpatts}
 
-In the example above, we matched two data sets on six variables using exact matching on each variable. However, misspellings and administrative errors may cause exact matching to declare a variable pair a non-match even when it comes from the same observation, and researchers may want to take that uncertainty into account when merging data sets. In \texttt{fastLink()}, we allow researchers to capture the fuzziness of the data match using both string-distance matching, which creates a numerical summary of the closeness of two string variables such as age, and numeric matching, which takes differences between numeric variables as a measure of closeness.
+In the example above, we matched two data sets on six variables using exact matching on each variable. However, misspellings and administrative errors may cause exact matching to declare a variable pair a non-match even when it comes from the same observation, and researchers may want to take that uncertainty into account when merging data sets. In <tt>fastLink()</tt>, we allow researchers to capture the fuzziness of the data match using both string-distance matching, which creates a numerical summary of the closeness of two string variables such as age, and numeric matching, which takes differences between numeric variables as a measure of closeness.
 
-\texttt{fastLink()} lets users specify one of three separate string-distance measures --- the Jaro distance metric [@Jaro1989], the Levenshtein edit distance [@Levenshtein1965], and the Jaro-Winkler distance metric [@Winkler1990]. While we refer interested readers to the extensive literatures on these measures for exact definitions and more information, their use in record linkage is fairly consistent. First, some string distance measure $M(s_i, s_j)$ is calculated on two strings $s_i$ and $s_j$. The measure is converted to a similarity measure such that values closer to 1 are maximally similar, and values closer to 0 are maximally dissimilar. Lastly, a cutoff is chosen such that values of the similarity measure above the cutoff are coded as matches, while values of the similarity measure below the cutoff are coded as non-matches. 
+<tt>fastLink()</tt> lets users specify one of three separate string-distance measures --- the Jaro distance metric [@Jaro1989], the Levenshtein edit distance [@Levenshtein1965], and the Jaro-Winkler distance metric [@Winkler1990]. While we refer interested readers to the extensive literatures on these measures for exact definitions and more information, their use in record linkage is fairly consistent. First, some string distance measure $M(s_i, s_j)$ is calculated on two strings $s_i$ and $s_j$. The measure is converted to a similarity measure such that values closer to 1 are maximally similar, and values closer to 0 are maximally dissimilar. Lastly, a cutoff is chosen such that values of the similarity measure above the cutoff are coded as matches, while values of the similarity measure below the cutoff are coded as non-matches. 
 
-We can tell \texttt{fastLink()} to use string distance measures for specific variables using the \texttt{stringdist.match} argument as follows:
+We can tell <tt>fastLink()</tt> to use string distance measures for specific variables using the <tt>stringdist.match</tt> argument as follows:
 ```{r stringdist_match, echo = TRUE, tidy = FALSE, results = "hide", fig.pos = "t!"}
 fl_out <- fastLink(
   dfA = dfA, dfB = dfB,
@@ -534,9 +498,9 @@ fl_out <- fastLink(
 )
 ```
 
-The argument \texttt{stringdist.match} contains a vector of variables that should be matched using a string-distance metric, which is specified in \texttt{stringdist.method}. Here, we've specified that \texttt{fastLink()} should use the Jaro-Winkler metric (\texttt{jw}), although other valid metrics include the Jaro metric (\texttt{jaro}) or the Levenshtein distance (\texttt{lv}). Finally, \texttt{cut.a} specifies that if the string similarity measure between pairs of observations is above 0.94, the pair should be coded as a match. Default settings are \texttt{stringdist.method = "jw"} and \texttt{cut.a = 0.94} (following the recommendations of @Winkler1990).
+The argument <tt>stringdist.match</tt> contains a vector of variables that should be matched using a string-distance metric, which is specified in <tt>stringdist.method</tt>. Here, we've specified that <tt>fastLink()</tt> should use the Jaro-Winkler metric (<tt>jw</tt>), although other valid metrics include the Jaro metric (<tt>jaro</tt>) or the Levenshtein distance (<tt>lv</tt>). Finally, <tt>cut.a</tt> specifies that if the string similarity measure between pairs of observations is above 0.94, the pair should be coded as a match. Default settings are <tt>stringdist.method = "jw"</tt> and <tt>cut.a = 0.94</tt> (following the recommendations of @Winkler1990).
 
-Specifying the variables to be compared using numeric matching is similar. If, for example, we believe that there may be administrative errors in year of birth or address number, we may want to construct a measure of similarity by simply taking the absolute value of the difference between the observations for each pair. The closer the difference is to 0, the more likely they are to be a match on that variable. We can make that comparison using the \texttt{numeric.match} argument in \texttt{fastLink()}, as follows:
+Specifying the variables to be compared using numeric matching is similar. If, for example, we believe that there may be administrative errors in year of birth or address number, we may want to construct a measure of similarity by simply taking the absolute value of the difference between the observations for each pair. The closer the difference is to 0, the more likely they are to be a match on that variable. We can make that comparison using the <tt>numeric.match</tt> argument in <tt>fastLink()</tt>, as follows:
 
 ```{r numeric_match, echo = TRUE, tidy = FALSE, results = "hide", fig.pos = "t!"}
 fl_out <- fastLink(
@@ -549,11 +513,11 @@ fl_out <- fastLink(
 )
 ```
 
-Of the six variables we specified to match on, three (\texttt{firstname}, \texttt{lastname}, and \texttt{streetname}) are now being compared using Jaro-Winkler string distances as described above, and one (\texttt{birthyear}) is being compared with numeric distances. The final two variables, \texttt{city} and \texttt{housenum}, use exact comparisons (the default). We have also specified the threshold below which a numeric comparison is declared a match using \texttt{cut.a.num} --- here, if the birth year of observation $i$ and observation $j$ are less than $\pm 1$ year apart or less, it is declared a match.
+Of the six variables we specified to match on, three (<tt>firstname</tt>, <tt>lastname</tt>, and <tt>streetname</tt>) are now being compared using Jaro-Winkler string distances as described above, and one (<tt>birthyear</tt>) is being compared with numeric distances. The final two variables, <tt>city</tt> and <tt>housenum</tt>, use exact comparisons (the default). We have also specified the threshold below which a numeric comparison is declared a match using <tt>cut.a.num</tt> --- here, if the birth year of observation $i$ and observation $j$ are less than $\pm 1$ year apart or less, it is declared a match.
 
 ## Incorporating Partial Match Categories{#subsec:partialmatch}
 
-So far, we have introduced string distance and numeric distance comparisons in terms of a single cutoff --- if the comparison value is above the cutoff, it is declared a match, while if it is below the cutoff, it is declared a non-match. For both comparison types, though, we can introduce partial matching categories that can take advantage of more information in the data. Here, a comparison is declared a match if it is above the threshold provided in \texttt{cut.a} for a string distance comparison and \texttt{cut.a.num} for a numeric distance comparison, and it will be considered a partial match if its value is above the threshold given in \texttt{cut.p} (\texttt{cut.p.num}) and below the threshold given in \texttt{cut.a} (\texttt{cut.a.num}) for string.distance comparisons (numeric distance comparisons). If the value of the comparison is below \texttt{cut.p} for string distance comparisons or \texttt{cut.p.num} for numeric comparisons, it is declared a non-match. We can specify partial match comparisons as follows, using the argument \texttt{partial.match}:
+So far, we have introduced string distance and numeric distance comparisons in terms of a single cutoff --- if the comparison value is above the cutoff, it is declared a match, while if it is below the cutoff, it is declared a non-match. For both comparison types, though, we can introduce partial matching categories that can take advantage of more information in the data. Here, a comparison is declared a match if it is above the threshold provided in <tt>cut.a</tt> for a string distance comparison and <tt>cut.a.num</tt> for a numeric distance comparison, and it will be considered a partial match if its value is above the threshold given in <tt>cut.p</tt> (<tt>cut.p.num</tt>) and below the threshold given in <tt>cut.a</tt> (<tt>cut.a.num</tt>) for string.distance comparisons (numeric distance comparisons). If the value of the comparison is below <tt>cut.p</tt> for string distance comparisons or <tt>cut.p.num</tt> for numeric comparisons, it is declared a non-match. We can specify partial match comparisons as follows, using the argument <tt>partial.match</tt>:
 
 ```{r partial_match, echo = TRUE, tidy = FALSE, results = "hide", fig.pos = "t!"}
 fl_out <- fastLink(
@@ -567,13 +531,13 @@ fl_out <- fastLink(
 )
 ```
 
-As before, we are matching the variables \texttt{firstname}, \texttt{lastname}, and \texttt{streetname} using string-distance matching, \texttt{birthyear} using numeric distance matching, and \texttt{housenum} and \texttt{city} using exact matching. However, we've also specified that the comparisons for \texttt{streetname} and \texttt{birthyear} include a partial match category, and we've also noted the lower cutoffs for declaring a comparison a partial match using the arguments \texttt{cut.p} and \texttt{cut.p.num}. For all other variables without a partial match category, the cutoff for match/non-match is still \texttt{cut.a} and \texttt{cut.a.num}.
+As before, we are matching the variables <tt>firstname</tt>, <tt>lastname</tt>, and <tt>streetname</tt> using string-distance matching, <tt>birthyear</tt> using numeric distance matching, and <tt>housenum</tt> and <tt>city</tt> using exact matching. However, we've also specified that the comparisons for <tt>streetname</tt> and <tt>birthyear</tt> include a partial match category, and we've also noted the lower cutoffs for declaring a comparison a partial match using the arguments <tt>cut.p</tt> and <tt>cut.p.num</tt>. For all other variables without a partial match category, the cutoff for match/non-match is still <tt>cut.a</tt> and <tt>cut.a.num</tt>.
 
 ## Random Sampling to Speed up Large-scale Data Merges{#subsec:randomsamp}
 
 One advantage of the probabilistic modeling framework is that we can use random sampling of observations to reduce the computational burden of estimating the model. Calculating agreement patterns across two data sets of several million observations each can be computationally difficult even for \fastLink, and since the number of parameters being estimated by the model is fairly small (just $\bpi$ and $\lambda$), we can easily estimate them on a small random subset of the data. Then, the user can split up the larger data linkage task into smaller chunks and apply the parameter estimates from the random sample to the full set of agreement patterns in parallel.
 
-We demonstrate a simple example of this workflow below. We start by creating two small random samples of our test data, \texttt{dfA.s} and \texttt{dfB.s}, by randomly sampling 30\% of of the observations in each. Since we're only estimating the model on this subset and not actually getting matched pairs, we can tell \texttt{fastLink()} to only return the EM object by specifying \texttt{estimate.only = TRUE}. This not only reduces the computational time for estimating and returning the \fastLink \ object, but it also returns the EM object in a form that can be fed back into \texttt{fastLink()} when getting posterior match probabilities for the full sample (\texttt{fl\_out\_rs}).
+We demonstrate a simple example of this workflow below. We start by creating two small random samples of our test data, <tt>dfA.s</tt> and <tt>dfB.s</tt>, by randomly sampling 30\% of of the observations in each. Since we're only estimating the model on this subset and not actually getting matched pairs, we can tell <tt>fastLink()</tt> to only return the EM object by specifying <tt>estimate.only = TRUE</tt>. This not only reduces the computational time for estimating and returning the \fastLink \ object, but it also returns the EM object in a form that can be fed back into <tt>fastLink()</tt> when getting posterior match probabilities for the full sample (<tt>fl\_out\_rs</tt>).
 
 ```{r random_sample, echo = TRUE, tidy = FALSE, results = "hide", fig.pos = "t!"}
 ## Take 30% random samples of dfA and dfB
@@ -597,13 +561,13 @@ fl_out_predict <- fastLink(
 )
 ```
 
-Finally, we take the estimated model parameters and feed them back into \texttt{fastLink()} to predict posterior match probabilities on the full data set. The EM object is simply fed back into \texttt{fastLink()} using the \texttt{em.obj} argument, which tells the function to take the estimated match parameters and apply them to the match patterns in the full data set. The user can also split up the full data set and provide the same estimated model parameters to each separate run of \texttt{fastLink()} to further reduce the computational burden.
+Finally, we take the estimated model parameters and feed them back into <tt>fastLink()</tt> to predict posterior match probabilities on the full data set. The EM object is simply fed back into <tt>fastLink()</tt> using the <tt>em.obj</tt> argument, which tells the function to take the estimated match parameters and apply them to the match patterns in the full data set. The user can also split up the full data set and provide the same estimated model parameters to each separate run of <tt>fastLink()</tt> to further reduce the computational burden.
 
 ## Capturing Dependence between Linkage Fields{#subsec:dependence}
 
 A shortcoming of the Fellegi-Sunter model, as described in Section~\@ref(subsec:model), is the assumption of conditional independence across fields --- conditional on the match status $M_{ij}$, the observed match pattern of variable $k$ is assumed to be independent of the observed match pattern for variable $k'$\footnote{This can be formally stated as $\gamma_k(i,j) \indep \gamma_{k'}(i,j) \mid M_{i,j}$.} For example, conditional on being a true match, the likelihood of being a match on first name should be fully independent of the likelihood of being a match on last name. This is often an infeasible assumption, particularly when dealing with large households. One proposed solution to this limitation of the standard Fellegi-Sunter model (for full details, see @wink:89, @Winkler1993, @thib:93, @lars:rubi:01) is to use weighted log-linear models to capture the full set of dependencies across linkage fields, conditional on match status.
 
-We implement the log-linear model in \fastLink \ through the option \texttt{cond.indep} --- when set to true (default), \texttt{fastLink()} runs the standard Fellegi-Sunter conditionally independent model. When set to false, it substitutes the log-linear modeling strategy in the EM algorithm to model dependencies between linkage fields. 
+We implement the log-linear model in \fastLink \ through the option <tt>cond.indep</tt> --- when set to true (default), <tt>fastLink()</tt> runs the standard Fellegi-Sunter conditionally independent model. When set to false, it substitutes the log-linear modeling strategy in the EM algorithm to model dependencies between linkage fields. 
 
 ```{r cond_indep, echo = TRUE, tidy = FALSE, results = "hide", fig.pos = "t!"}
 fl_out <- fastLink(
@@ -618,9 +582,9 @@ As of version `r packageVersion("fastLink")` of \fastLink, the log-linear modeli
 
 ## Finding Duplicates in a Single Data Set{#subsec:dedup}
 
-\fastLink \ can also be used to de-duplicate a single data frame using the PRL framework. Within-data-frame dedupliation is straightforward in \fastLink --- the user simply provides the same data frame to both \texttt{dfA} and \texttt{dfB} arguments, and runs \texttt{fastLink()} as they normally would. The \texttt{blockData()} function then takes both data frames and the resulting output from \texttt{fastLink()}, and returns a final data frame with a new ID column indicating identical observations.
+\fastLink \ can also be used to de-duplicate a single data frame using the PRL framework. Within-data-frame dedupliation is straightforward in \fastLink --- the user simply provides the same data frame to both <tt>dfA</tt> and <tt>dfB</tt> arguments, and runs <tt>fastLink()</tt> as they normally would. The <tt>blockData()</tt> function then takes both data frames and the resulting output from <tt>fastLink()</tt>, and returns a final data frame with a new ID column indicating identical observations.
 
-Below is a simple workflow to de-duplicate \texttt{dfA}, after adding 10 duplicated observations manually:
+Below is a simple workflow to de-duplicate <tt>dfA</tt>, after adding 10 duplicated observations manually:
 
 ```{r dedupe, results = 'markup', echo = TRUE, tidy = FALSE, fig.pos = "t!"}
 ## Add duplicates
@@ -643,20 +607,20 @@ names(table(dfA_dedupe$dedupe.ids)[table(dfA_dedupe$dedupe.ids) > 1])
 dfA_dedupe[dfA_dedupe$dedupe.ids == 501,]
 ```
 
-Users can then dedupe data sets using the \texttt{dedupe.ids} covariate in the returned data frame.
+Users can then dedupe data sets using the <tt>dedupe.ids</tt> covariate in the returned data frame.
 
 ## Incorporating Auxiliary Information and Post-Processing Data Merges{#sec:postproc}
 
 Another advantage of the probabilistic modeling approach is its ability to incorporate auxiliary information into the estimation process. This information can take the form of ex-post adjustments or as Bayesian priors on the relevant parameters, and is easily incorporated into the \fastLink \ estimation step. We detail the two main auxiliary information types --- migration rate information and first name frequencies --- below, and show how to include them in model estimation. In addition, we show how to post-process data merges by enforcing a one-to-one restriction, such that every obsevation in dataset A is matched to at most one observation in dataset B, and vice versa. 
 
-## Information on Migration Rates{#subsec:migration}
+### Information on Migration Rates{#subsec:migration}
 
 One important substantive application of record linkage methodologies is to study individuals who move across neighborhoods, states, and counties. While these individuals can be hard to track because of the loss of address information to inform the match, their social behavior, and the behavior of those around them, is of interest to many substantive scholars. To improve the quality of matching data sets for discovering movers, we provide a few tools to calibrate match rates using known auxiliary data on movers' rates.
 
 Two parameters, $\lambda$ (the probability that a given pairwise comparison is a true match) and $\pi_{{\rm adr}, 1, 0}$ (the probability that a true matched pair has different addresses) can be calibrated using available auxiliary data on migration. For example, when matching two voter files from the same state across different years, the prior on $\lambda$ can be calibrated as:
 $$\lambda^{\rm prior} = \frac{\text{\# of non-movers} + \text{\# of in-state movers}}{N_\cA \times N_\cB}$$ while the prior on $\pi_{{\rm adr}, 1, 0}$ can be calibrated as 
 $$\pi_{{\rm adr}, 1, 0}^{\rm prior} = \frac{\text{\# of in-state movers}}{\text{\# of in-state movers} + \text{\# of non-movers}}$$
-Counts of movers can come from a number of auxilary data sources --- in \fastLink, we use the IRS Statistics of Income datasets to recover these counts for within-state and across-state movers in the United States. The IRS SOI data is a definitive source on migration in the United States that relies on tax returns to track individual year-to-year migration.\footnote{The IRS Statistics of Income data for both county-to-county migration and state-to-state migration, which dates back to 1990, is available online at (https://www.irs.gov/statistics/soi-tax-stats-migration-data).} To automatically generate these priors, we can use the function \texttt{calcMoversPriors()} as follows:
+Counts of movers can come from a number of auxilary data sources --- in \fastLink, we use the IRS Statistics of Income datasets to recover these counts for within-state and across-state movers in the United States. The IRS SOI data is a definitive source on migration in the United States that relies on tax returns to track individual year-to-year migration.\footnote{The IRS Statistics of Income data for both county-to-county migration and state-to-state migration, which dates back to 1990, is available online at (https://www.irs.gov/statistics/soi-tax-stats-migration-data).} To automatically generate these priors, we can use the function <tt>calcMoversPriors()</tt> as follows:
 ```{r priors_ca, results = "markup", echo = TRUE, tidy = FALSE, fig.pos = "t!"}
 priors_out <- calcMoversPriors(geo.a = "CA", geo.b = "CA", 
                                year.start = 2014, year.end = 2015)
@@ -664,7 +628,7 @@ priors_out
 ```
 Here, we're recovering the estimated prior values for $\lambda$ and $\pi_{{\rm adr}, 1, 0}$ for a match of the California voter file in 2014 to the California voter file in 2015. 
 
-We can then feed these into \texttt{fastLink()} using the \texttt{priors.obj} argument. In order to properly specify the prior, we also need to tell \texttt{fastLink()} how much to weight the prior estimates relative to the parameter estimates implied by the observed match patterns. To weight the priors, we specify the arguments \texttt{w.lambda} and \texttt{w.pi} as the weights for the $\lambda^{\rm prior}$ and $\pi_{{\rm adr}, 1, 0}^{\rm prior}$, respectively. Specifying \texttt{w.lambda = .25} tells \texttt{fastLink()} that the final estimate for $\lambda$ should be a weighted average where 25\% is the prior estimate, and 75\% is the maximum likelihood estimate from the observed match matterns. Lastly, when specifying a prior on the address field, we tell \texttt{fastLink()} which field is an address field using the \texttt{address.field} argument. An example, with priors calibrated for the test data set, is:
+We can then feed these into <tt>fastLink()</tt> using the <tt>priors.obj</tt> argument. In order to properly specify the prior, we also need to tell <tt>fastLink()</tt> how much to weight the prior estimates relative to the parameter estimates implied by the observed match patterns. To weight the priors, we specify the arguments <tt>w.lambda</tt> and <tt>w.pi</tt> as the weights for the $\lambda^{\rm prior}$ and $\pi_{{\rm adr}, 1, 0}^{\rm prior}$, respectively. Specifying <tt>w.lambda = .25</tt> tells <tt>fastLink()</tt> that the final estimate for $\lambda$ should be a weighted average where 25\% is the prior estimate, and 75\% is the maximum likelihood estimate from the observed match matterns. Lastly, when specifying a prior on the address field, we tell <tt>fastLink()</tt> which field is an address field using the <tt>address.field</tt> argument. An example, with priors calibrated for the test data set, is:
 ```{r match_withpriors, echo = TRUE, tidy = FALSE, results = "hide", fig.pos = "t!"}
 ## Reasonable prior estimates for this dataset
 priors_out <- list(lambda.prior = 50/(nrow(dfA) * nrow(dfB)), 
@@ -680,13 +644,13 @@ fl_out <- fastLink(
 )
 ```
 
-We place Beta priors on the relevant parameters to maintain conjugacy, while leaving the priors on the remaining parameters improper. Other data sources for auxiliary information on migration can be used in \texttt{fastLink()} by feeding them in as a list with the names \texttt{lambda.prior} or \texttt{pi.prior} as above. 
+We place Beta priors on the relevant parameters to maintain conjugacy, while leaving the priors on the remaining parameters improper. Other data sources for auxiliary information on migration can be used in <tt>fastLink()</tt> by feeding them in as a list with the names <tt>lambda.prior</tt> or <tt>pi.prior</tt> as above. 
 
-## Reweighting Match Probabilities Ex-Post with Name Frequencies{#subsec:namefreq}
+### Reweighting Match Probabilities Ex-Post with Name Frequencies{#subsec:namefreq}
 
 We can also take advantage of information about common and uncommon first names in order to improve match quality. Unlike the migration priors discussed above, it is more difficult to incorporate information about name frequency into estimation without dramatically increasing the computational cost of the estimation --- instead, we follow the existing literature (e.g. @Winkler2000) and make an ex-post adjustment to the estimated parameters using the name frequencies that are observed in the data. Specifically, we correct for the possibility that a pair sharing a common first name, such as John, may be more likely to be a true non-match than a pair sharing an uncommon first name, such as Jocelyn.
 
-To conduct an ex-post adjustment on observed name frequencies, the user simply sets \texttt{reweight.names = TRUE} in \texttt{fastLink()} and provides the name of the first name field in \texttt{firstname.field}, as follows:
+To conduct an ex-post adjustment on observed name frequencies, the user simply sets <tt>reweight.names = TRUE</tt> in <tt>fastLink()</tt> and provides the name of the first name field in <tt>firstname.field</tt>, as follows:
 
 ```{r firstname_adjust, echo = TRUE, tidy = FALSE, results = "hide", fig.pos = "t!"}
 fl_out <- fastLink(
@@ -697,13 +661,13 @@ fl_out <- fastLink(
 )
 ```
 
-The unweighted posterior match probabilities are then replaced with the reweighted posterior match probabilities in the \texttt{posterior} slot of the returned \texttt{fastLink} object.
+The unweighted posterior match probabilities are then replaced with the reweighted posterior match probabilities in the <tt>posterior</tt> slot of the returned <tt>fastLink</tt> object.
 
 ## Enforcing a One-to-One Merge{#subsec:onetoone}
 
-One issue with the probabilistic modeling framework is that a single observation in one data set can be matched to multiple observations in the second data set. Individuals within a household who share a name, for example, can be a challenge for PRL models, where the posterior probability of matching can still be quite high even if name suffixes ("Jr.", "Sr.", "III") are different. To adjust for this, \texttt{fastLink()} offers several methods to enforce a "one-to-one" merge such that each observation in dataset A is matched to at most one observation in dataset B, and vice versa. 
+One issue with the probabilistic modeling framework is that a single observation in one data set can be matched to multiple observations in the second data set. Individuals within a household who share a name, for example, can be a challenge for PRL models, where the posterior probability of matching can still be quite high even if name suffixes ("Jr.", "Sr.", "III") are different. To adjust for this, <tt>fastLink()</tt> offers several methods to enforce a "one-to-one" merge such that each observation in dataset A is matched to at most one observation in dataset B, and vice versa. 
 
-The first method implemented, which is the default method used when enforcing a one-to-one merge, is a greedy algorithm that takes the best possible match for each observation in dataset A in dataset B, and then vice versa for dataset B among the possible remaining matches in dataset A. Any remaining ties are broken at random. By default, \texttt{fastLink()} runs the greedy de-duping algorithm after recovering all successfully matched indices from both data sets, but it can be called explicitly by running:
+The first method implemented, which is the default method used when enforcing a one-to-one merge, is a greedy algorithm that takes the best possible match for each observation in dataset A in dataset B, and then vice versa for dataset B among the possible remaining matches in dataset A. Any remaining ties are broken at random. By default, <tt>fastLink()</tt> runs the greedy de-duping algorithm after recovering all successfully matched indices from both data sets, but it can be called explicitly by running:
 
 ```{r basic_dedupe, echo = TRUE, tidy = FALSE, results = "hide", fig.pos = "t!"}
 fl_out <- fastLink(
@@ -714,7 +678,7 @@ fl_out <- fastLink(
 )
 ```
 
-\fastLink\ also implements a linear sum assignment solution proposed by @Jaro1989 and @wink:94, which maximizes the sum of the posterior match probabilities subject to the one-to-one match constraint. Unlike the greedy de-duping algorithm, this method considers all possible assignments across pairs to find the optimal set that maximizes the sum of the posterior match probabilities, and @wink:94 shows that this method is more robust than the greedy algorithm in small-to-medium-sized data sets. However, as the size of the data grows large, the method scales poorly in runtime, and the relative advantages in accuracy are smaller. However, we recommend this method for smaller data merging problems. Users can implement the linear sum assignment de-duping method by setting \texttt{linprog.dedupe = TRUE}, as follows: 
+\fastLink\ also implements a linear sum assignment solution proposed by @Jaro1989 and @wink:94, which maximizes the sum of the posterior match probabilities subject to the one-to-one match constraint. Unlike the greedy de-duping algorithm, this method considers all possible assignments across pairs to find the optimal set that maximizes the sum of the posterior match probabilities, and @wink:94 shows that this method is more robust than the greedy algorithm in small-to-medium-sized data sets. However, as the size of the data grows large, the method scales poorly in runtime, and the relative advantages in accuracy are smaller. However, we recommend this method for smaller data merging problems. Users can implement the linear sum assignment de-duping method by setting <tt>linprog.dedupe = TRUE</tt>, as follows: 
 
 ```{r linprog_dedupe, eval = FALSE, echo = TRUE, tidy = FALSE, results = "hide", fig.pos = "t!"}
 fl_out <- fastLink(
@@ -732,13 +696,13 @@ While much of \fastLink \ focuses on improving the speed and quality of the Fell
 
 ## Cleaning and Harmonizing Strings{#subsec:stringclean}
 
-Preprocessing string data for a data merge generally proceeds in two steps --- first, data is tokenized into similar fields (from ``Benjamin Haber Fifield'' to ``Benjamin'', ``Haber'', and ``Fifield'' for names, and from ``19 Crawford Road'' to ``19'', ``Crawford'', and ``Road'' for addresses), and then harmonizing those fields using some manner of text standardization. While we do not implement the tokenization step in \fastLink, we will discuss a \textsf{Python} library called \textsf{probablepeople} that we have used extensively in our own substantive work. We will then briefly introduce a function in \fastLink, \texttt{preprocText()}, for standardizing and harmonizing text fields that have already been tokenized using United States Postal Service benchmarks for standardization.
+Preprocessing string data for a data merge generally proceeds in two steps --- first, data is tokenized into similar fields (from ``Benjamin Haber Fifield'' to ``Benjamin'', ``Haber'', and ``Fifield'' for names, and from ``19 Crawford Road'' to ``19'', ``Crawford'', and ``Road'' for addresses), and then harmonizing those fields using some manner of text standardization. While we do not implement the tokenization step in \fastLink, we will discuss a \textsf{Python} library called \textsf{probablepeople} that we have used extensively in our own substantive work. We will then briefly introduce a function in \fastLink, <tt>preprocText()</tt>, for standardizing and harmonizing text fields that have already been tokenized using United States Postal Service benchmarks for standardization.
 
 ### Tokenizing String Data{#subsubsec:token}
 
 While we do not implement tokenizing ourselves in \fastLink, we recommend that users seeking to tokenize data use the \textsf{Python} library \textsf{probablepeople} for personal and corporation names and \textsf{usaddress} for addresses, which we have used in our own substantive applications. Both libraries use pre-trained conditional random field models to split name, entity, and address strings into specific components such as first name, last name, and suffix (for names), corporation name and corporation legal type (for corporations and entities), and street number, street name, town, state, and zip code (for addresses). 
 
-Below we show a simple example where we use \textsf{probablepeople} to parse strings of corporation names and personal names into separate components. For a given string, we simply use the \texttt{tag()} function in the \textsf{probablepeople} library, which outputs an ordered dictionary where each identified component is assigned to one of several pre-defined tags. For names, these tags include \texttt{FirstName}, \texttt{Surname}, \texttt{Nickname}, \texttt{PrefixMarital}, and others.\footnote{See the documentation for \textsf{probablepeople} at (https://probablepeople.readthedocs.io/en/latest/) for more detail.} Corporations have their own set of pre-defined tags for the separate components.
+Below we show a simple example where we use \textsf{probablepeople} to parse strings of corporation names and personal names into separate components. For a given string, we simply use the <tt>tag()</tt> function in the \textsf{probablepeople} library, which outputs an ordered dictionary where each identified component is assigned to one of several pre-defined tags. For names, these tags include <tt>FirstName</tt>, <tt>Surname</tt>, <tt>Nickname</tt>, <tt>PrefixMarital</tt>, and others.\footnote{See the documentation for \textsf{probablepeople} at (https://probablepeople.readthedocs.io/en/latest/) for more detail.} Corporations have their own set of pre-defined tags for the separate components.
 
 ```{r probablepeople, engine = 'python', results = 'markup', echo = TRUE, tidy = FALSE, fig.pos = "t!"}
 # Parsing personal and corporation names using probablepeople
@@ -760,7 +724,7 @@ for key in uni_str_parsed[0]:
     print("{}: {}".format(key, uni_str_parsed[0][key]))
 ```
 
-We can apply the same methodology to address strings in order to parse them into usable components. Again, the \texttt{tag()} function will take an input string and output an ordered dictionary with pre-defined tags. Valid tags for addresses include \texttt{AddressNumber}, \texttt{BuildingName}, \texttt{StateName}, \texttt{PlaceName}, and \texttt{ZipCode}, among other tags.\footnote{See the documentation for \textsf{usaddress} at (https://usaddress.readthedocs.io/en/latest/) for more detail.}
+We can apply the same methodology to address strings in order to parse them into usable components. Again, the <tt>tag()</tt> function will take an input string and output an ordered dictionary with pre-defined tags. Valid tags for addresses include <tt>AddressNumber</tt>, <tt>BuildingName</tt>, <tt>StateName</tt>, <tt>PlaceName</tt>, and <tt>ZipCode</tt>, among other tags.\footnote{See the documentation for \textsf{usaddress} at (https://usaddress.readthedocs.io/en/latest/) for more detail.}
 
 ```{r usaddress, engine = 'python', results = 'markup', echo = TRUE, tidy = FALSE, fig.pos = "t!"}
 # Parsing addresses using usaddress
@@ -775,26 +739,26 @@ for key in adr_str_parsed[0]:
     print("{}: {}".format(key, adr_str_parsed[0][key]))
 ```
 
-Once parsed, these tagged fields can be used as inputs for \texttt{fastLink()} as additional fields to match datasets on. However, we remind users that once parsed, the original string should not be fed into \texttt{fastLink()} in addition to the parsed strings. Doing so, in addition to leading to longer runtimes, will violate the conditional independence assumption such that the agreement patterns of the parsed fields will be dependent on the agreement patterns of the un-parsed fields.
+Once parsed, these tagged fields can be used as inputs for <tt>fastLink()</tt> as additional fields to match datasets on. However, we remind users that once parsed, the original string should not be fed into <tt>fastLink()</tt> in addition to the parsed strings. Doing so, in addition to leading to longer runtimes, will violate the conditional independence assumption such that the agreement patterns of the parsed fields will be dependent on the agreement patterns of the un-parsed fields.
 
 ### Harmonizing String Fields{#subsubsec:harmonize}
 
-Once strings are parsed into individual components that will be used for a match, we also have to ensure that the same field across datasets handles the same data identically. For example, if street types in dataset A are `Road', `Street', and `Avenue', but in dataset B they are `Rd.', `St.', and `Ave.', these true matches will be coded by \fastLink \ (and any other matching algorithm) as a non-match on that variable. To ensure harmonization across dataset by field, we provide a function for text standardization, \textsf{preprocText()}, that can help ensure this equivalence across datasets.
+Once strings are parsed into individual components that will be used for a match, we also have to ensure that the same field across datasets handles the same data identically. For example, if street types in dataset A are "Road", "Street", and "Avenue", but in dataset B they are "Rd.", "St.", and "Ave.", these true matches will be coded by \fastLink \ (and any other matching algorithm) as a non-match on that variable. To ensure harmonization across dataset by field, we provide a function for text standardization, \textsf{preprocText()}, that can help ensure this equivalence across datasets.
 
-The function \textsf{preprocText()} takes as argument a vector of text, which it assumes has already been split into fields, and then provides a number of options for conversion. The options applicable to all string types include \texttt{tolower} (convert all text to lower-case), \texttt{remove\_whitespace} (strip leading and trailing whitespace, and convert multiple spaces to single space), and \texttt{remove\_punctuation} (remove all punctuation such as apostrophes, semi-colons, colons, periods, question marks, etc.). For example, we can convert text as follows:
+The function \textsf{preprocText()} takes as argument a vector of text, which it assumes has already been split into fields, and then provides a number of options for conversion. The options applicable to all string types include <tt>tolower</tt> (convert all text to lower-case), <tt>remove\_whitespace</tt> (strip leading and trailing whitespace, and convert multiple spaces to single space), and <tt>remove\_punctuation</tt> (remove all punctuation such as apostrophes, semi-colons, colons, periods, question marks, etc.). For example, we can convert text as follows:
 
 ```{r preproc_punct, results = 'markup', echo = TRUE, tidy = FALSE, fig.pos = "t!"}
 preprocText(text = " Road.", tolower = TRUE, 
             remove_whitespace = TRUE, remove_punctuation = TRUE)
 ```
 
-For names, \texttt{preprocText()} also implements Soundex encoding from the \texttt{stringdist} package. The Soundex algorithm is used by the U.S. Census Bureau to increase the likelihood of matches across similar-sounding names --- for example, while Rupert and Robert are spelled differently and would be coded as non-matches by any string distance measure, Soundex encodings of both names are identical. We refer users to other references (e.g. @knut:72, pgs. 391-92) for a full description of the algorithm, but as an overview, the algorithm keeps the first letter of a string and then follows a series of rules to convert the remaining portion of the string to a three-digit numerical code based on letter combinations that are similar in sound. Below, we show the output from a Soundex conversion of Rupert and Robert:
+For names, <tt>preprocText()</tt> also implements Soundex encoding from the <tt>stringdist</tt> package. The Soundex algorithm is used by the U.S. Census Bureau to increase the likelihood of matches across similar-sounding names --- for example, while Rupert and Robert are spelled differently and would be coded as non-matches by any string distance measure, Soundex encodings of both names are identical. We refer users to other references (e.g. @knut:72, pgs. 391-92) for a full description of the algorithm, but as an overview, the algorithm keeps the first letter of a string and then follows a series of rules to convert the remaining portion of the string to a three-digit numerical code based on letter combinations that are similar in sound. Below, we show the output from a Soundex conversion of Rupert and Robert:
 
 ```{r preproc_soundex, results = 'markup', echo = TRUE, tidy = FALSE, fig.pos = "t!"}
 preprocText(text = c("Rupert", "Robert"), soundex = TRUE)
 ```
 
-Finally, for addresses, we also implement United States Postal Service (USPS) address standardization of street names to ensure all street types (for example, Road, Street, and Avenue) are consistently recorded across data sets. The USPS converts all street types to standard abbreviations (such as `Road' to `Rd.' and `Street' to `St.'), and we implement the same conversion in \texttt{preprocText()} through the \texttt{usps\_address} argument:
+Finally, for addresses, we also implement United States Postal Service (USPS) address standardization of street names to ensure all street types (for example, Road, Street, and Avenue) are consistently recorded across data sets. The USPS converts all street types to standard abbreviations (such as `Road' to `Rd.' and `Street' to `St.'), and we implement the same conversion in <tt>preprocText()</tt> through the <tt>usps\_address</tt> argument:
 
 ```{r preproc_usps, results = 'markup', echo = TRUE, tidy = FALSE, fig.pos = "t!"}
 preprocText(text = c("Street", "Boulevard"), usps_address = TRUE)
@@ -803,10 +767,9 @@ preprocText(text = c("Street", "Boulevard"), usps_address = TRUE)
 Together, these resources can help ensure the uniformity across data sets of string variables before conducting a data merge.
 
 ### Blocking Data to Improve Merge Quality
-% Blocking data
 \fastLink\ also includes a series of tools to help block data sets before conducting a merge. The goal of blocking is to avoid comparisons between observations that are certain non-matches, in order to increase the amount of overlap between data sets and to reduce computation time resulting from irrelevant comparisons. For example, if an analyst is certain there are no true matches across states when merging survey data to voter files, they can block by state and only compare observations within states. We refer readers interested in a comprehensive review of blocking techniques to @pchri:12 and @SVSF2014 --- here, we will cover the methods implemented in \fastLink \ for blocking data before conducting the merge, and for identifying and removing observations with no obvious candidate matches.
 
-In \fastLink, the function \texttt{blockData()} can block two data sets using a single variable or combinations of variables using several different blocking techniques. The basic functionality is similar to that of \texttt{fastLink()}, where the analyst inputs two data sets and a vector of variable names that they want to block on. A simple example follows, where we are blocking the two sample data sets by gender:
+In \fastLink, the function <tt>blockData()</tt> can block two data sets using a single variable or combinations of variables using several different blocking techniques. The basic functionality is similar to that of <tt>fastLink()</tt>, where the analyst inputs two data sets and a vector of variable names that they want to block on. A simple example follows, where we are blocking the two sample data sets by gender:
 
 ```{r setup_block, echo = FALSE, tidy = FALSE, results = "hide", fig.pos = "t!"}
 fl_out <- fastLink(dfA, dfB,
@@ -832,7 +795,7 @@ blockgender_out <- blockData(dfA, dfB, varnames = "gender")
 names(blockgender_out)
 ```
 
-In its simplest usage, \texttt{blockData()} takes two data sets and a single variable name for the \texttt{varnames} argument, and it returns the indices of the member observations for each block. Data sets can then be subsetted as follows and the match can then be run within each block separately:
+In its simplest usage, <tt>blockData()</tt> takes two data sets and a single variable name for the <tt>varnames</tt> argument, and it returns the indices of the member observations for each block. Data sets can then be subsetted as follows and the match can then be run within each block separately:
 
 ```{r match_withblocks, echo = TRUE, tidy = FALSE, results = "hide", fig.pos = "t!"}
 ## Subset dfA into blocks
@@ -858,14 +821,14 @@ fl_out_block2 <- fastLink(
 
 Blocking on gender substantially reduces the number of comparisons \fastLink\ has to make. Without blocking, \fastLink\ makes `r nrow(dfA)` $\times$ `r nrow(dfB)` $=$ `r nrow(dfA) * nrow(dfB)` comparisons, and the probability that any given comparison is a match is `r round(fl_out$EM$p.m, 5)`. However, when blocking on gender, \fastLink\ makes `r nrow(dfA_block1)` $\times$ `r nrow(dfB_block1)` $+$ `r nrow(dfA_block2)` $\times$ `r nrow(dfB_block2)` $=$ `r nrow(dfA_block1) * nrow(dfB_block1) + nrow(dfA_block2) * nrow(dfB_block2)` comparisons, while the baseline probability of finding a match goes up to `r round(fl_out_block1$EM$p.m, 5)` in Block 1, and `r round(fl_out_block2$EM$p.m, 5)` in Block 2. Stricter blocking strategies, of course, will reduce the number of comparisons even further.
 
-Furthermore, \texttt{blockData()} allows analysts to go beyond exact blocking on a single variable. Users can block on multiple variables by feeding a vector of variable names to \texttt{varnames}, as follows:
+Furthermore, <tt>blockData()</tt> allows analysts to go beyond exact blocking on a single variable. Users can block on multiple variables by feeding a vector of variable names to <tt>varnames</tt>, as follows:
 
 ```{r block_twovar, echo = TRUE, tidy = FALSE, results = "hide", fig.pos = "t!"}
 ## Exact block on gender and city
 blockdata_out <- blockData(dfA, dfB, varnames = c("gender", "city"))
 ```
 
-\texttt{blockData()} also implements other methods of blocking other than exact blocking. Analysts commonly use {\it window blocking} for numeric variables, where a given observation in dataset A will be compared to all observations in dataset B where the value of the blocking variable is within $\pm K$ of the value of the same variable in dataset A. The value of $K$ is the size of the window --- for instance, if we wanted to compare observations where birth year is within $\pm 1$ year, the window size is 1. Below, we block \texttt{dfA} and \texttt{dfB} on gender and birth year, using exact blocking on gender and window blocking with a window size of 1 on birth year:
+<tt>blockData()</tt> also implements other methods of blocking other than exact blocking. Analysts commonly use {\it window blocking} for numeric variables, where a given observation in dataset A will be compared to all observations in dataset B where the value of the blocking variable is within $\pm K$ of the value of the same variable in dataset A. The value of $K$ is the size of the window --- for instance, if we wanted to compare observations where birth year is within $\pm 1$ year, the window size is 1. Below, we block <tt>dfA</tt> and <tt>dfB</tt> on gender and birth year, using exact blocking on gender and window blocking with a window size of 1 on birth year:
 
 ```{r block_window, echo = TRUE, tidy = FALSE, results = "hide", fig.pos = "t!"}
 ## Exact block on gender, window block (+/- 1 year) on birth year
@@ -876,7 +839,7 @@ blockdata_out <- blockData(
 )
 ```
 
-\texttt{blockData()} also allows users to block variables using k-means clustering, so that similar values of string and numeric variables are blocked together. When applying k-means blocking to string variables such as name, the algorithm orders observations so that alphabetically close names are grouped together in a block. In the following example, we block \texttt{dfA} and \texttt{dfB} on gender and first name, again using exact blocking on gender and k-means blocking on first name while specifying 2 clusters for the k-means algorithm:
+<tt>blockData()</tt> also allows users to block variables using k-means clustering, so that similar values of string and numeric variables are blocked together. When applying k-means blocking to string variables such as name, the algorithm orders observations so that alphabetically close names are grouped together in a block. In the following example, we block <tt>dfA</tt> and <tt>dfB</tt> on gender and first name, again using exact blocking on gender and k-means blocking on first name while specifying 2 clusters for the k-means algorithm:
 
 ```{r block_kmeans, echo = TRUE, tidy = FALSE, results = "hide", fig.pos = "t!"}
 ## Exact block on gender, k-means block on first name with 2 clusters
@@ -887,7 +850,7 @@ blockdata_out <- blockData(
 )
 ```
 
-In addition to the blocking functionalities, \fastLink\ also includes methods to help researchers discard observations with no obvious matching candidates in the paired data set using string distance comparisons. \texttt{stringSubset()} calculates the string distance between each pair of observations in two data sets and returns the indices where there is at least one candidate match with a string similarity measure above a certain threshold. That is, it reduces the set of candidate matches by throwing out any observation in dataset A where no observation in dataset B has a sufficiently similar first name/last name/street name, and vice versa. 
+In addition to the blocking functionalities, \fastLink\ also includes methods to help researchers discard observations with no obvious matching candidates in the paired data set using string distance comparisons. <tt>stringSubset()</tt> calculates the string distance between each pair of observations in two data sets and returns the indices where there is at least one candidate match with a string similarity measure above a certain threshold. That is, it reduces the set of candidate matches by throwing out any observation in dataset A where no observation in dataset B has a sufficiently similar first name/last name/street name, and vice versa. 
 
 As an example, we will reduce the set of candidate matches by discarding any observation in the two sample datasets where the Jaro-Winkler string similarity measure is below 0.8, as follows: 
 
@@ -898,6 +861,6 @@ stringsub_out <- stringSubset(dfA$firstname, dfB$firstname,
 names(stringsub_out)
 ```
 
-In the output object, \texttt{dfA.inds} contains the indices of the observations in \texttt{dfA} where at least one observation in \texttt{dfB} has a sufficiently similar first name, and vice versa for \texttt{dfB.inds}. This procedure has also reduced the number of possible comparisons  --- whereas the standard merge has to make `r nrow(dfA) * nrow(dfB)` comparisons, now \texttt{fastLink()} only has to make `r length(stringsub_out$dfA.inds) * length(stringsub_out$dfB.inds)` comparisons within the subsetted data frames. \texttt{stringSubset()} also allows users to specify Jaro string-distance measures and Levenshtein distances instead of the default Jaro-Winkler distance.
+In the output object, <tt>dfA.inds</tt> contains the indices of the observations in <tt>dfA</tt> where at least one observation in <tt>dfB</tt> has a sufficiently similar first name, and vice versa for <tt>dfB.inds</tt>. This procedure has also reduced the number of possible comparisons  --- whereas the standard merge has to make `r nrow(dfA) * nrow(dfB)` comparisons, now <tt>fastLink()</tt> only has to make `r length(stringsub_out$dfA.inds) * length(stringsub_out$dfB.inds)` comparisons within the subsetted data frames. <tt>stringSubset()</tt> also allows users to specify Jaro string-distance measures and Levenshtein distances instead of the default Jaro-Winkler distance.
 
 # References
