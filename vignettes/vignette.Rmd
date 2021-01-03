@@ -7,10 +7,12 @@ bibliography: linkref.bib
 link-citations: yes
 header-includes:
    - \usepackage{tikz}
-   - \newcommand\bbeta{\bm{\beta}}
-   - \newcommand\bdelta{\bm{\delta}}
-   - \newcommand\bgamma{\bm{\gamma}}
-   - \newcommand\balpha{\bm{\alpha}}
+   - \usepackage{bm}
+   - \newcommand\bbeta{\boldsymbol{\beta}}
+   - \newcommand\bdelta{\boldsymbol{\delta}}
+   - \newcommand\bgamma{\boldsymbol{\gamma}}
+   - \newcommand\balpha{\boldsymbol{\alpha}}
+   - \newcommand\bpi{\boldsymbol{\pi}}
    - \newcommand\bone{\mathbf{1}}
    - \newcommand\E{\mathbb{E}}
    - \newcommand\P{\mathbb{P}}
@@ -40,7 +42,6 @@ header-includes:
    - \newcommand\bX{\mathbf{X}}
    - \newcommand\bV{\mathbf{V}}
    - \newcommand\bW{\mathbf{W}}
-   - \newcommand\bM{\mathbf{M}}
    - \newcommand\bZ{\mathbf{Z}}
    - \newcommand\bY{\mathbf{Y}}
    - \newcommand\bt{\mathbf{t}}
@@ -54,7 +55,6 @@ header-includes:
    - \newcommand\logit{{\rm logit}}
    - \renewcommand\r{\right}
    - \renewcommand\l{\left}
-   - \newcommand\bpi{\bm{\pi}}
 vignette: >
   %\VignetteIndexEntry{fastLink: R Package for Fast Probabilistic Record Linkage}
   %\VignetteEngine{knitr::rmarkdown}
@@ -81,6 +81,7 @@ knitr::knit_hooks$set(inline = function(x) {
 
 options(digits = 3)
 
+set.seed(27667)
 library(tidyverse)
 library(fastLink)
 ```
@@ -285,12 +286,12 @@ $$
 $$
 where $\gamma_k(i, j)$ represents the agreement level between the
 values for variable $k$ for the pair $(i, j)$ and
-$\bm{\tau} = \{ \tau_0, \tau_1, \ldots, \tau_{L_{k - 1}} \}$ the set
+$\boldsymbol{\tau} = \{ \tau_0, \tau_1, \ldots, \tau_{L_{k - 1}} \}$ the set
 of predetermined thresholds use to define the agreement levels. For
 example, to compare names and last names, some authors such as
 @Winkler1990 argue in favor of using the Jaro-Winkler string
 distance to produce $S_k$, where one could use
-$\bm{\tau} = \{ 0.88, 0.94\}$ to construct $\gamma_k$ for three
+$\boldsymbol{\tau} = \{ 0.88, 0.94\}$ to construct $\gamma_k$ for three
 agreement levels.
 
 Still the problem with constructing $\gamma_k$ is that the number of
@@ -338,7 +339,7 @@ can compute the posterior match probabilities for every agreement
 pattern found in the entire data sets in parallel.  In this way, we
 are able to scale the model to massive data sets.
 
-# Conducting Data Merges using fastLink{\#sec:merge}
+# Conducting Data Merges using fastLink {#sec:merge}
 
 The \fastLink\ package consists of several main functions as well as various methods for
 summarizing output from these functions (e.g., <tt>plot()</tt> and <tt>confusion()</tt>).
@@ -604,7 +605,7 @@ dfA_dedupe <- getMatches(dfA = dfA, dfB = dfA, fl.out = fl_out_dedupe)
 names(table(dfA_dedupe$dedupe.ids)[table(dfA_dedupe$dedupe.ids) > 1])
 
 ## Show duplicated observation
-dfA_dedupe[dfA_dedupe$dedupe.ids == 501,]
+dfA_dedupe[dfA_dedupe$dedupe.ids == 4,]
 ```
 
 Users can then dedupe data sets using the <tt>dedupe.ids</tt> covariate in the returned data frame.
@@ -618,8 +619,8 @@ Another advantage of the probabilistic modeling approach is its ability to incor
 One important substantive application of record linkage methodologies is to study individuals who move across neighborhoods, states, and counties. While these individuals can be hard to track because of the loss of address information to inform the match, their social behavior, and the behavior of those around them, is of interest to many substantive scholars. To improve the quality of matching data sets for discovering movers, we provide a few tools to calibrate match rates using known auxiliary data on movers' rates.
 
 Two parameters, $\lambda$ (the probability that a given pairwise comparison is a true match) and $\pi_{{\rm adr}, 1, 0}$ (the probability that a true matched pair has different addresses) can be calibrated using available auxiliary data on migration. For example, when matching two voter files from the same state across different years, the prior on $\lambda$ can be calibrated as:
-$$\lambda^{\rm prior} = \frac{\text{\# of non-movers} + \text{\# of in-state movers}}{N_\cA \times N_\cB}$$ while the prior on $\pi_{{\rm adr}, 1, 0}$ can be calibrated as 
-$$\pi_{{\rm adr}, 1, 0}^{\rm prior} = \frac{\text{\# of in-state movers}}{\text{\# of in-state movers} + \text{\# of non-movers}}$$
+$$\lambda^{\rm prior} = \frac{\text{# of non-movers} + \text{# of in-state movers}}{N_\cA \times N_\cB}$$ while the prior on $\pi_{{\rm adr}, 1, 0}$ can be calibrated as 
+$$\pi_{{\rm adr}, 1, 0}^{\rm prior} = \frac{\text{# of in-state movers}}{\text{# of in-state movers} + \text{# of non-movers}}$$
 Counts of movers can come from a number of auxilary data sources --- in \fastLink, we use the IRS Statistics of Income datasets to recover these counts for within-state and across-state movers in the United States. The IRS SOI data is a definitive source on migration in the United States that relies on tax returns to track individual year-to-year migration.\footnote{The IRS Statistics of Income data for both county-to-county migration and state-to-state migration, which dates back to 1990, is available online at (https://www.irs.gov/statistics/soi-tax-stats-migration-data).} To automatically generate these priors, we can use the function <tt>calcMoversPriors()</tt> as follows:
 ```{r priors_ca, results = "markup", echo = TRUE, tidy = FALSE, fig.pos = "t!"}
 priors_out <- calcMoversPriors(geo.a = "CA", geo.b = "CA", 
@@ -696,7 +697,7 @@ While much of \fastLink \ focuses on improving the speed and quality of the Fell
 
 ## Cleaning and Harmonizing Strings{#subsec:stringclean}
 
-Preprocessing string data for a data merge generally proceeds in two steps --- first, data is tokenized into similar fields (from ``Benjamin Haber Fifield'' to ``Benjamin'', ``Haber'', and ``Fifield'' for names, and from ``19 Crawford Road'' to ``19'', ``Crawford'', and ``Road'' for addresses), and then harmonizing those fields using some manner of text standardization. While we do not implement the tokenization step in \fastLink, we will discuss a \textsf{Python} library called \textsf{probablepeople} that we have used extensively in our own substantive work. We will then briefly introduce a function in \fastLink, <tt>preprocText()</tt>, for standardizing and harmonizing text fields that have already been tokenized using United States Postal Service benchmarks for standardization.
+Preprocessing string data for a data merge generally proceeds in two steps --- first, data is tokenized into similar fields (from "Benjamin Haber Fifield" to "Benjamin", "Haber", and "Fifield" for names, and from "19 Crawford Road" to "19", "Crawford", and "Road" for addresses), and then harmonizing those fields using some manner of text standardization. While we do not implement the tokenization step in \fastLink, we will discuss a \textsf{Python} library called \textsf{probablepeople} that we have used extensively in our own substantive work. We will then briefly introduce a function in \fastLink, <tt>preprocText()</tt>, for standardizing and harmonizing text fields that have already been tokenized using United States Postal Service benchmarks for standardization.
 
 ### Tokenizing String Data{#subsubsec:token}
 
@@ -752,7 +753,7 @@ preprocText(text = " Road.", tolower = TRUE,
             remove_whitespace = TRUE, remove_punctuation = TRUE)
 ```
 
-For names, <tt>preprocText()</tt> also implements Soundex encoding from the <tt>stringdist</tt> package. The Soundex algorithm is used by the U.S. Census Bureau to increase the likelihood of matches across similar-sounding names --- for example, while Rupert and Robert are spelled differently and would be coded as non-matches by any string distance measure, Soundex encodings of both names are identical. We refer users to other references (e.g. @knut:72, pgs. 391-92) for a full description of the algorithm, but as an overview, the algorithm keeps the first letter of a string and then follows a series of rules to convert the remaining portion of the string to a three-digit numerical code based on letter combinations that are similar in sound. Below, we show the output from a Soundex conversion of Rupert and Robert:
+For names, <tt>preprocText()</tt> also implements Soundex encoding from the <tt>stringdist</tt> package. The Soundex algorithm is used by the U.S. Census Bureau to increase the likelihood of matches across similar-sounding names --- for example, while Rupert and Robert are spelled differently and would be coded as non-matches by any string distance measure, Soundex encodings of both names are identical. We refer users to other references (e.g. @knut:73, pgs. 391-92) for a full description of the algorithm, but as an overview, the algorithm keeps the first letter of a string and then follows a series of rules to convert the remaining portion of the string to a three-digit numerical code based on letter combinations that are similar in sound. Below, we show the output from a Soundex conversion of Rupert and Robert:
 
 ```{r preproc_soundex, results = 'markup', echo = TRUE, tidy = FALSE, fig.pos = "t!"}
 preprocText(text = c("Rupert", "Robert"), soundex = TRUE)
