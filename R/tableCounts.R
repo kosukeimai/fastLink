@@ -55,8 +55,8 @@ tableCounts <- function(gammalist, nobs.a, nobs.b, n.cores = NULL) {
     }
 
     ## Slicing the data:
-    n.slices1 <- max(round(as.numeric(nobs.a)/(4500), 0), 1) 
-    n.slices2 <- max(round(as.numeric(nobs.b)/(4500), 0), 1) 
+    n.slices1 <- max(round(as.numeric(nobs.a)/(10000), 0), 1) 
+    n.slices2 <- max(round(as.numeric(nobs.b)/(10000), 0), 1) 
     
     if(is.null(n.cores)) {
         n.cores <- detectCores() - 1
