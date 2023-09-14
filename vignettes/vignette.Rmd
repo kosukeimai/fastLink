@@ -73,7 +73,8 @@ knitr::opts_chunk$set(
   cache = TRUE,
   tidy = FALSE,
   results = "hide",
-  eval = TRUE
+  eval = TRUE,
+  dev = "tikz"
 )
 knitr::knit_hooks$set(inline = function(x) {
   prettyNum(x, big.mark=",")
@@ -90,7 +91,7 @@ library(fastLink)
 
 Modern social science research often relies on innovative combinations of survey, administrative, and textual data
 sources in order to advance new claims and knowledge about the world. Merging can be a trivial task if there 
-exists a unique identifier that unambiguously identifies records, in which case the <tt>merge()</tt> function in \R\ 
+exists a unique identifier that unambiguously identifies records, in which case the <tt>merge()</tt> function in <tt>R</tt> 
 can seamlessly and quickly conduct a 1-to-1, 1-to-many, or many-to-1 merge on the unique identifier. Unfortunately,
 in practice, this unique identifier is rarely available. Applied researchers have previously relied on 
 deterministic algorithms, which suffer from an inability to flexibly handle missing data and measurement error, or
@@ -98,27 +99,27 @@ proprietary merging algorithms, which prevent the merging process from being inc
 the replication process. Furthermore, none of the deterministic or proprietary algorithms allow the researcher
 to quantify the uncertainty inherent in the merging process.
 
-In this vignette, we walk through the \R\ package \fastLink\ (@enam:fifi:imai:19) for conducting data merges. 
-The \fastLink\ package includes: (1) a fast implementation of the canonical Fellegi-Sunter (@Fellegi1969) probabilistic record linkage (PRL) model (2) a series of utilities for flexibly clustering, preparing, adjusting, and 
+In this vignette, we walk through the <tt>R</tt> package <tt>fastLink</tt> (@enam:fifi:imai:19) for conducting data merges. 
+The <tt>fastLink</tt> package includes: (1) a fast implementation of the canonical Fellegi-Sunter (@Fellegi1969) probabilistic record linkage (PRL) model (2) a series of utilities for flexibly clustering, preparing, adjusting, and 
 summarizing data merges (3) extensions that relax the core assumptions of the Fellegi-Sunter model, and methods to incorporate auxiliary information about 
 migration to inform merges of data sets across time and space and (4) easy parallelization and automatic hashing
 of merging information in order to quickly merge data sets in a memory-efficient manner. We focus here on the 
-demonstration of the functionalities included in the \fastLink\ package. The statistical theory underlying the
+demonstration of the functionalities included in the <tt>fastLink</tt> package. The statistical theory underlying the
 procedures we demonstrate here can be found in @enam:fifi:imai:19.
 
-The \fastLink\ package is freely available for download through the Comprehensive R Archive Network (CRAN) at
+The <tt>fastLink</tt> package is freely available for download through the Comprehensive R Archive Network (CRAN) at
 (https://cran.r-project.org/package=fastLink) and can be installed using the standard syntax for installing
-an \R\ package:
+an <tt>R</tt> package:
 ```{r install_fl, eval = FALSE, echo = TRUE, tidy = FALSE, results = "hide", fig.pos = "t!"}
 install.packages("fastLink")
 ```
 
 where users may be prompted to select a CRAN mirror from which the package will be
-downloaded. This step needs to be done only once (unless one wishes to update \fastLink\ to a new version).
+downloaded. This step needs to be done only once (unless one wishes to update <tt>fastLink</tt> to a new version).
 
-In the next section, we provide an overview of the \fastLink\ package, including the computational implementation and a summary of our improvements on the Fellegi-Sunter model to incorporate aggregate migration information. We then describe how to conduct a basic data merge (Section \@ref(sec:merge)) using \fastLink \ along with methods for analyzing the results of the merge, methods for incorporating auxiliary information to inform the merge and post-processing of merged datasets (Section \@ref(sec:postproc)), and functionalities  included for pre-processing and clustering data in preparation for a merge (Section \@ref(sec:preproc)). 
+In the next section, we provide an overview of the <tt>fastLink</tt> package, including the computational implementation and a summary of our improvements on the Fellegi-Sunter model to incorporate aggregate migration information. We then describe how to conduct a basic data merge ([Conducting Data Merges Using fastLink](sec:merge)) using <tt>fastLink</tt> along with methods for analyzing the results of the merge, methods for incorporating auxiliary information to inform the merge and post-processing of merged datasets ([Incorporating Auxiliary Information and Post-Processing Data Merges](sec:postproc)), and functionalities  included for pre-processing and clustering data in preparation for a merge ([Preprocessing Data Merges](sec:preproc)). 
 
-# Overview of the \fastLink\ Algorithm{#sec:overview}
+# Overview of the <tt>fastLink</tt> Algorithm{#sec:overview}
 
 ## The Model and Assumptions{#subsec:model}
 
@@ -148,7 +149,7 @@ form for the likelihood function.
 Following @wink:88, we apply the expectation and maximization
 (EM) algorithm, which is an iterative procedure, to estimate the model
 parameters [@demp:lair:rubi:77].  Under the modeling assumptions
-described in Section \@ref(subsec:model), the complete-data
+described in [The Model and Assumptions](subsec:model), the complete-data
 likelihood function is given by,
 $$
 \begin{eqnarray*}
@@ -190,7 +191,7 @@ model parameters, we impose inequality constraints based on the following two
 ideas: (1) the set of matches is strictly smaller than the set on
 non-matches $\lambda \ll 1 - \lambda$, and (2) for binary comparisons,
 we have $\pi_{k10} \ll \pi_{k11}$ and $\pi_{k01} \ll \pi_{k00}$ for
-each $k$ [@Jaro1989, Winkler1993, Sadinle2013].  The latter
+each $k$ [@Jaro1989;@Winkler1993;@Sadinle2013].  The latter
 implies that agreement (disagreement) is more likely among matches
 (non-matches).
 
@@ -304,7 +305,7 @@ record linkage problems in social sciences:
 * Comparisons involving a missing value need not be made. Instead, we only need to store the indices of the observations in $\mathcal{A}$ and $\mathcal{B}$ that contain missing information for field $k$.
 * Since the agreement levels are mutually exclusive, we use the lowest agreement level as the base category. Once a set of threshold values has been defined, then a pair of names can only be categorized in one of the $L_k$ agreement levels. The indices for the the pairs of values that can be categorized as disagreements (or nearly disagreements) do not need to be stored.  For most variables, disagreement is the category that encompasses the largest number of pairs.  Thus, our reverse data structure lists become quite sparse. This sparsity can be exploited by the use of sparse matrix, yielding a substantially memory efficient implementation.
 
-Together, these improvements make \fastLink\ more efficient in runtime 
+Together, these improvements make <tt>fastLink</tt> more efficient in runtime 
 and memory management than other existing open-source implementations
 of the Fellegi-Sunter record linkage model and allow it to scale to 
 larger problems.
@@ -339,11 +340,11 @@ can compute the posterior match probabilities for every agreement
 pattern found in the entire data sets in parallel.  In this way, we
 are able to scale the model to massive data sets.
 
-# Conducting Data Merges using fastLink {#sec:merge}
+# Conducting Data Merges using fastLink{#sec:merge}
 
-The \fastLink\ package consists of several main functions as well as various methods for
+The <tt>fastLink</tt> package consists of several main functions as well as various methods for
 summarizing output from these functions (e.g., <tt>plot()</tt> and <tt>confusion()</tt>).
-Figure~\@ref(fg:schematic) illustrates the core structure of the \fastLink\ package.
+The [schematic figure](fg:schematic) illustrates the core structure of the <tt>fastLink</tt> package.
 
 \begin{figure}
 \resizebox{6in}{!}{
@@ -395,14 +396,14 @@ Figure~\@ref(fg:schematic) illustrates the core structure of the \fastLink\ pack
   \path [thinline] (fastLink) -- (gM);
   \end{tikzpicture}
 }
-\caption{Core structure of the \fastLink\ package as of version `r packageVersion("fastLink")`.}
+\caption{Core structure of the <tt>fastLink</tt> package as of version `r packageVersion("fastLink")`.}
 {#fg:schematic}
 \end{figure}
 
 The core of the algorithm can be run using the <tt>fastLink()</tt> wrapper, which we will describe in
 more detail below. This includes utilities to count unique patterns, run the EM algorithm, and adjust the
 estimated matching probabilities by deduping and through auxiliary information such as name frequency. Each
-of these steps can also be run separately through the functions listed in the utilities. \fastLink\ also includes
+of these steps can also be run separately through the functions listed in the utilities. <tt>fastLink</tt> also includes
 utilities to prepare data for a merge by harmonizing fields and data blocking, as well as utilities for summarizing
 and inspecting data merges.
 
@@ -410,7 +411,7 @@ and inspecting data merges.
 
 The <tt>fastLink()</tt> function takes two data sets and a simple description of the merging fields, and returns
 the results of the data merge which can then be passed to the <tt>plot()</tt> and <tt>confusion()</tt> functions for inspection and summarization. We
-illustrate the use of the function using a small-scale example, which is included in the \fastLink\ package.
+illustrate the use of the function using a small-scale example, which is included in the <tt>fastLink</tt> package.
 The two data sets, <tt>dfA</tt> and <tt>dfB</tt>, are samples from the California voter file which are then shuffled within-field
 to preserve anonyminity. There are 50 true matches across the two data sets, and a brief description of the
 fields in the two data sets can be found by running
@@ -538,7 +539,7 @@ As before, we are matching the variables <tt>firstname</tt>, <tt>lastname</tt>, 
 
 One advantage of the probabilistic modeling framework is that we can use random sampling of observations to reduce the computational burden of estimating the model. Calculating agreement patterns across two data sets of several million observations each can be computationally difficult even for \fastLink, and since the number of parameters being estimated by the model is fairly small (just $\bpi$ and $\lambda$), we can easily estimate them on a small random subset of the data. Then, the user can split up the larger data linkage task into smaller chunks and apply the parameter estimates from the random sample to the full set of agreement patterns in parallel.
 
-We demonstrate a simple example of this workflow below. We start by creating two small random samples of our test data, <tt>dfA.s</tt> and <tt>dfB.s</tt>, by randomly sampling 30\% of of the observations in each. Since we're only estimating the model on this subset and not actually getting matched pairs, we can tell <tt>fastLink()</tt> to only return the EM object by specifying <tt>estimate.only = TRUE</tt>. This not only reduces the computational time for estimating and returning the \fastLink \ object, but it also returns the EM object in a form that can be fed back into <tt>fastLink()</tt> when getting posterior match probabilities for the full sample (<tt>fl\_out\_rs</tt>).
+We demonstrate a simple example of this workflow below. We start by creating two small random samples of our test data, <tt>dfA.s</tt> and <tt>dfB.s</tt>, by randomly sampling 30\% of of the observations in each. Since we're only estimating the model on this subset and not actually getting matched pairs, we can tell <tt>fastLink()</tt> to only return the EM object by specifying <tt>estimate.only = TRUE</tt>. This not only reduces the computational time for estimating and returning the <tt>fastLink</tt> object, but it also returns the EM object in a form that can be fed back into <tt>fastLink()</tt> when getting posterior match probabilities for the full sample (<tt>fl\_out\_rs</tt>).
 
 ```{r random_sample, echo = TRUE, tidy = FALSE, results = "hide", fig.pos = "t!"}
 ## Take 30% random samples of dfA and dfB
@@ -568,7 +569,7 @@ Finally, we take the estimated model parameters and feed them back into <tt>fast
 
 A shortcoming of the Fellegi-Sunter model, as described in Section~\@ref(subsec:model), is the assumption of conditional independence across fields --- conditional on the match status $M_{ij}$, the observed match pattern of variable $k$ is assumed to be independent of the observed match pattern for variable $k'$\footnote{This can be formally stated as $\gamma_k(i,j) \indep \gamma_{k'}(i,j) \mid M_{i,j}$.} For example, conditional on being a true match, the likelihood of being a match on first name should be fully independent of the likelihood of being a match on last name. This is often an infeasible assumption, particularly when dealing with large households. One proposed solution to this limitation of the standard Fellegi-Sunter model (for full details, see @wink:89, @Winkler1993, @thib:93, @lars:rubi:01) is to use weighted log-linear models to capture the full set of dependencies across linkage fields, conditional on match status.
 
-We implement the log-linear model in \fastLink \ through the option <tt>cond.indep</tt> --- when set to true (default), <tt>fastLink()</tt> runs the standard Fellegi-Sunter conditionally independent model. When set to false, it substitutes the log-linear modeling strategy in the EM algorithm to model dependencies between linkage fields. 
+We implement the log-linear model in <tt>fastLink</tt> through the option <tt>cond.indep</tt> --- when set to true (default), <tt>fastLink()</tt> runs the standard Fellegi-Sunter conditionally independent model. When set to false, it substitutes the log-linear modeling strategy in the EM algorithm to model dependencies between linkage fields. 
 
 ```{r cond_indep, echo = TRUE, tidy = FALSE, results = "hide", fig.pos = "t!"}
 fl_out <- fastLink(
@@ -583,7 +584,7 @@ As of version `r packageVersion("fastLink")` of \fastLink, the log-linear modeli
 
 ## Finding Duplicates in a Single Data Set{#subsec:dedup}
 
-\fastLink \ can also be used to de-duplicate a single data frame using the PRL framework. Within-data-frame dedupliation is straightforward in \fastLink --- the user simply provides the same data frame to both <tt>dfA</tt> and <tt>dfB</tt> arguments, and runs <tt>fastLink()</tt> as they normally would. The <tt>blockData()</tt> function then takes both data frames and the resulting output from <tt>fastLink()</tt>, and returns a final data frame with a new ID column indicating identical observations.
+<tt>fastLink</tt> can also be used to de-duplicate a single data frame using the PRL framework. Within-data-frame dedupliation is straightforward in \fastLink --- the user simply provides the same data frame to both <tt>dfA</tt> and <tt>dfB</tt> arguments, and runs <tt>fastLink()</tt> as they normally would. The <tt>blockData()</tt> function then takes both data frames and the resulting output from <tt>fastLink()</tt>, and returns a final data frame with a new ID column indicating identical observations.
 
 Below is a simple workflow to de-duplicate <tt>dfA</tt>, after adding 10 duplicated observations manually:
 
@@ -612,7 +613,7 @@ Users can then dedupe data sets using the <tt>dedupe.ids</tt> covariate in the r
 
 ## Incorporating Auxiliary Information and Post-Processing Data Merges{#sec:postproc}
 
-Another advantage of the probabilistic modeling approach is its ability to incorporate auxiliary information into the estimation process. This information can take the form of ex-post adjustments or as Bayesian priors on the relevant parameters, and is easily incorporated into the \fastLink \ estimation step. We detail the two main auxiliary information types --- migration rate information and first name frequencies --- below, and show how to include them in model estimation. In addition, we show how to post-process data merges by enforcing a one-to-one restriction, such that every obsevation in dataset A is matched to at most one observation in dataset B, and vice versa. 
+Another advantage of the probabilistic modeling approach is its ability to incorporate auxiliary information into the estimation process. This information can take the form of ex-post adjustments or as Bayesian priors on the relevant parameters, and is easily incorporated into the <tt>fastLink</tt> estimation step. We detail the two main auxiliary information types --- migration rate information and first name frequencies --- below, and show how to include them in model estimation. In addition, we show how to post-process data merges by enforcing a one-to-one restriction, such that every obsevation in dataset A is matched to at most one observation in dataset B, and vice versa. 
 
 ### Information on Migration Rates{#subsec:migration}
 
@@ -679,7 +680,7 @@ fl_out <- fastLink(
 )
 ```
 
-\fastLink\ also implements a linear sum assignment solution proposed by @Jaro1989 and @wink:94, which maximizes the sum of the posterior match probabilities subject to the one-to-one match constraint. Unlike the greedy de-duping algorithm, this method considers all possible assignments across pairs to find the optimal set that maximizes the sum of the posterior match probabilities, and @wink:94 shows that this method is more robust than the greedy algorithm in small-to-medium-sized data sets. However, as the size of the data grows large, the method scales poorly in runtime, and the relative advantages in accuracy are smaller. However, we recommend this method for smaller data merging problems. Users can implement the linear sum assignment de-duping method by setting <tt>linprog.dedupe = TRUE</tt>, as follows: 
+<tt>fastLink</tt> also implements a linear sum assignment solution proposed by @Jaro1989 and @wink:94, which maximizes the sum of the posterior match probabilities subject to the one-to-one match constraint. Unlike the greedy de-duping algorithm, this method considers all possible assignments across pairs to find the optimal set that maximizes the sum of the posterior match probabilities, and @wink:94 shows that this method is more robust than the greedy algorithm in small-to-medium-sized data sets. However, as the size of the data grows large, the method scales poorly in runtime, and the relative advantages in accuracy are smaller. However, we recommend this method for smaller data merging problems. Users can implement the linear sum assignment de-duping method by setting <tt>linprog.dedupe = TRUE</tt>, as follows: 
 
 ```{r linprog_dedupe, eval = FALSE, echo = TRUE, tidy = FALSE, results = "hide", fig.pos = "t!"}
 fl_out <- fastLink(
@@ -693,7 +694,7 @@ fl_out <- fastLink(
 
 # Preprocessing Data Merges{#sec:preproc}
 
-While much of \fastLink \ focuses on improving the speed and quality of the Fellegi-Sunter model, the success of a data merge is fundamentally dependent on preprocessing and cleaning decisions made by the analyst. Such decisions include ensuring that both data sets abide by similar rules about leading zeros, that they both split strings of names into first/middle/last names in identical ways, that abbreviations such as Rd. are changed to be equivalent to Road, and that accents in names are handled in similar ways. Here, we describe some tools for effectively harmonizing data sets before conducting a merge using \fastLink, along with tools for blocking data in preparation for a match.
+While much of <tt>fastLink</tt> focuses on improving the speed and quality of the Fellegi-Sunter model, the success of a data merge is fundamentally dependent on preprocessing and cleaning decisions made by the analyst. Such decisions include ensuring that both data sets abide by similar rules about leading zeros, that they both split strings of names into first/middle/last names in identical ways, that abbreviations such as Rd. are changed to be equivalent to Road, and that accents in names are handled in similar ways. Here, we describe some tools for effectively harmonizing data sets before conducting a merge using \fastLink, along with tools for blocking data in preparation for a match.
 
 ## Cleaning and Harmonizing Strings{#subsec:stringclean}
 
@@ -744,7 +745,7 @@ Once parsed, these tagged fields can be used as inputs for <tt>fastLink()</tt> a
 
 ### Harmonizing String Fields{#subsubsec:harmonize}
 
-Once strings are parsed into individual components that will be used for a match, we also have to ensure that the same field across datasets handles the same data identically. For example, if street types in dataset A are "Road", "Street", and "Avenue", but in dataset B they are "Rd.", "St.", and "Ave.", these true matches will be coded by \fastLink \ (and any other matching algorithm) as a non-match on that variable. To ensure harmonization across dataset by field, we provide a function for text standardization, \textsf{preprocText()}, that can help ensure this equivalence across datasets.
+Once strings are parsed into individual components that will be used for a match, we also have to ensure that the same field across datasets handles the same data identically. For example, if street types in dataset A are "Road", "Street", and "Avenue", but in dataset B they are "Rd.", "St.", and "Ave.", these true matches will be coded by <tt>fastLink</tt> (and any other matching algorithm) as a non-match on that variable. To ensure harmonization across dataset by field, we provide a function for text standardization, \textsf{preprocText()}, that can help ensure this equivalence across datasets.
 
 The function \textsf{preprocText()} takes as argument a vector of text, which it assumes has already been split into fields, and then provides a number of options for conversion. The options applicable to all string types include <tt>tolower</tt> (convert all text to lower-case), <tt>remove\_whitespace</tt> (strip leading and trailing whitespace, and convert multiple spaces to single space), and <tt>remove\_punctuation</tt> (remove all punctuation such as apostrophes, semi-colons, colons, periods, question marks, etc.). For example, we can convert text as follows:
 
@@ -768,7 +769,7 @@ preprocText(text = c("Street", "Boulevard"), usps_address = TRUE)
 Together, these resources can help ensure the uniformity across data sets of string variables before conducting a data merge.
 
 ### Blocking Data to Improve Merge Quality
-\fastLink\ also includes a series of tools to help block data sets before conducting a merge. The goal of blocking is to avoid comparisons between observations that are certain non-matches, in order to increase the amount of overlap between data sets and to reduce computation time resulting from irrelevant comparisons. For example, if an analyst is certain there are no true matches across states when merging survey data to voter files, they can block by state and only compare observations within states. We refer readers interested in a comprehensive review of blocking techniques to @pchri:12 and @SVSF2014 --- here, we will cover the methods implemented in \fastLink \ for blocking data before conducting the merge, and for identifying and removing observations with no obvious candidate matches.
+<tt>fastLink</tt> also includes a series of tools to help block data sets before conducting a merge. The goal of blocking is to avoid comparisons between observations that are certain non-matches, in order to increase the amount of overlap between data sets and to reduce computation time resulting from irrelevant comparisons. For example, if an analyst is certain there are no true matches across states when merging survey data to voter files, they can block by state and only compare observations within states. We refer readers interested in a comprehensive review of blocking techniques to @pchri:12 and @SVSF2014 --- here, we will cover the methods implemented in <tt>fastLink</tt> for blocking data before conducting the merge, and for identifying and removing observations with no obvious candidate matches.
 
 In \fastLink, the function <tt>blockData()</tt> can block two data sets using a single variable or combinations of variables using several different blocking techniques. The basic functionality is similar to that of <tt>fastLink()</tt>, where the analyst inputs two data sets and a vector of variable names that they want to block on. A simple example follows, where we are blocking the two sample data sets by gender:
 
@@ -820,7 +821,7 @@ fl_out_block2 <- fastLink(
 )
 ```
 
-Blocking on gender substantially reduces the number of comparisons \fastLink\ has to make. Without blocking, \fastLink\ makes `r nrow(dfA)` $\times$ `r nrow(dfB)` $=$ `r nrow(dfA) * nrow(dfB)` comparisons, and the probability that any given comparison is a match is `r round(fl_out$EM$p.m, 5)`. However, when blocking on gender, \fastLink\ makes `r nrow(dfA_block1)` $\times$ `r nrow(dfB_block1)` $+$ `r nrow(dfA_block2)` $\times$ `r nrow(dfB_block2)` $=$ `r nrow(dfA_block1) * nrow(dfB_block1) + nrow(dfA_block2) * nrow(dfB_block2)` comparisons, while the baseline probability of finding a match goes up to `r round(fl_out_block1$EM$p.m, 5)` in Block 1, and `r round(fl_out_block2$EM$p.m, 5)` in Block 2. Stricter blocking strategies, of course, will reduce the number of comparisons even further.
+Blocking on gender substantially reduces the number of comparisons <tt>fastLink</tt> has to make. Without blocking, <tt>fastLink</tt> makes `r nrow(dfA)` $\times$ `r nrow(dfB)` $=$ `r nrow(dfA) * nrow(dfB)` comparisons, and the probability that any given comparison is a match is `r round(fl_out$EM$p.m, 5)`. However, when blocking on gender, <tt>fastLink</tt> makes `r nrow(dfA_block1)` $\times$ `r nrow(dfB_block1)` $+$ `r nrow(dfA_block2)` $\times$ `r nrow(dfB_block2)` $=$ `r nrow(dfA_block1) * nrow(dfB_block1) + nrow(dfA_block2) * nrow(dfB_block2)` comparisons, while the baseline probability of finding a match goes up to `r round(fl_out_block1$EM$p.m, 5)` in Block 1, and `r round(fl_out_block2$EM$p.m, 5)` in Block 2. Stricter blocking strategies, of course, will reduce the number of comparisons even further.
 
 Furthermore, <tt>blockData()</tt> allows analysts to go beyond exact blocking on a single variable. Users can block on multiple variables by feeding a vector of variable names to <tt>varnames</tt>, as follows:
 
@@ -851,7 +852,7 @@ blockdata_out <- blockData(
 )
 ```
 
-In addition to the blocking functionalities, \fastLink\ also includes methods to help researchers discard observations with no obvious matching candidates in the paired data set using string distance comparisons. <tt>stringSubset()</tt> calculates the string distance between each pair of observations in two data sets and returns the indices where there is at least one candidate match with a string similarity measure above a certain threshold. That is, it reduces the set of candidate matches by throwing out any observation in dataset A where no observation in dataset B has a sufficiently similar first name/last name/street name, and vice versa. 
+In addition to the blocking functionalities, <tt>fastLink</tt> also includes methods to help researchers discard observations with no obvious matching candidates in the paired data set using string distance comparisons. <tt>stringSubset()</tt> calculates the string distance between each pair of observations in two data sets and returns the indices where there is at least one candidate match with a string similarity measure above a certain threshold. That is, it reduces the set of candidate matches by throwing out any observation in dataset A where no observation in dataset B has a sufficiently similar first name/last name/street name, and vice versa. 
 
 As an example, we will reduce the set of candidate matches by discarding any observation in the two sample datasets where the Jaro-Winkler string similarity measure is below 0.8, as follows: 
 
