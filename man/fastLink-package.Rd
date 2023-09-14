@@ -13,10 +13,6 @@ The current version of this package conducts a merge of two datasets under
 the Fellegi-Sunter model, using the Expectation-Maximization Algorithm. In addition,
 tools for conducting and summarizing data merges are included.
 }
-\details{
-\tabular{ll}{ Package: \tab fastLink\cr Type: \tab Package\cr Version: \tab 0.6.0-\cr
-Date: \tab 2020-04-25\cr License: \tab GPL (>= 3)\cr }
-}
 \references{
 Enamorado, Ted, Ben Fifield and Kosuke Imai. (2019) "Using a Probabilistic Model to Assist Merging of
 Large-scale Administrative Records." American Political Science Review. Vol. 113, No. 2. Available at \url{https://imai.fas.harvard.edu/research/files/linkage.pdf}.

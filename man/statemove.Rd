@@ -4,7 +4,9 @@
 \name{statemove}
 \alias{statemove}
 \title{In-state movers rates by state}
-\format{A dataframe containing 51 observations.}
+\format{
+A dataframe containing 51 observations.
+}
 \usage{
 statemove
 }

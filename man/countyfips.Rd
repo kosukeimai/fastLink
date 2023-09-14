@@ -4,7 +4,9 @@
 \name{countyfips}
 \alias{countyfips}
 \title{County-level FIPS Codes}
-\format{A dataframe containing 3235 observations.}
+\format{
+A dataframe containing 3235 observations.
+}
 \usage{
 countyfips
 }

@@ -4,7 +4,9 @@
 \name{dfA}
 \alias{dfA}
 \title{Sample dataset A}
-\format{A dataframe containing 500 observations.}
+\format{
+A dataframe containing 500 observations.
+}
 \usage{
 dfA
 }

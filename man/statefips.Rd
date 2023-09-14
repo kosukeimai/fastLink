@@ -4,7 +4,9 @@
 \name{statefips}
 \alias{statefips}
 \title{State-level FIPS Codes}
-\format{A dataframe containing 54 observations.}
+\format{
+A dataframe containing 54 observations.
+}
 \usage{
 statefips
 }

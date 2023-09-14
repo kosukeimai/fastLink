@@ -4,7 +4,9 @@
 \name{dfB}
 \alias{dfB}
 \title{Sample dataset B}
-\format{A dataframe containing 350 observations.}
+\format{
+A dataframe containing 350 observations.
+}
 \usage{
 dfB
 }

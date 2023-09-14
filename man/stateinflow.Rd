@@ -4,7 +4,9 @@
 \name{stateinflow}
 \alias{stateinflow}
 \title{State-level inflow rates by state}
-\format{A dataframe containing 11321 observations.}
+\format{
+A dataframe containing 11321 observations.
+}
 \usage{
 stateinflow
 }
