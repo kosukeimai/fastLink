@@ -4,8 +4,7 @@
 \alias{clusterMatch}
 \title{clusterMatch}
 \usage{
-clusterMatch(vecA, vecB, nclusters, max.n, word.embed, min.var,
-weighted.kmeans, iter.max)
+clusterMatch(vecA, vecB, nclusters, max.n, word.embed, min.var, iter.max)
 }
 \arguments{
 \item{vecA}{The character vector from dataset A}
@@ -23,10 +22,6 @@ the largest cluster. Either nclusters = NULL or max.n = NULL}
 \item{min.var}{The minimum amount of explained variance (maximum = 1) a
 PCA dimension can provide in order to be included in k-means clustering when
 using word embedding. Default is .20.}
-
-\item{weighted.kmeans}{Whether to weight the k-means algorithm features by the
-explained variance of the included principal component when using word
-embedding clustering. Default is FALSE.}
 
 \item{iter.max}{Maximum number of iterations for the k-means algorithm.}
 }

@@ -27,7 +27,6 @@ Imports:
     stringr,
     stringi,
     Rcpp (>= 0.12.7),
-    FactoClass,
     adagio,
     dplyr,
     plotrix,
