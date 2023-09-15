@@ -73,6 +73,14 @@ getMatches <- function(dfA, dfB, fl.out, threshold.match = 0.85, combine.dfs = T
                 fl.out$matches$inds.a[fl.out$posterior >= threshold.match]
             )
         )
+        
+        temp0 <- 1:nrow(dfA)
+        temp1 <- which(!(temp0 %in% matches$V1))
+        
+        if(length(temp1) > 0) {
+            temp2 <- cbind(as.matrix(temp1), as.matrix(temp1))
+            matches <- rbind(matches, temp2)
+        }
 
         pasteT <- function(x) {
             x = sort(x) # 1,2,3 is the same as 3,2,1

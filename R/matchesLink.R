@@ -59,8 +59,8 @@ matchesLink <- function(gammalist, nobs.a, nobs.b, em, thresh, n.cores = NULL) {
     }
 
     ## Slicing the data:
-    n.slices1 <- max(round(as.numeric(nobs.a)/(4500), 0), 1) 
-    n.slices2 <- max(round(as.numeric(nobs.b)/(4500), 0), 1) 
+    n.slices1 <- max(round(as.numeric(nobs.a)/(10000), 0), 1) 
+    n.slices2 <- max(round(as.numeric(nobs.b)/(10000), 0), 1) 
     nc <- min(n.cores, n.slices1 * n.slices2)
 
     limit.1 <- round(quantile((0:nobs.a), p = seq(0, 1, 1/n.slices1)), 0)

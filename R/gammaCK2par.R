@@ -72,8 +72,8 @@ gammaCK2par <- function(matAp, matBp, n.cores = NULL, cut.a = 0.92, method = "jw
     u.values.1 <- unique(matrix.1)
     u.values.2 <- unique(matrix.2)
 
-    n.slices1 <- max(round(length(u.values.1)/(4500), 0), 1) 
-    n.slices2 <- max(round(length(u.values.2)/(4500), 0), 1) 
+    n.slices1 <- max(round(length(u.values.1)/(10000), 0), 1) 
+    n.slices2 <- max(round(length(u.values.2)/(10000), 0), 1) 
 
     limit.1 <- round(quantile((0:nrow(u.values.2)), p = seq(0, 1, 1/n.slices2)), 0)
     limit.2 <- round(quantile((0:nrow(u.values.1)), p = seq(0, 1, 1/n.slices1)), 0)
