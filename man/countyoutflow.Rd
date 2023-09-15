@@ -4,7 +4,9 @@
 \name{countyoutflow}
 \alias{countyoutflow}
 \title{County-level outflow rates by state}
-\format{A dataframe containing 424475 observations.}
+\format{
+A dataframe containing 424475 observations.
+}
 \usage{
 countyoutflow
 }
