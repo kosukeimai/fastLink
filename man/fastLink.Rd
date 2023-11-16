@@ -26,7 +26,7 @@ Must be present in both dfA and dfB}
 which variables should use string distance matching. Must be a subset of
 'varnames' and must not be present in 'numeric.match'.}
 
-\item{stringdist.method}{String distance method for calculating similarity, options are: "jw" Jaro-Winkler (Default), "jaro" Jaro, and "lv" Edit}
+\item{stringdist.method}{String distance method for calculating similarity, options are: "jw" Jaro-Winkler (Default), "dl" Damerau-Levenshtein, "jaro" Jaro, and "lv" Edit}
 
 \item{numeric.match}{A vector of variable names indicating which variables should use numeric matching.
 Must be a subset of 'varnames' and must not be present in 'stringdist.match'.}

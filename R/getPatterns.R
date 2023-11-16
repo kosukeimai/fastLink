@@ -17,7 +17,7 @@
 #' @param partial.match A vector of booleans, indicating whether to include
 #' a partial matching category for the string distances. Must be same length
 #' as varnames. Default is FALSE for all variables.
-#' @param stringdist.method String distance method for calculating similarity, options are: "jw" Jaro-Winkler (Default), "jaro" Jaro, and "lv" Edit
+#' @param stringdist.method String distance method for calculating similarity, options are: "jw" Jaro-Winkler (Default), "dl" Damerau-Levenshtein, "jaro" Jaro, and "lv" Edit
 #' @param cut.a Lower bound for full string-distance match, ranging between 0 and 1. Default is 0.92
 #' @param cut.p Lower bound for partial string-distance match, ranging between 0 and 1. Default is 0.88
 #' @param jw.weight Parameter that describes the importance of the first characters of a string (only needed if stringdist.method = "jw"). Default is .10
@@ -45,8 +45,8 @@ getPatterns <- function(matchesA, matchesB, varnames,
     if(any(class(matchesB) %in% c("tbl_df", "data.table"))){
         matchesB <- as.data.frame(matchesB)
     }
-    if(!(stringdist.method %in% c("jw", "jaro", "lv"))){
-        stop("Invalid string distance method. Method should be one of 'jw', 'jaro', or 'lv'.")
+    if(!(stringdist.method %in% c("jw", "jaro", "lv", "dl"))){
+        stop("Invalid string distance method. Method should be one of 'jw', 'dl', 'jaro', or 'lv'.")
     }
     if(stringdist.method == "jw" & !is.null(jw.weight)){
         if(jw.weight < 0 | jw.weight > 0.25){

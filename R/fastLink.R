@@ -20,7 +20,7 @@
 #' @param stringdist.match A vector of variable names indicating
 #' which variables should use string distance matching. Must be a subset of
 #' 'varnames' and must not be present in 'numeric.match'.
-#' @param stringdist.method String distance method for calculating similarity, options are: "jw" Jaro-Winkler (Default), "jaro" Jaro, and "lv" Edit
+#' @param stringdist.method String distance method for calculating similarity, options are: "jw" Jaro-Winkler (Default), "dl" Damerau-Levenshtein, "jaro" Jaro, and "lv" Edit
 #' @param numeric.match A vector of variable names indicating which variables should use numeric matching.
 #' Must be a subset of 'varnames' and must not be present in 'stringdist.match'.
 #' @param partial.match A vector of variable names indicating whether to include
@@ -176,8 +176,8 @@ fastLink <- function(dfA, dfB, varnames,
         estimate.only <- FALSE
         cat("You have provided an EM object but have set 'estimate.only' to TRUE. Setting 'estimate.only' to FALSE so that matched indices are returned.\n")
     }
-    if(!(stringdist.method %in% c("jw", "jaro", "lv"))){
-        stop("Invalid string distance method. Method should be one of 'jw', 'jaro', or 'lv'.")
+    if(!(stringdist.method %in% c("jw", "jaro", "lv", "dl"))){
+        stop("Invalid string distance method. Method should be one of 'jw', 'dl', 'jaro', or 'lv'.")
     }
     if(stringdist.method == "jw" & !is.null(jw.weight)){
         if(jw.weight < 0 | jw.weight > 0.25){

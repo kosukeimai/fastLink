@@ -10,7 +10,7 @@
 #' @param similarity.threshold Lower bound on string-distance measure for being considered a possible match.
 #' If an observation has no possible matches above this threshold, it is discarded from the match. Default is 0.8.
 #' @param stringdist.method The method to use for calculating string-distance similarity. Possible values are
-#' 'jaro' (Jaro Distance), 'jw' (Jaro-Winkler), and 'lv' (Levenshtein). Default is 'jw'.
+#' 'jaro' (Jaro Distance), 'dl' Damerau-Levenshtein, 'jw' (Jaro-Winkler), and 'lv' (Levenshtein). Default is 'jw'.
 #' @param jw.weight Parameter that describes the importance of the first characters of a string (only needed if stringdist.method = "jw"). Default is .10.
 #' @param n.cores Number of cores to parallelize over. Default is NULL.
 #'

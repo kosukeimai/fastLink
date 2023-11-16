@@ -11,7 +11,7 @@
 #' @param n.cores Number of cores to parallelize over. Default is NULL.
 #' @param cut.a Lower bound for full match, ranging between 0 and 1. Default is 0.92
 #' @param cut.p Lower bound for partial match, ranging between 0 and 1. Default is 0.88
-#' @param method String distance method, options are: "jw" Jaro-Winkler (Default), "jaro" Jaro, and "lv" Edit
+#' @param method String distance method, options are: "jw" Jaro-Winkler (Default), "dl" Damerau-Levenshtein, "jaro" Jaro, and "lv" Edit
 #' @param w Parameter that describes the importance of the first characters of a string (only needed if method = "jw"). Default is .10
 #'
 #' @return \code{gammaCKpar} returns a list with the indices corresponding to each
@@ -51,8 +51,8 @@ gammaCKpar <- function(matAp, matBp, n.cores = NULL, cut.a = 0.92, cut.p = 0.88,
         cat("WARNING: You have no variation in this variable, or all observations are missing in dataset B.\n")
     }
     
-    if(!(method %in% c("jw", "jaro", "lv"))){
-        stop("Invalid string distance method. Method should be one of 'jw', 'jaro', or 'lv'.")
+    if(!(method %in% c("jw", "jaro", "lv", "dl"))){
+        stop("Invalid string distance method. Method should be one of 'jw', 'dl', 'jaro', or 'lv'.")
     }
 
     if(method == "jw" & !is.null(w)){
@@ -100,8 +100,18 @@ gammaCKpar <- function(matAp, matBp, n.cores = NULL, cut.a = 0.92, cut.p = 0.88,
         		t <- 1 - stringdistmatrix(e, x, method = "jw", p = p1, nthread = 1)
         		t[ t < cut[[2]] ] <- 0
         		t <- Matrix(t, sparse = T)
-        	}
-
+        }
+        
+        if(strdist == "dl") {
+          t <- stringdistmatrix(e, x, method = "dl", nthread = 1)
+          t.1 <- nchar(as.matrix(e))
+          t.2 <- nchar(as.matrix(x))
+          o <- t(apply(t.1, 1, function(w){ ifelse(w >= t.2, w, t.2)}))
+          t <- 1 - t * (1/o)
+          t[ t < cut[[2]] ] <- 0
+          t <- Matrix(t, sparse = T)
+        }
+    
         if(strdist == "jaro") {
         		t <- 1 - stringdistmatrix(e, x, method = "jw", nthread = 1)
         		t[ t < cut[[2]] ] <- 0
@@ -109,7 +119,7 @@ gammaCKpar <- function(matAp, matBp, n.cores = NULL, cut.a = 0.92, cut.p = 0.88,
         	}
 
         if(strdist == "lv") {
-            t <- stringdistmatrix(e, x, method = method, nthread = 1)
+            t <- stringdistmatrix(e, x, method = "lv", nthread = 1)
             t.1 <- nchar(as.matrix(e))
             t.2 <- nchar(as.matrix(x))
             o <- t(apply(t.1, 1, function(w){ ifelse(w >= t.2, w, t.2)}))
@@ -222,7 +232,7 @@ gammaCKpar <- function(matAp, matBp, n.cores = NULL, cut.a = 0.92, cut.p = 0.88,
 
     if(length(matches.2) == 0){ 
       final.list2 <- list()
-      warning("There are no identical (or nearly identical) matches. We suggest either changing the value of cut.p") 
+      warning("There are no identical (or nearly identical) matches. We suggest changing the value of cut.a") 
     }
     
     if(length(matches.1) == 0){ 

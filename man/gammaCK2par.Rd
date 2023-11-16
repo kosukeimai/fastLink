@@ -15,7 +15,7 @@ gammaCK2par(matAp, matBp, n.cores, cut.a, method, w)
 
 \item{cut.a}{Lower bound for full match, ranging between 0 and 1. Default is 0.92}
 
-\item{method}{String distance method, options are: "jw" Jaro-Winkler (Default), "jaro" Jaro, and "lv" Edit}
+\item{method}{String distance method, options are: "jw" Jaro-Winkler (Default), "dl" Damerau-Levenshtein, "jaro" Jaro, and "lv" Edit}
 
 \item{w}{Parameter that describes the importance of the first characters of a string (only needed if method = "jw"). Default is .10}
 }
