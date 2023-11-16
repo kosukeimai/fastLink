@@ -40,71 +40,72 @@ clusterMatch <- function(vecA, vecB,
                          word.embed = FALSE,
                          min.var = .20,
                          iter.max = 5000){
-
-    ## Warning
-    if(is.null(nclusters) & is.null(max.n)){
-        stop("Please provide either the number of clusters ('nclusters') to create or the maximum n of each cluster ('max.n') as an argument.")
-    }
-
-    ## Clean and combine
-    if(class(vecA) == "factor"){
-        vecA <- as.character(vecA)
-    }
-    if(class(vecB) == "factor"){
-        vecB <- as.character(vecB)
-    }
-    setid <- c(rep(1, length(vecA)), rep(2, length(vecB)))
-    vec <- c(vecA, vecB)
-
-    ## ------------------------
-    ## Which type of clustering
-    ## ------------------------
-    if(word.embed){   
-        ## Create word embedding
-        out <- sapply(letters, function(x){str_count(vec, x)})
-
-        ## Do pca
-        pca.out <- prcomp(out, scale = TRUE)
-        pred <- predict(pca.out, out)
-
-        ## Get difference in variances
-        vars <- apply(pca.out$x, 2, var)  
-        props <- vars / sum(vars)
-        cs.var <- cumsum(props)
-        diffs <- diff(cs.var)
-        dims.include <- c(1, which(diffs > min.var) + 1)
-
-        ## Get first K dimensions
-        dims <- pred[,1:dims.include]
-    }else{
-        dims <- as.numeric(as.factor(vec))
-        weighted.kmeans <- FALSE
-    }
-
-    ## ----------
-    ## Run kmeans
-    ## ----------
-    if(!is.null(nclusters)){
-        ncl <- nclusters
-    }else{
-        ncl <- max(round(max(length(vecA), length(vecB))/max.n, 0), 1)
-    }
-    km.out <- kmeans(dims, centers = ncl, iter.max = iter.max)
-    cluster <- km.out$cluster
-
-    ## --------------------
-    ## Create output object
-    ## --------------------
-    if(word.embed){
-        out <- list(clusterA = cluster[setid == 1], clusterB = cluster[setid == 2],
-                    n.clusters = ncl, kmeans = km.out,
-                    pca = pca.out, dims.pca = dims.include)
-    }else{
-        out <- list(clusterA = cluster[setid == 1], clusterB = cluster[setid == 2],
-                    n.clusters = ncl, kmeans = km.out)
-    }
-
-    return(out)
+  
+  ## Warning
+  if(is.null(nclusters) & is.null(max.n)){
+    stop("Please provide either the number of clusters ('nclusters') to create or the maximum n of each cluster ('max.n') as an argument.")
+  }
+  
+  ## Clean and combine
+  if(is(vecA, "factor")){
+    vecA <- as.character(vecA)
+  }
+  if(is(vecB, "factor")){
+    vecB <- as.character(vecB)
+  }
+  
+  setid <- c(rep(1, length(vecA)), rep(2, length(vecB)))
+  vec <- c(vecA, vecB)
+  
+  ## ------------------------
+  ## Which type of clustering
+  ## ------------------------
+  if(word.embed){   
+    ## Create word embedding
+    out <- sapply(letters, function(x){str_count(vec, x)})
     
+    ## Do pca
+    pca.out <- prcomp(out, scale = TRUE)
+    pred <- predict(pca.out, out)
+    
+    ## Get difference in variances
+    vars <- apply(pca.out$x, 2, var)  
+    props <- vars / sum(vars)
+    cs.var <- cumsum(props)
+    diffs <- diff(cs.var)
+    dims.include <- c(1, which(diffs > min.var) + 1)
+    
+    ## Get first K dimensions
+    dims <- pred[,1:dims.include]
+  }else{
+    dims <- as.numeric(as.factor(vec))
+    weighted.kmeans <- FALSE
+  }
+  
+  ## ----------
+  ## Run kmeans
+  ## ----------
+  if(!is.null(nclusters)){
+    ncl <- nclusters
+  }else{
+    ncl <- max(round(max(length(vecA), length(vecB))/max.n, 0), 1)
+  }
+  km.out <- kmeans(dims, centers = ncl, iter.max = iter.max)
+  cluster <- km.out$cluster
+  
+  ## --------------------
+  ## Create output object
+  ## --------------------
+  if(word.embed){
+    out <- list(clusterA = cluster[setid == 1], clusterB = cluster[setid == 2],
+                n.clusters = ncl, kmeans = km.out,
+                pca = pca.out, dims.pca = dims.include)
+  }else{
+    out <- list(clusterA = cluster[setid == 1], clusterB = cluster[setid == 2],
+                n.clusters = ncl, kmeans = km.out)
+  }
+  
+  return(out)
+  
 }
 

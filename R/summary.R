@@ -71,7 +71,7 @@ summarize.agg <- function(x, num.comparisons, weighted){
         return(list(fdr = fdr, fnr = fnr, matches = matches, matchcount = matchcount))
     }
     
-    if(class(x) == "data.frame"){
+    if(is(x, "data.frame")){
         out <- s.calc(x)
     }else{
         out <- list()

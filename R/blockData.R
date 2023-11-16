@@ -27,13 +27,13 @@ stringSubset <- function(vecA, vecB,
                          similarity.threshold = .8, stringdist.method = "jw",
                          jw.weight = .10, n.cores = NULL){
 
-    if(class(vecA) == "factor"){
+    if(is(vecA, "factor")){
         vecA <- as.character(vecA)
     }
-    if(class(vecB) == "factor"){
+    if(is(vecB, "factor")){
         vecB <- as.character(vecB)
     }
-    if(class(vecA) != "character" | class(vecB) != "character"){
+    if(!is(vecA, "character") | !is(vecB, "character")){
         stop("vecA and vecB must be of class factor or character.")
     }
     if(!(stringdist.method %in% c("jw", "jaro", "lv"))){
@@ -225,13 +225,13 @@ combineBlocks <- function(blocklist){
 
 kmeansBlock <- function(vecA, vecB, nclusters, iter.max, n.cores){
     
-    if(class(vecA) == "factor"){
-        vecA <- as.character(vecA)
-    }
-    if(class(vecB) == "factor"){
-        vecB <- as.character(vecB)
-    }
-    
+  if(is(vecA, "factor")){
+    vecA <- as.character(vecA)
+  }
+  if(is(vecB, "factor")){
+    vecB <- as.character(vecB)
+  }
+
     ## Clean and combine
     vec <- c(vecA, vecB)
     setid <- c(rep("A", length(vecA)), rep("B", length(vecB)))

@@ -14,11 +14,11 @@ Enamorado, Ted, Benjamin Fifield, and Kosuke Imai. 2017. fastLink: Fast Probabil
 
 For a detailed description of the method see:
 
--   [Using a Probabilistic Model to Assist Merging of Large-scale Administrative Records](http://imai.fas.harvard.edu/research/files/linkage.pdf) *American Political Science Review*
+-   [Using a Probabilistic Model to Assist Merging of Large-scale Administrative Records](https://imai.fas.harvard.edu/research/files/linkage.pdf) *American Political Science Review*
 
 Applications of the method:
 
--   [Validating Self-reported Turnout by Linking Public Opinion Surveys with Administrative Records](http://imai.fas.harvard.edu/research/files/turnout.pdf) *Public Opinion Quarterly*
+-   [Validating Self-reported Turnout by Linking Public Opinion Surveys with Administrative Records](https://imai.fas.harvard.edu/research/files/turnout.pdf) *Public Opinion Quarterly*
 
 Technical reports:
 
@@ -28,7 +28,7 @@ Technical reports:
 
 Data:
 
--   [ANES 2016 Time Series Voter Validation Supplemental Data](http://www.electionstudies.org/studypages/download/datacenter_all_NoData.php)
+-   [ANES 2016 Time Series Voter Validation Supplemental Data](https://www.electionstudies.org/studypages/download/datacenter_all_NoData.php)
 
 -   [CCES 2016 Voter Validation Supplemental Data](https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/2NNA4L)
 
