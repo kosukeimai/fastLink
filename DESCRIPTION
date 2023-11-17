@@ -2,7 +2,7 @@ Package: fastLink
 Type: Package
 Title: Fast Probabilistic Record Linkage with Missing Data
 Version: 0.6.1
-Date: 2023-09-14
+Date: 2023-11-17
 Authors@R: c(
   person("Ted", "Enamorado", email = "ted.enamorado@gmail.com", role = c("aut", "cre")),
   person("Ben", "Fifield", email = "benfifield@gmail.com", role = c("aut")),
@@ -14,7 +14,7 @@ Description: Implements a Fellegi-Sunter probabilistic record linkage model that
     tools for preparing, adjusting, and summarizing data merges are included. The package implements methods 
     described in Enamorado, Fifield, and Imai (2019) ''Using a Probabilistic Model to Assist Merging of 
     Large-scale Administrative Records'' <doi:10.1017/S0003055418000783> and is available 
-    at <http://imai.fas.harvard.edu/research/linkage.html>.
+    at <https://imai.fas.harvard.edu/research/linkage.html>.
 License: GPL(>= 3)
 Imports:
     Matrix,
@@ -31,12 +31,13 @@ Imports:
     dplyr,
     plotrix,
     grDevices,
-    graphics
+    graphics,
+    methods
 Depends:
     R (>= 2.14.0)
 LinkingTo: RcppArmadillo, Rcpp, RcppEigen
 Encoding: UTF-8
 LazyData: true
 BugReports: https://github.com/kosukeimai/fastLink/issues
-RoxygenNote: 7.1.2
+RoxygenNote: 7.2.2
 Suggests: testthat
