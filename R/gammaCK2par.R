@@ -6,8 +6,8 @@
 #'
 #' @usage gammaCK2par(matAp, matBp, n.cores, cut.a, method, w)
 #'
-#' @param matAp vector storing the comparison field in data set 1
-#' @param matBp vector storing the comparison field in data set 2
+#' @param vecA vector storing the comparison field in data set 1
+#' @param vecB vector storing the comparison field in data set 2
 #' @param n.cores Number of cores to parallelize over. Default is NULL.
 #' @param cut.a Lower bound for full match, ranging between 0 and 1. Default is 0.92
 #' @param method String distance method, options are: "jw" Jaro-Winkler (Default), "dl" Damerau-Levenshtein, "jaro" Jaro, and "lv" Edit
@@ -29,70 +29,79 @@
 ## This function applies gamma.k
 ## in parallel
 ## ------------------------
+gammaCK2par <- function(vecA,vecB, n.cores = NULL, cut.a = 0.92, method = "jw", w = 0.1) {
 
-gammaCK2par <- function(matAp, matBp, n.cores = NULL, cut.a = 0.92, method = "jw", w = .10) {
+     if (is.null(n.cores)) {
+        n.cores <- parallel::detectCores() - 1
+    }
+    if (!is.factor(vecA)) {
+        vecA=collapse::qF(vecA,na.exclude = T)
+    } 
+    if (!is.factor(vecB)) {
+        vecB=collapse::qF(vecB,na.exclude = T)
+    }
 
-    if(any(class(matAp) %in% c("tbl_df", "data.table"))){
-        matAp <- as.data.frame(matAp)[,1]
-    }
-    if(any(class(matBp) %in% c("tbl_df", "data.table"))){
-        matBp <- as.data.frame(matBp)[,1]
-    }
+    levels(vecA)[levels(vecA)==""]=NA
+    levels(vecB)[levels(vecB)==""]=NA
+    u.values.1 <- levels(vecA)
+    u.values.2 <- levels(vecB)
     
-    matAp[matAp == ""] <- NA
-    matBp[matBp == ""] <- NA
-
-    if(sum(is.na(matAp)) == length(matAp) | length(unique(matAp)) == 1){
-        cat("WARNING: You have no variation in this variable, or all observations are missing in dataset A.\n")
+    # WARNING/STOP block
+    if (length(u.values.1) < 2) {
+        warning("You have no variation in this variable, or all observations are missing in dataset A.\n")
     }
-    if(sum(is.na(matBp)) == length(matBp) | length(unique(matBp)) == 1){
-        cat("WARNING: You have no variation in this variable, or all observations are missing in dataset B.\n")
+    if (length(u.values.2) < 2) {
+        warning("You have no variation in this variable, or all observations are missing in dataset B.\n")
     }
-
-    if(!(method %in% c("jw", "jaro", "lv", "dl"))){
+    if (!(method %in% c("jw", "jaro", "lv", "dl"))) {
         stop("Invalid string distance method. Method should be one of 'jw', 'dl', 'jaro', or 'lv'.")
     }
-
-    if(method == "jw" & !is.null(w)){
-        if(w < 0 | w > 0.25){
+    if (method == "jw" & !is.null(w)) {
+        if (w < 0 | w > 0.25) {
             stop("Invalid value provided for w. Remember, w in [0, 0.25].")
         }
     }
     
-    if(is.null(n.cores)) {
-        n.cores <- detectCores() - 1
-    }
 
-    matrix.1 <- as.matrix(as.character(matAp))
-    matrix.2 <- as.matrix(as.character(matBp))
+    n.slices1 <- max(round(length(u.values.1)/(4000), 0), 1) 
+    n.slices2 <- max(round(length(u.values.2)/(4000), 0), 1) 
 
-    matrix.1[is.na(matrix.1)] <- "1234MF"
-    matrix.2[is.na(matrix.2)] <- "9876ES"
-
-    u.values.1 <- unique(matrix.1)
-    u.values.2 <- unique(matrix.2)
-
-    n.slices1 <- max(round(length(u.values.1)/(10000), 0), 1) 
-    n.slices2 <- max(round(length(u.values.2)/(10000), 0), 1) 
-
-    limit.1 <- round(quantile((0:nrow(u.values.2)), p = seq(0, 1, 1/n.slices2)), 0)
-    limit.2 <- round(quantile((0:nrow(u.values.1)), p = seq(0, 1, 1/n.slices1)), 0)
-
-    temp.1 <- temp.2 <- list()
-
-    n.cores <- min(n.cores, n.slices1 * n.slices2)
+    limit.1 <- round(quantile((0:length(u.values.2)), p = seq(0, 1, 1/n.slices2)), 0)
+    limit.2 <- round(quantile((0:length(u.values.1)), p = seq(0, 1, 1/n.slices1)), 0)
     
-    for(i in 1:n.slices2) {
-        temp.1[[i]] <- list(u.values.2[(limit.1[i]+1):limit.1[i+1]], limit.1[i])
+    n.cores <- min(n.cores, n.slices1 * n.slices2)
+
+
+    do <- expand.grid(1:n.slices2, 1:n.slices1)
+    
+    temp <- list()
+    ListPointer <- setRefClass("ListPointer",
+                               fields = list(data1 = "matrix",
+                                             data2 = "matrix",
+                                             lim1 = "numeric",
+                                             lim2 = "numeric"))
+    factorPointer <- setRefClass("FactorPointer",
+                                 fields=list(f1="numeric",
+                                             f2="numeric"))
+    facs=factorPointer$new(f1=as.numeric(vecA),
+                           f2=as.numeric(vecB))
+    
+    for (i in 1:nrow(do)) {
+        i1=do[i,2]
+        i2=do[i,1]
+        temp[[i]] <- ListPointer$new(
+          data1=as.matrix(u.values.2[(limit.1[i2] + 1):limit.1[i2+1]]),
+          data2=as.matrix(u.values.1[(limit.2[i1] + 1):limit.2[i1 + 1]]),
+          lim1=limit.1[i2],
+          lim2=limit.2[i1])
     }
 
-    for(i in 1:n.slices1) {
-        temp.2[[i]] <- list(u.values.1[(limit.2[i]+1):limit.2[i+1]], limit.2[i])
-    }
-
-    stringvec <- function(m, y, cut, strdist = method, p1 = w) {
-        x <- as.matrix(m[[1]])
-        e <- as.matrix(y[[1]])        
+    stringvec <- function(m, fa, cut=cut.a, strdist = method, p1 = w,
+                          stringdistmatrix=stringdist::stringdistmatrix) {
+        library(Matrix)
+        
+        x <- m$data1
+        e <- m$data2        
         
         if(strdist == "jw") {
             t <- 1 - stringdistmatrix(e, x, method = "jw", p = p1, nthread = 1)
@@ -133,91 +142,52 @@ gammaCK2par <- function(matAp, matBp, n.cores = NULL, cut.a = 0.92, method = "jw
         }
         gc()
         
-        slice.1 <- m[[2]]
-        slice.2 <- y[[2]]
+        slice.1 <- m$lim1
+        slice.2 <- m$lim2
         indexes.2 <- which(t == 2, arr.ind = T)
         indexes.2[, 1] <- indexes.2[, 1] + slice.2
         indexes.2[, 2] <- indexes.2[, 2] + slice.1
-        list(indexes.2)
-    }
 
-    do <- expand.grid(1:n.slices2, 1:n.slices1)
-
-    if (n.cores == 1) '%oper%' <- foreach::'%do%'
-    else { 
-        '%oper%' <- foreach::'%dopar%'
-        cl <- makeCluster(n.cores)
-        registerDoParallel(cl)
-        on.exit(stopCluster(cl))
-    }
-
-    temp.f <- foreach(i = 1:nrow(do), .packages = c("stringdist", "Matrix")) %oper% {
-        r1 <- do[i, 1]
-        r2 <- do[i, 2]
-        stringvec(temp.1[[r1]], temp.2[[r2]], cut.a)
-    }
-
-    gc()
-
-    reshape2 <- function(s) { s[[1]] }
-    temp.2 <- lapply(temp.f, reshape2)
-
-    indexes.2 <- do.call('rbind', temp.2)
-
-    ht1 <- new.env(hash=TRUE)
-    ht2 <- new.env(hash=TRUE)
-
-    n.values.2 <- as.matrix(cbind(u.values.1[indexes.2[, 1]], u.values.2[indexes.2[, 2]]))
-    
-    if(sum(n.values.2 == "1234MF") > 0) {
-      t1 <- which(n.values.2 == "1234MF", arr.ind = T)[1]
-      n.values.2 <- n.values.2[-t1, ]; rm(t1)
-    }
-    
-    if(sum(n.values.2 == "9876ES") > 0) {
-      t1 <- which(n.values.2 == "9876ES", arr.ind = T)[1]
-      n.values.2 <- n.values.2[-t1, ]; rm(t1)
-    }
-    
-    matches.2 <- lapply(seq_len(nrow(n.values.2)), function(i) n.values.2[i, ])
-
-    if(Sys.info()[['sysname']] == 'Windows') {
-        if (n.cores == 1) '%oper%' <- foreach::'%do%'
-        else { 
-            '%oper%' <- foreach::'%dopar%'
-            cl <- makeCluster(n.cores)
-            registerDoParallel(cl)
-            on.exit(stopCluster(cl))
+        get_inds<-function(vec,indc) {
+            Map(function(x) base::which(vec==x, useNames = T), indc,USE.NAMES=F)
         }
-        if(length(matches.2) > 0) {
-            final.list2 <- foreach(i = 1:length(matches.2)) %oper% {
-            ht1 <- which(matrix.1 == matches.2[[i]][[1]]); ht2 <- which(matrix.2 == matches.2[[i]][[2]])
-            list(ht1, ht2)
-      	  }
-        }    
-    } else {
-        no_cores <- n.cores
-            final.list2 <- mclapply(matches.2, function(s){
-            ht1 <- which(matrix.1 == s[1]); ht2 <- which(matrix.2 == s[2]);
-            list(ht1, ht2) }, mc.cores = getOption("mc.cores", no_cores))
+        if (nrow(indexes.2) > 0) {
+            list(lapply(1:nrow(indexes.2), function(x) {
+                c(get_inds(fa$f1,indexes.2[x,1]),
+                  get_inds(fa$f2,indexes.2[x,2]))
+            }))
+        } else {
+            list(list())
+        }
+        
     }
 
-    if(length(matches.2) == 0){ 
-      final.list2 <- list()
-      warning("There are no identical (or nearly identical) matches. We suggest changing the value of cut.a") 
+    cl <- parallel::makeCluster(n.cores)
+    on.exit(parallel::stopCluster(cl))
+    temp.f <- parallel::parSapply(cl, temp, stringvec,
+                                  cut = cut.a,
+                                  strdist = method,
+                                  p1 = w,
+                                  fa = facs)
+
+    
+
+    names(temp.f) <- c("matches2")
+    if (length(temp.f$matches2) == 0) {
+        warning("There are no identical (or nearly identical) matches. We suggest changing the value of cut.a")
     }
     
-    na.list <- list()
-    na.list[[1]] <- which(matrix.1 == "1234MF")
-    na.list[[2]] <- which(matrix.2 == "9876ES")
-
-    out <- list()
-    out[["matches2"]] <- final.list2
-    out[["nas"]] <- na.list
-    class(out) <- c("fastLink", "gammaCK2par")
     
-    return(out)
+    temp.f[["nas"]] =  list(
+        which(is.na(vecA)),
+        which(is.na(vecB))
+    )
+    
+    class(temp.f) <- c("fastLink", "gammaCKpar")
+    
+    return(temp.f)
 }
+
 
 
 ## ------------------------

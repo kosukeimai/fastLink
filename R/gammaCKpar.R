@@ -35,7 +35,7 @@ gammaCKpar <- function (vecA, vecB, n.cores = NULL, cut.a = 0.92, cut.p = 0.88,
                         method = "jw", w = 0.1) {
     
     if (is.null(n.cores)) {
-        n.cores <- detectCores() - 1
+        n.cores <- parallel::detectCores() - 1
     }
     if (!is.factor(vecA)) {
         vecA=collapse::qF(vecA,na.exclude = T)
@@ -68,6 +68,7 @@ gammaCKpar <- function (vecA, vecB, n.cores = NULL, cut.a = 0.92, cut.p = 0.88,
     
     n.slices1 <- max(round(length(u.values.1)/(4000), 0), 1)
     n.slices2 <- max(round(length(u.values.2)/(4000), 0), 1)
+    
     limit.1 <- round(quantile((0:length(u.values.2)), p = seq(0, 
                                                               1, 1/n.slices2)), 0)
     limit.2 <- round(quantile((0:length(u.values.1)), p = seq(0, 
@@ -82,7 +83,7 @@ gammaCKpar <- function (vecA, vecB, n.cores = NULL, cut.a = 0.92, cut.p = 0.88,
                                              data2 = "matrix",
                                              lim1 = "numeric",
                                              lim2 = "numeric"))
-    factorPointer <- setRefClass("FacorPointer",
+    factorPointer <- setRefClass("FactorPointer",
                                  fields=list(f1="numeric",
                                              f2="numeric"))
     facs=factorPointer$new(f1=as.numeric(vecA),
