@@ -31,7 +31,7 @@
 ## ------------------------
 gammaCK2par <- function(vecA,vecB, n.cores = NULL, cut.a = 0.92, method = "jw", w = 0.1) {
 
-     if (is.null(n.cores)) {
+    if (is.null(n.cores)) {
         n.cores <- parallel::detectCores() - 1
     }
     if (!is.factor(vecA)) {
@@ -183,7 +183,7 @@ gammaCK2par <- function(vecA,vecB, n.cores = NULL, cut.a = 0.92, method = "jw", 
         which(is.na(vecB))
     )
     
-    class(temp.f) <- c("fastLink", "gammaCKpar")
+    class(temp.f) <- c("fastLink", "gammaCK2par")
     
     return(temp.f)
 }
