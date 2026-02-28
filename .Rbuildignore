@@ -6,3 +6,4 @@ README.Rmd
 \.DS_Store
 \.\.Rcheck
 builder.sh
+CLAUDE\.md
