@@ -120,16 +120,12 @@ emlinklog <- function(patterns, nobs.a, nobs.b,
     p.gamma.j.u <- matrix(rep(NA, N), nrow = N, ncol = 1)
     
     for (i in 1:nfeatures) {
-        temp.01 <- temp.02 <- gamma.j.k[, i]
-        temp.1 <- unique(na.omit(temp.01))
+        ## Ascending levels and indexed lookup, as in emlinkMARmov().
+        temp.1 <- sort(unique(na.omit(gamma.j.k[, i])))
         temp.2 <- p.gamma.k.m[[i]]
         temp.3 <- p.gamma.k.u[[i]]
-        for (j in 1:length(temp.1)) {
-            temp.01[temp.01 == temp.1[j]] <- temp.2[j]
-            temp.02[temp.02 == temp.1[j]] <- temp.3[j]
-        }
-        p.gamma.k.j.m[i, ] <- temp.01
-        p.gamma.k.j.u[i, ] <- temp.02
+        p.gamma.k.j.m[i, ] <- temp.2[match(gamma.j.k[, i], temp.1)]
+        p.gamma.k.j.u[i, ] <- temp.3[match(gamma.j.k[, i], temp.1)]
     }
     
     sumlog <- function(x) { sum(log(x), na.rm = T) }

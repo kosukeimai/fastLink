@@ -224,16 +224,14 @@ emlinkMARmov <- function(patterns, nobs.a, nobs.b,
         p.old <- c(p.m, p.u, unlist(p.gamma.k.m), unlist(p.gamma.k.u))
 
         for (i in 1:nfeatures) {
-            temp.01 <- temp.02 <- gamma.j.k[, i]
-            temp.1 <- unique(na.omit(temp.01))
+            ## Levels in ascending order, so that they align with the sorted
+            ## component probabilities; indexed lookup, so that a substituted
+            ## probability is never mistaken for an agreement code.
+            temp.1 <- sort(unique(na.omit(gamma.j.k[, i])))
             temp.2 <- p.gamma.k.m[[i]]
             temp.3 <- p.gamma.k.u[[i]]
-            for (j in 1:length(temp.1)) {
-                temp.01[temp.01 == temp.1[j]] <- temp.2[j]
-                temp.02[temp.02 == temp.1[j]] <- temp.3[j]
-            }
-            p.gamma.k.j.m[i, ] <- temp.01
-            p.gamma.k.j.u[i, ] <- temp.02
+            p.gamma.k.j.m[i, ] <- temp.2[match(gamma.j.k[, i], temp.1)]
+            p.gamma.k.j.u[i, ] <- temp.3[match(gamma.j.k[, i], temp.1)]
         }
 
         sumlog <- function(x) { sum(log(x), na.rm = T) }
@@ -260,15 +258,17 @@ emlinkMARmov <- function(patterns, nobs.a, nobs.b,
         ## --------
         ## M-step :
         ## --------
-        num.prod <- exp(log(n.j) + log(zeta.j))
+        ## Bounded multiplication: exp(log(n.j) + log(zeta.j)) can exceed n.j
+        ## through rounding when zeta.j is one, giving negative nonmatch counts.
+        num.prod <- n.j * pmin(1, pmax(0, zeta.j))
         l.p.m <- log(sum(num.prod) + mu - 1) - log(psi - mu + sum(n.j))
         p.m <- exp(l.p.m)
         p.u <- 1 - p.m
 
         for (i in 1:nfeatures) {
             temp.01 <- temp.02 <- gamma.j.k[, i]
-            temp.1 <- unique(na.omit(temp.01))
-            
+            temp.1 <- sort(unique(na.omit(temp.01)))
+
             temp.2 <- rep(alpha1, (length(temp.1) - 1))
             temp.3 <- c(alpha0, temp.2)
 
@@ -449,16 +449,12 @@ emlinkRS <- function(patterns.out, em.out, nobs.a, nobs.b){
     p.gamma.j.u <- matrix(rep(NA, N), nrow = N, ncol = 1)
 
     for (i in 1:nfeatures) {
-        temp.01 <- temp.02 <- gamma.j.k[, i]
-        temp.1 <- unique(na.omit(temp.01))
+        ## Ascending levels and indexed lookup, as in emlinkMARmov().
+        temp.1 <- sort(unique(na.omit(gamma.j.k[, i])))
         temp.2 <- p.gamma.k.m[[i]]
         temp.3 <- p.gamma.k.u[[i]]
-        for (j in 1:length(temp.1)) {
-            temp.01[temp.01 == temp.1[j]] <- temp.2[j]
-            temp.02[temp.02 == temp.1[j]] <- temp.3[j]
-        }
-        p.gamma.k.j.m[i, ] <- temp.01
-        p.gamma.k.j.u[i, ] <- temp.02
+        p.gamma.k.j.m[i, ] <- temp.2[match(gamma.j.k[, i], temp.1)]
+        p.gamma.k.j.u[i, ] <- temp.3[match(gamma.j.k[, i], temp.1)]
     }
     
     sumlog <- function(x) {
