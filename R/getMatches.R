@@ -53,7 +53,7 @@ getMatches <- function(dfA, dfB, fl.out, threshold.match = 0.85, combine.dfs = T
         if(combine.dfs){
             names.dfB <- names(dfB.match)[!(names(dfB.match) %in% names(dfA.match))]
             if(length(names.dfB) > 0){
-                df.match <- cbind(dfA.match, dfB.match[,names.dfB])
+                df.match <- cbind(dfA.match, dfB.match[,names.dfB, drop = FALSE])
             }else{
                 df.match <- dfA.match
             }
@@ -106,7 +106,7 @@ getMatches <- function(dfA, dfB, fl.out, threshold.match = 0.85, combine.dfs = T
         if(combine.dfs){
             names.dfB <- names(dfB.match)[!(names(dfB.match) %in% names(dfA.match))]
             if(length(names.dfB) > 0){
-                df.match <- cbind(dfA.match, dfB.match[,names.dfB])
+                df.match <- cbind(dfA.match, dfB.match[,names.dfB, drop = FALSE])
             }else{
                 df.match <- dfA.match
             }
