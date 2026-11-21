@@ -8,7 +8,7 @@ tableCounts(gammalist, nobs.a, nobs.b, n.cores)
 }
 \arguments{
 \item{gammalist}{A list of objects produced by gammaKpar, gammaCK2par, or
-gammaCKpar.}
+gammaCKpar. Up to 17 fields can be encoded exactly.}
 
 \item{nobs.a}{number of observations in dataset 1}
 
