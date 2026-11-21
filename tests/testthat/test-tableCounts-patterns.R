@@ -46,3 +46,12 @@ test_that("counts add across record slices", {
     expect_identical(observed[, "gamma.1"], c(0, 2))
     expect_identical(observed[, "counts"], c(24000, 8000))
 })
+
+test_that("counts keep the sole observed pattern and omit zero counts", {
+    no.matches <- gammaKpar(c("a", "b"), c("c", "d"), n.cores = 1)
+    same <- gammaKpar(c("a", "a"), c("a", "a"), n.cores = 1)
+    expect_identical(unclass(tableCounts(list(no.matches), 2, 2, n.cores = 1)),
+                     c(gamma.1 = 0, counts = 4))
+    expect_identical(unclass(tableCounts(list(same), 2, 2, n.cores = 1)),
+                     c(gamma.1 = 2, counts = 4))
+})
