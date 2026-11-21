@@ -5,7 +5,7 @@
 #' @usage tableCounts(gammalist, nobs.a, nobs.b, n.cores)
 #'
 #' @param gammalist A list of objects produced by gammaKpar, gammaCK2par, or
-#' gammaCKpar. 
+#' gammaCKpar. Up to 17 fields can be encoded exactly.
 #' @param nobs.a number of observations in dataset 1
 #' @param nobs.b number of observations in dataset 2
 #' @param n.cores Number of cores to parallelize over. Default is NULL.
@@ -38,6 +38,11 @@
 
 tableCounts <- function(gammalist, nobs.a, nobs.b, n.cores = NULL) {
     
+    fields <- length(gammalist)
+    if (fields > 17L) {
+        stop("At most 17 comparison fields fit in a numeric pattern ID.")
+    }
+
     ## Lists of indices:
     ##     temp - exact
     ##     ptemp - partial
@@ -125,43 +130,22 @@ tableCounts <- function(gammalist, nobs.a, nobs.b, n.cores = NULL) {
     
     rm(gammas); rm(gammas_mat); gc()
 
-    counts.f <- as.matrix(tapply(as.numeric(temp[, 2]), temp[, 1], sum))
-    counts.d <- cbind( as.numeric(row.names(counts.f)), counts.f)
-    colnames(counts.d) <- c("pattern.id", "count")
+    ids <- sort(unique(temp[, 1]))
+    counts <- as.numeric(rowsum(temp[, 2], match(temp[, 1], ids)))
+    patterns <- matrix(0, nrow = length(ids), ncol = fields)
+    valid <- rep(TRUE, length(ids))
 
-    ## Merge Counts
-    seq <- 1:(length(gammalist)*3)
-    b <- 2^(seq)
-    patterns.vec <- matrix(NA, 4, length(gammalist))
-    for(i in 1:length(gammalist)){
-        patterns.vec[,i] <- c(b[1:3 + (i-1)*3], 0)
+    ## Each field occupies three bits starting at bit 1. The C++ encoder
+    ## uses 0 for disagreement, 1 for partial, 2 for exact and 4 for missing.
+    for (j in seq_len(fields)) {
+        digit <- floor(ids / 2^(1 + 3 * (j - 1))) %% 8
+        valid <- valid & digit %in% c(0, 1, 2, 4)
+        digit[digit == 4] <- NA_real_
+        patterns[, j] <- digit
     }
-    patterns <- expand.grid(as.data.frame(patterns.vec))
-    pattern.id <- rowSums(patterns)
-    patterns <- cbind(patterns, pattern.id)
-    data.new.0 <- merge(patterns, counts.d, by = "pattern.id")
-    data.new.0 <- data.new.0[,-1]
-
-    b<-2
-    patterns.2vec <- c()
-    for(i in 1:length(gammalist)){
-        patterns.2vec <- c(patterns.2vec, 1/b^(1 + (i-1)*3))
-    }
-    patterns.2 <- t((patterns.2vec) * t(data.new.0[,1:length(gammalist)]))
-    data.new.1 <- cbind(patterns.2, data.new.0[,length(gammalist)+1])
-    names <- c(paste0("gamma.", 1:length(gammalist)), "counts")
-    colnames(data.new.1) <- names
-    sub.nc <- which(colSums(data.new.1) == 0)
-    sub.nc <- sub.nc[sub.nc > length(gammalist)]
-    if(length(sub.nc) > 0){
-        data.new.1 <- data.new.1[, -sub.nc]
-    }
-    nc <- ncol(data.new.1)
-    na.data.new <- data.new.1[, -c(nc), drop = FALSE]
-    na.data.new[na.data.new == 4] <- NA
-    data.new <- cbind(na.data.new, data.new.1[, nc])
-    colnames(data.new)[nc] <- "counts"
-    data.new <- data.new[data.new[, nc] > 0, ]
+    data.new <- cbind(patterns, counts)
+    colnames(data.new) <- c(paste0("gamma.", seq_len(fields)), "counts")
+    data.new <- data.new[valid & counts > 0, ]
     class(data.new) <- c("fastLink", "tableCounts")
     return(data.new)
     
