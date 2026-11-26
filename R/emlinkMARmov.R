@@ -261,7 +261,7 @@ emlinkMARmov <- function(patterns, nobs.a, nobs.b,
         ## M-step :
         ## --------
         num.prod <- exp(log(n.j) + log(zeta.j))
-        l.p.m <- log(sum(num.prod) + mu - 1) - log(psi - mu + sum(n.j))
+        l.p.m <- log(sum(num.prod) + mu - 1) - log(psi + mu - 2 + sum(n.j))  ## Beta(mu, psi) posterior mode
         p.m <- exp(l.p.m)
         p.u <- 1 - p.m
 
